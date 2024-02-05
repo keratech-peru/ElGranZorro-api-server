@@ -1,6 +1,6 @@
 from starlette.config import Config
 
-config = Config("../.env")
+config = Config(".env")
 
 POSTGRES_DB = config("POSTGRES_DB")
 POSTGRES_USER = config("POSTGRES_USER")
