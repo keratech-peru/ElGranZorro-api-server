@@ -1,14 +1,17 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Form, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from mangum import Mangum
 from typing import Dict
 from app.database import Base, engine
 from app.users.routers import router as users
+from app.admin.routers import router as admin
 
 # Creacion de la BD
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="app/admin/static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(users)
+app.include_router(admin)
 
 @app.get("/")
 def root() -> Dict[str, object]:
