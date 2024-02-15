@@ -12,8 +12,9 @@ import csv
 import json
 import pandas
 import shutil
+import os
 
-FILEDIR = "./app/admin/archivos/"
+FILEDIR = os.getcwd() +"/app/admin/archivos/"
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/admin/templates")
