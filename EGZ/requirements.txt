@@ -11,3 +11,4 @@ infobip-api-python-client==3.0.1
 jinja2
 python-multipart
 pandas
+openpyxl
