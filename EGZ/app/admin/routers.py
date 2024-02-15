@@ -30,5 +30,6 @@ async def post_basic_form(request: Request, username: str = Form(...), password:
         with open(f"{FILEDIR}{file.filename}", "wb") as f:
             f.write(contents)
     except:
+        print("\nos.getcwd() : ",os.getcwd())
         print("Error en la escritura del archivo ....\n")
     return templates.TemplateResponse("form.html", {"request": request})
