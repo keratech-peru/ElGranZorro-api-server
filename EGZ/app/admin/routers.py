@@ -14,7 +14,8 @@ import pandas
 import shutil
 import os
 
-FILEDIR = "/opt/render/project/src/EGZ" +"/app/admin/archivos/"
+#"/opt/render/project/src/EGZ"
+FILEDIR = "/app/admin/archivos/"
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/admin/templates")
@@ -26,10 +27,6 @@ def get_basic_form(request: Request):
 @router.post('/file-upload', response_class=HTMLResponse)
 async def post_basic_form(request: Request, username: str = Form(...), password: str = Form(...), file: UploadFile = File(...)):     
     contents = await file.read()
-    print(contents)
-    print("\nos.getcwd() : ",os.getcwd())
-    print("Error en la escritura del archivo ....\n")
     with open(f"{FILEDIR}{file.filename}", "wb") as f:
         f.write(contents)
-
     return templates.TemplateResponse("form.html", {"request": request})
