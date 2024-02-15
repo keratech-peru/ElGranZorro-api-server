@@ -13,7 +13,7 @@ import json
 import pandas
 import shutil
 
-FILEDIR = "app/admin/archivos/"
+FILEDIR = "./app/admin/archivos/"
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/admin/templates")
