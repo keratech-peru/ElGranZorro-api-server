@@ -26,6 +26,9 @@ def get_basic_form(request: Request):
 @router.post('/file-upload', response_class=HTMLResponse)
 async def post_basic_form(request: Request, username: str = Form(...), password: str = Form(...), file: UploadFile = File(...)):     
     contents = await file.read()
-    with open(f"{FILEDIR}{file.filename}", "wb") as f:
-        f.write(contents)
+    try:
+        with open(f"{FILEDIR}{file.filename}", "wb") as f:
+            f.write(contents)
+    except:
+        print("Error en la escritura del archivo ....\n")
     return templates.TemplateResponse("form.html", {"request": request})
