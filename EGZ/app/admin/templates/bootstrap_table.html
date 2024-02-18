@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <table id="data" class="table table-striped">
+    <thead>
+      <tr>
+        <th>created_at</th>
+        <th>codigo</th>
+        <th>Name</th>
+        <th>logo</th>
+        <th>start_date</th>
+        <th>max_number_of_players</th>
+        <th>game_mode</th>
+        <th>tournament_rules</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tourmament in tourmaments %}
+        <tr>
+          <td>{{ tourmament.created_at }}</td>
+          <td>{{ tourmament.codigo }}</td>  
+          <td>{{ tourmament.name }}</td>
+          <td>{{ tourmament.logo }}</td>
+          <td>{{ tourmament.start_date }}</td>
+          <td>{{ tourmament.max_number_of_players }}</td>
+          <td>{{ tourmament.game_mode }}</td>
+          <td>{{ tourmament.tournament_rules }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(function () {
+      $('#data').DataTable({
+        columns: [
+          {searchable: false},
+          {searchable: false},
+          {orderable: true, searchable: true},
+          {searchable: false},
+          {searchable: false},
+          {searchable: false},
+          {searchable: false},
+          {searchable: false}],
+      });
+    });
+  </script>
+{% endblock %}
