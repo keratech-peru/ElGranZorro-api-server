@@ -4,8 +4,8 @@ from fastapi.templating import Jinja2Templates
 from typing import Dict, Optional
 from sqlalchemy.orm import Session
 from app.tournaments.schemas import Tourmaments as SchemasTournaments
-from app.tournaments.models import Tourmaments as ModelsTournaments
-from app.tournaments.service import Tourmaments_
+from app.tournaments.models import Tournaments as ModelsTournaments
+from app.tournaments.service import Tourmaments_, FootballGames_
 from app.database import get_db, CRUD
 from app.security import valid_header
 from app.constants import ApiKey
@@ -51,7 +51,9 @@ async def post_basic_form(request: Request, username: str = Form(...), password:
     return templates.TemplateResponse("bootstrap_table.html",{"request": request, "title":'Bootstrap Table', "tourmaments":tourmaments})
 
 
-@router.get("/table", response_class=HTMLResponse)
-def get_basic_table(request: Request, db: Session = Depends(get_db)):
-    tourmaments = Tourmaments_.list_all(db)
-    return templates.TemplateResponse("bootstrap_table.html",{"request": request, "title":'Bootstrap Table', "tourmaments":tourmaments})
+@router.get("/table/{table_name}", response_class=HTMLResponse)
+def get_basic_table(request: Request, table_name: str, db: Session = Depends(get_db)):
+    list_all = {"tourmaments": Tourmaments_.list_all(db), "footballgames": FootballGames_.list_all(db)}
+    if table_name not in list_all:
+        raise exception.table_does_not_exist
+    return templates.TemplateResponse("bootstrap_table.html",{"request": request, "table_name":table_name , "tablas":list_all})

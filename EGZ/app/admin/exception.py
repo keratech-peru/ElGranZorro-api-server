@@ -6,3 +6,9 @@ file_not_allowed = HTTPException(
         "message": ErrorCode.FILE_NOT_ALLOWED
     }
 )
+
+table_does_not_exist = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND, detail={
+        "message": ErrorCode.TABLE_DOES_NOT_EXIST
+    }
+)

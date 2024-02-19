@@ -9,3 +9,11 @@ class Tourmaments(BaseModel):
     max_number_of_players: str
     game_mode: str
     tournament_rules: str
+
+class FootballGames(BaseModel):
+    codigo: str
+    tournament_id: int
+    home_team: str
+    away_team: str
+    home_score: int
+    away_score: int
