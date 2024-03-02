@@ -3,7 +3,7 @@ from app.tournaments.models import Tournaments, FootballGames
 from app.tournaments import schemas
 from sqlalchemy.orm import Session
 from typing import List
-class Tourmaments_(CRUD):
+class Tournaments_(CRUD):
     @staticmethod
     def create(tourmament_in: schemas.Tourmaments, db: Session) -> Tournaments:
         new_tourmament = Tournaments(**tourmament_in.dict())

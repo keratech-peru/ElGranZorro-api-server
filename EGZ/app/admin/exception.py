@@ -12,3 +12,9 @@ table_does_not_exist = HTTPException(
         "message": ErrorCode.TABLE_DOES_NOT_EXIST
     }
 )
+
+unauthorized = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED, detail={
+        "message": ErrorCode.UNAUTHORIZED
+    }
+)

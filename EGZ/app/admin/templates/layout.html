@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block body %}
+    <div class="wrapper min-vh-100">
+        <aside class="navbar navbar-vertical navbar-expand-lg navbar-dark">
+            <div class="container-fluid">
+                <h1 class="navbar-brand navbar-brand-autodark">
+                    <a href="/admin/dashboard">
+                        <img
+                            src="https://preview.tabler.io/static/logo-white.svg"
+                            width="110"
+                            height="32"
+                            alt="Tabler"
+                            class="navbar-brand-image"
+                        />
+                    </a>
+                </h1>
+                <div class="collapse navbar-collapse" id="navbar-menu">
+                    <ul class="navbar-nav pt-lg-3">
+                        {% for resource in resources %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/table/{{ resource.label }}">
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <i class="fas fa-file-code"></i>
+                                    </span>
+                                    <span class="nav-link-title">
+                                        {{ resource.label }}
+                                    </span>
+                                </a>
+                            </li>
+
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </aside>
+        <div class="page-wrapper min-vh-100">
+            <header class="navbar navbar-expand-md navbar-light d-none d-lg-flex d-print-none">
+                <div class="container-fluid">
+                    <div class="navbar-nav flex-row order-md-last"></div>
+                    <div></div>
+                </div>
+            </header>
+            <div class="container-fluid">
+                <div class="page-header d-print-none">
+                    {% block page_header %}
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <div class="page-pretitle">{{ page_pre_title or '' }}</div>
+                                <h2 class="page-title">{{ page_title or '' }}</h2>
+                            </div>
+                        </div>
+                        {% block page_title_actions %} {% endblock %} {% endblock %}
+                </div>
+            </div>
+            <div class="page-body flex-grow-1">
+                <div class="container-fluid">
+                    <div class="row row-deck row-cards">
+                        <div class="container">
+                            {% block page_body %} {% endblock %}
+                        </div>
+                        <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+                        <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
+                        {% block scripts %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+            {% block footer %}
+                {% include "footer.html" %}
+            {% endblock %}
+        </div>
+    </div>
+
+{% endblock %}

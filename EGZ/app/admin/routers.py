@@ -5,11 +5,12 @@ from typing import Dict, Optional
 from sqlalchemy.orm import Session
 from app.tournaments.schemas import Tourmaments as SchemasTournaments
 from app.tournaments.models import Tournaments as ModelsTournaments
-from app.tournaments.service import Tourmaments_, FootballGames_
+from app.tournaments.service import Tournaments_, FootballGames_
 from app.database import get_db, CRUD
 from app.security import valid_header
 from app.constants import ApiKey
 from app.admin import exception
+from app.config import USERNAME, PASSWORD
 import pandas as pd
 import os
 
@@ -19,13 +20,23 @@ FILEDIR = os.getcwd() + "/app/admin/archivos/"
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/admin/templates")
 
-@router.get("/file-upload", response_class=HTMLResponse)
-def get_basic_form(request: Request):
-    return templates.TemplateResponse("form.html", {"request": request})
+@router.get("/login", response_class=HTMLResponse)
+def get_login(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@router.post("/login", response_class=HTMLResponse)
+def get_login(request: Request, username: str = Form(...), password: str = Form(...)):
+    if not (username == USERNAME and password == PASSWORD):
+        return templates.TemplateResponse("login.html", {"request": request, "error":True})
+    resources = [{"label":"footballgames"}, {"label":"tournaments"}]
+    return templates.TemplateResponse("dashboard.html", {"request": request, "resources":resources, "title": "Hola mundo"})
 
 @router.post('/file-upload', response_class=HTMLResponse)
 async def post_basic_form(request: Request, username: str = Form(...), password: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):     
     contents = await file.read()
+
+    if not (username == USERNAME and password == PASSWORD):
+        raise exception.unauthorized
 
     if file.filename.split(".")[-1] != "xsls":
         raise exception.file_not_allowed
@@ -47,13 +58,17 @@ async def post_basic_form(request: Request, username: str = Form(...), password:
         CRUD.insert(db, ModelsTournaments(**obj.dict()))
 
     os.remove(f"{FILEDIR}{file.filename}")
-    tourmaments = Tourmaments_.list_all(db)
+    tourmaments = Tournaments_.list_all(db)
     return templates.TemplateResponse("bootstrap_table.html",{"request": request, "title":'Bootstrap Table', "tourmaments":tourmaments})
 
 
 @router.get("/table/{table_name}", response_class=HTMLResponse)
 def get_basic_table(request: Request, table_name: str, db: Session = Depends(get_db)):
-    list_all = {"tourmaments": Tourmaments_.list_all(db), "footballgames": FootballGames_.list_all(db)}
-    if table_name not in list_all:
+    list_all = []
+    if table_name in 'tournaments':
+        list_all = Tournaments_.list_all(db)
+    elif table_name in 'footballgames':
+        list_all = FootballGames_.list_all(db)
+    else:
         raise exception.table_does_not_exist
-    return templates.TemplateResponse("bootstrap_table.html",{"request": request, "table_name":table_name , "tablas":list_all})
+    return templates.TemplateResponse(f"table_{table_name}.html",{"request": request, "table_name":table_name , "tablas":list_all})

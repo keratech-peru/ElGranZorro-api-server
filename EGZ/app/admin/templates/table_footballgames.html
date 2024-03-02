@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block page_body %}
+<div class="col-12">
+  <div class="card">
+      <div class="card-header">
+      </div>
+      <div class="card-body border-bottom py-3 d-flex">
+        <div id="toolbar-actions" class="ms-auto btn-list">
+            <a class="btn btn-dark" href="/admin/dashboard">
+                <i class="fas fa-plus me-2" aria-hidden="true"></i>
+                create
+            </a>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table id="data" class="table table-striped">
+          <thead>
+            <tr>
+              <th>codigo</th>
+              <th>tournament_id</th>
+              <th>home_team</th>
+              <th>away_team</th>
+              <th>home_score</th>
+              <th>away_score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tabla in tablas %}
+              <tr>
+                <td>{{ tabla.codigo }}</td>
+                <td>{{ tabla.tournament_id }}</td>  
+                <td>{{ tabla.home_team }}</td>
+                <td>{{ tabla.away_team }}</td>
+                <td>{{ tabla.home_score }}</td>
+                <td>{{ tabla.away_score }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(function () {
+      $('#data').DataTable({
+        columns: [
+          {searchable: false},
+          {searchable: false},
+          {orderable: true, searchable: true},
+          {searchable: false},
+          {searchable: false},
+          {searchable: false},],
+      });
+    });
+  </script>
+{% endblock %}
