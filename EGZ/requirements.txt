@@ -12,3 +12,4 @@ jinja2
 python-multipart
 pandas
 openpyxl
+python-jose[cryptography]

@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Request, Form, UploadFile, File, Depends
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Request, Form, UploadFile, File, Depends, Cookie
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from typing import Dict, Optional
 from sqlalchemy.orm import Session
@@ -10,15 +10,28 @@ from app.database import get_db, CRUD
 from app.security import valid_header
 from app.constants import ApiKey
 from app.admin import exception
+from app.admin.constants import RESOURCES
 from app.config import USERNAME, PASSWORD
 import pandas as pd
 import os
+from jose import jwt, JWTError
+from datetime import datetime, timedelta
 
 
 FILEDIR = os.getcwd() + "/app/admin/archivos/"
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/admin/templates")
+
+
+SECRETE_KEY = "a2468f571c35be1540412ac8053e97ed164569cb33350b7848d0342d9a2ee7c0"
+TOKEN_SCONDS_EXP = 10
+
+def create_token(data: list):
+    data_token = data.copy()
+    data_token["exp"] = datetime.utcnow() + timedelta(seconds=TOKEN_SCONDS_EXP)
+    token_jwt = jwt.encode(data_token, key=SECRETE_KEY, algorithm="HS256")
+    return token_jwt
 
 @router.get("/login", response_class=HTMLResponse)
 def get_login(request: Request):
@@ -28,8 +41,8 @@ def get_login(request: Request):
 def get_login(request: Request, username: str = Form(...), password: str = Form(...)):
     if not (username == USERNAME and password == PASSWORD):
         return templates.TemplateResponse("login.html", {"request": request, "error":True})
-    resources = [{"label":"footballgames"}, {"label":"tournaments"}]
-    return templates.TemplateResponse("dashboard.html", {"request": request, "resources":resources, "title": "Hola mundo"})
+    token = create_token({"username":username})
+    return RedirectResponse("/admin/table/tournaments", status_code=302, headers={"set-cookie" : f"access_token={token}; Max-Age={TOKEN_SCONDS_EXP}"})  
 
 @router.post('/file-upload', response_class=HTMLResponse)
 async def post_basic_form(request: Request, username: str = Form(...), password: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):     
@@ -63,7 +76,15 @@ async def post_basic_form(request: Request, username: str = Form(...), password:
 
 
 @router.get("/table/{table_name}", response_class=HTMLResponse)
-def get_basic_table(request: Request, table_name: str, db: Session = Depends(get_db)):
+def get_basic_table(request: Request ,table_name: str, access_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    if access_token is None:
+        return RedirectResponse("/admin/login", status_code=302)
+    try:
+        data_user = jwt.decode(access_token, key=SECRETE_KEY, algorithms=["HS256"])
+        if data_user["username"] != USERNAME:
+            return RedirectResponse("/admin/login", status_code=302)
+    except JWTError:
+        return RedirectResponse("/admin/login", status_code=302)
     list_all = []
     if table_name in 'tournaments':
         list_all = Tournaments_.list_all(db)
@@ -71,4 +92,4 @@ def get_basic_table(request: Request, table_name: str, db: Session = Depends(get
         list_all = FootballGames_.list_all(db)
     else:
         raise exception.table_does_not_exist
-    return templates.TemplateResponse(f"table_{table_name}.html",{"request": request, "table_name":table_name , "tablas":list_all})
+    return templates.TemplateResponse(f"table_{table_name}.html",{"request": request,"resources":RESOURCES, "title": "Hi", "table_name":table_name , "tablas":list_all})
