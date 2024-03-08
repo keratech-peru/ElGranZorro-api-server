@@ -3,4 +3,4 @@ class ErrorCode:
     TABLE_DOES_NOT_EXIST = "La tabla no existe."
     UNAUTHORIZED = "Usuario no Autorizado."
 
-RESOURCES = [{"label":"footballgames"}, {"label":"tournaments"}]
+RESOURCES = [{"label":"footballgames"}, {"label":"tournaments"}, {"label":"appusers"}]

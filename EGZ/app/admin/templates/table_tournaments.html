@@ -1,47 +1,114 @@
-{% extends "layout.html" %}
+d{% extends "layout.html" %}
 {% block page_body %}
 <div class="col-12">
   <div class="card">
       <div class="card-header">
+        <form action="/admin/login" method="get" class="w-100">
+          <div class="d-flex">
+            <div class="text-muted">
+                    {{ ('show') }}
+                    <div class="mx-2 d-inline-block">
+                        <input
+                          type="text"
+                          class="form-control"
+                          value="11"
+                          size="2"
+                          name="page_size"
+                          aria-label="entries count"
+                        />
+                    </div>
+                    {{ ('entries') }}
+            </div>
+            <div class="d-flex ms-auto">
+              <div class="mx-2">
+                <div class="text-muted">
+                  Name : 
+                  <div class="d-inline-block">
+                    <input class="form-control" type="text" name="name" value placeholder="">
+                  </div>
+                </div>
+              </div>
+              <div class="ms-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>
+                    {{ ('search') }}
+                  </button>
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
       <div class="card-body border-bottom py-3 d-flex">
         <div id="toolbar-actions" class="ms-auto btn-list">
-            <a class="btn btn-dark" href="/admin/dashboard">
+            <a class="btn btn-dark" href="/admin/tournaments">
                 <i class="fas fa-plus me-2" aria-hidden="true"></i>
                 create
             </a>
         </div>
       </div>
       <div class="table-responsive">
-        <table id="data" class="table table-striped">
+        <table id="data" class="table card-table table-vcenter text-nowrap datatable">
           <thead>
             <tr>
-              <th>created_at</th>
-              <th>codigo</th>
-              <th>Name</th>
-              <th>logo</th>
-              <th>start_date</th>
-              <th>max_number_of_players</th>
-              <th>game_mode</th>
-              <th>tournament_rules</th>
+                    <th class="w-1">
+                      <input class="form-check-input m-0 align-middle" type="checkbox" id="checkbox-select-all"/>
+                    </th>
+                    <th>id</th>
+                    <th>created_at</th>
+                    <th>codigo</th>
+                    <th>Name</th>
+                    <th>logo</th>
+                    <th>start_date</th>
+                    <th>max_number_of_players</th>
+                    <th>game_mode</th>
+                    <th>tournament_rules</th>
+                    <th></th>
             </tr>
           </thead>
           <tbody>
-            {% for tabla in tablas %}
-              <tr>
-                <td>{{ tabla.created_at }}</td>
-                <td>{{ tabla.codigo }}</td>  
-                <td>{{ tabla.name }}</td>
-                <td>{{ tabla.logo }}</td>
-                <td>{{ tabla.start_date }}</td>
-                <td>{{ tabla.max_number_of_players }}</td>
-                <td>{{ tabla.game_mode }}</td>
-                <td>{{ tabla.tournament_rules }}</td>
-              </tr>
-            {% endfor %}
+                  {% for tabla in tablas %}
+                    <tr>
+                      <td>
+                        <input data-id="{{ tabla.id|int }}" class="form-check-input m-0 align-middle checkbox-select-item" type="checkbox"/>
+                      </td>
+                      <td>{{ tabla.id }}</td>
+                      <td>{{ tabla.created_at }}</td>
+                      <td>{{ tabla.codigo }}</td>  
+                      <td>{{ tabla.name }}</td>
+                      <td>{{ tabla.logo }}</td>
+                      <td>{{ tabla.start_date }}</td>
+                      <td>{{ tabla.max_number_of_players }}</td>
+                      <td>{{ tabla.game_mode }}</td>
+                      <td>{{ tabla.tournament_rules }}</td>
+                      <td class="text-end">
+                        <span class="dropdown">
+                          <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport" data-bs-toggle="dropdown">
+                              {{ ('actions') }}
+                          </button>
+                          <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                            <a class="dropdown-item" href="/admin/tournament/update/{{tabla.id}}">
+                              <i class="ti ti-edit me-2"></i>
+                              Update
+                            </a>
+                            <a class="dropdown-item" href="#" onclick="onAction('/admin/product/delete/198','DELETE')">
+                              <i class="ti ti-edit me-2"></i>
+                              Delete
+                            </a>
+                          </div>
+                        </span>
+                      </td>
+                    </tr>
+                  {% endfor %}
           </tbody>
         </table>
       </div>
+      <div class="card-footer d-flex align-items-center">
+        <p class="m-0 text-muted">
+          Showing 1 to 10 of 1 entries
+        </p>
+
+      </div>
+
   </div>
 </div>
 {% endblock %}
@@ -51,6 +118,7 @@
     $(document).ready(function () {
       $('#data').DataTable({
         columns: [
+          {searchable: false},
           {searchable: false},
           {searchable: false},
           {orderable: true, searchable: true},

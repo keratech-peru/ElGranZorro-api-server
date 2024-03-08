@@ -40,7 +40,7 @@ d{% extends "layout.html" %}
       </div>
       <div class="card-body border-bottom py-3 d-flex">
         <div id="toolbar-actions" class="ms-auto btn-list">
-            <a class="btn btn-dark" href="/admin/footballgames">
+            <a class="btn btn-dark" href="/admin/tournaments">
                 <i class="fas fa-plus me-2" aria-hidden="true"></i>
                 create
             </a>
@@ -54,12 +54,14 @@ d{% extends "layout.html" %}
                       <input class="form-check-input m-0 align-middle" type="checkbox" id="checkbox-select-all"/>
                     </th>
                     <th>id</th>
-                    <th>codigo</th>
-                    <th>tournament_id</th>
-                    <th>home_team</th>
-                    <th>away_team</th>
-                    <th>home_score</th>
-                    <th>away_score</th>
+                    <th>created_at</th>
+                    <th>name</th>
+                    <th>lastname</th>
+                    <th>birthdate</th>
+                    <th>phone</th>
+                    <th>email</th>
+                    <th>what_team_are_you_fan</th>
+                    <th>from_what_age_are_you_fan</th>
                     <th></th>
             </tr>
           </thead>
@@ -70,12 +72,14 @@ d{% extends "layout.html" %}
                         <input data-id="{{ tabla.id|int }}" class="form-check-input m-0 align-middle checkbox-select-item" type="checkbox"/>
                       </td>
                       <td>{{ tabla.id }}</td>
-                      <td>{{ tabla.codigo }}</td>
-                      <td>{{ tabla.tournament_id }}</td>  
-                      <td>{{ tabla.home_team }}</td>
-                      <td>{{ tabla.away_team }}</td>
-                      <td>{{ tabla.home_score }}</td>
-                      <td>{{ tabla.away_score }}</td>
+                      <td>{{ tabla.created_at }}</td>
+                      <td>{{ tabla.name }}</td>  
+                      <td>{{ tabla.lastname }}</td>
+                      <td>{{ tabla.birthdate }}</td>
+                      <td>{{ tabla.phone }}</td>
+                      <td>{{ tabla.email }}</td>
+                      <td>{{ tabla.what_team_are_you_fan }}</td>
+                      <td>{{ tabla.from_what_age_are_you_fan }}</td>
                       <td class="text-end">
                         <span class="dropdown">
                           <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport" data-bs-toggle="dropdown">
@@ -120,7 +124,9 @@ d{% extends "layout.html" %}
           {orderable: true, searchable: true},
           {searchable: false},
           {searchable: false},
-          {searchable: false},],
+          {searchable: false},
+          {searchable: false},
+          {searchable: false}],
       });
     });
   </script>

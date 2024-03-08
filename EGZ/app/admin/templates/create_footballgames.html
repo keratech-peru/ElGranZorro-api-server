@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block page_body %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">footballgames</h3>
+            </div>
+            <div class="card-body border-bottom py-3">
+                <form method="post" action="/admin/footballgames">
+                    <div class="form-group mb-3">
+                        <label class="form-label">codigo</label>
+                        <input required type="text" class="form-control" name="codigo" value="datos a enviar" disabled>
+                        <!-- <input required type class="form-control" name="codigo" placeholder value> -->
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">tournament_id</label>
+                        <input required type class="form-control" name="tournament_id" placeholder value>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">home_team</label>
+                        <input required type class="form-control" name="home_team" placeholder value>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">away_team</label>
+                        <input required type class="form-control" name="away_team" placeholder value>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">home_score</label>
+                        <input required type class="form-control" name="home_score" placeholder value>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label">away_score</label>
+                        <input required type class="form-control" name="away_score" placeholder value>
+                    </div>
+                    <div class="form-footer">
+                        <button type="submit" name="save" class="btn btn-primary">{{ ('save') }}</button>
+                        <a type="button" class="btn btn-secondary" href="/admin/table/footballgames">
+                            {{ ('return') }}
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
