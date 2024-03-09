@@ -1,5 +1,9 @@
 from fastapi import Request
 from app.exception import invalid_api_lambda_key, api_cms_failure
+from app.config import USERNAME, SECRETE_KEY, TOKEN_SCONDS_EXP
+from jose import jwt, JWTError
+from app.admin.exception import fail_access_token
+from datetime import datetime, timedelta
 
 
 def valid_header(request: Request, api_key: str) -> Request:
@@ -10,3 +14,20 @@ def valid_header(request: Request, api_key: str) -> Request:
         return request
     else:
         raise invalid_api_lambda_key
+
+
+def valid_access_token(access_token):
+    if access_token is None:
+        raise fail_access_token
+    try:
+        data_user = jwt.decode(access_token, key=SECRETE_KEY, algorithms=["HS256"])
+        if data_user["username"] != USERNAME:
+            raise fail_access_token
+    except JWTError:
+        raise fail_access_token
+
+def create_token(data: list):
+    data_token = data.copy()
+    data_token["exp"] = datetime.utcnow() + timedelta(seconds=int(TOKEN_SCONDS_EXP))
+    token_jwt = jwt.encode(data_token, key=SECRETE_KEY, algorithm="HS256")
+    return token_jwt

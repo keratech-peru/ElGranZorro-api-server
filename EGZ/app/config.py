@@ -2,6 +2,8 @@ from starlette.config import Config
 
 config = Config(".env")
 
+SECRETE_KEY = config("SECRETE_KEY")
+TOKEN_SCONDS_EXP = config("TOKEN_SCONDS_EXP")
 POSTGRES_DB = config("POSTGRES_DB")
 POSTGRES_USER = config("POSTGRES_USER")
 POSTGRES_PASSWORD = config("POSTGRES_PASSWORD")

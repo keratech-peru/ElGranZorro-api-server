@@ -18,3 +18,10 @@ unauthorized = HTTPException(
         "message": ErrorCode.UNAUTHORIZED
     }
 )
+
+fail_access_token = HTTPException(
+    status_code=status.HTTP_302_FOUND, detail={
+        "message": ErrorCode.FAIL_ACCESS_TOKEN
+    },
+    headers = {"Location": "/admin/login"}
+)
