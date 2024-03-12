@@ -13,7 +13,10 @@ class Tourmaments(BaseModel):
 class FootballGames(BaseModel):
     codigo: str
     tournament_id: int
-    home_team: str
-    away_team: str
-    home_score: int
-    away_score: int
+    tournament_stage: str
+    date: str
+    type_footballgames: str
+    home_team: Optional[str]
+    away_team: Optional[str]
+    home_score: Optional[int]
+    away_score: Optional[int]

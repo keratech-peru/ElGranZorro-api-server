@@ -55,7 +55,10 @@ d{% extends "layout.html" %}
                     </th>
                     <th>id</th>
                     <th>codigo</th>
-                    <th>tournament_id</th>
+                    <th>tournament_codigo</th>
+                    <th>tournament_stage</th>
+                    <th>date</th>
+                    <th>type_footballgames</th>
                     <th>home_team</th>
                     <th>away_team</th>
                     <th>home_score</th>
@@ -71,7 +74,10 @@ d{% extends "layout.html" %}
                       </td>
                       <td>{{ tabla.id }}</td>
                       <td>{{ tabla.codigo }}</td>
-                      <td>{{ tabla.tournament_id }}</td>  
+                      <td>{{ tabla.tournament_codigo }}</td>
+                      <td>{{ tabla.tournament_stage }}</td>
+                      <td>{{ tabla.date }}</td>
+                      <td>{{ tabla.type_footballgames }}</td>  
                       <td>{{ tabla.home_team }}</td>
                       <td>{{ tabla.away_team }}</td>
                       <td>{{ tabla.home_score }}</td>
@@ -114,6 +120,7 @@ d{% extends "layout.html" %}
     $(document).ready(function () {
       $('#data').DataTable({
         columns: [
+          {searchable: false},
           {searchable: false},
           {searchable: false},
           {searchable: false},

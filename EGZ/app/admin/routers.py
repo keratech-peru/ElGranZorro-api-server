@@ -14,7 +14,6 @@ from app.security import valid_access_token, create_token
 from app.admin import exception
 from app.admin.constants import RESOURCES
 from app.config import USERNAME, PASSWORD, TOKEN_SCONDS_EXP
-import pandas as pd
 import os
 
 FILEDIR = os.getcwd() + "/app/admin/archivos/"
@@ -37,9 +36,10 @@ async def create_tournaments(request: Request,
             start_date: str = Form(...),
             tournament_rules: str = Form(...),
             db: Session = Depends(get_db)):
+    codigo, id = code_generator_tournaments(db)       
     obj = SchemasTournaments(               
         name=name,
-        codigo=code_generator_tournaments(db),
+        codigo=codigo,
         logo=logo,
         start_date=start_date,
         max_number_of_players=Players.MAXIMO,
@@ -47,12 +47,22 @@ async def create_tournaments(request: Request,
         tournament_rules=tournament_rules                                                                                      
     )    
     CRUD.insert(db, ModelsTournaments(**obj.dict()))
+
+    FootballGames_.create_groups_stage(id, codigo, start_date, db)
+    FootballGames_.create_eighths_stage(id, codigo, start_date, db)
+    FootballGames_.create_quarter_stage(id, codigo, start_date, db)
+    FootballGames_.create_semifinal_stage(id, codigo, start_date, db)
+    FootballGames_.create_final_stage(id, codigo, start_date, db)
+
     return templates.TemplateResponse("create_tournaments.html", {"request": request ,"resources":RESOURCES})
 
 @router.post("/footballgames", response_class=HTMLResponse)
 async def create_footballgames(request: Request,
             codigo: str = Form(...),
             tournament_id: int = Form(...),
+            tournament_stage: str = Form(...),
+            date: str = Form(...),
+            type_footballgames: str = Form(...),
             home_team: str = Form(...),
             away_team: str = Form(...),
             home_score: str = Form(...),
@@ -61,6 +71,9 @@ async def create_footballgames(request: Request,
     obj = SchemasFootballGames(               
         codigo=codigo,
         tournament_id=tournament_id,
+        tournament_stage=tournament_stage,
+        date=date,
+        type_footballgames=type_footballgames,
         home_team=home_team,
         away_team=away_team,
         home_score=home_score,
