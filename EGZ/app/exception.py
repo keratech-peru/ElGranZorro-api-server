@@ -15,3 +15,15 @@ invalid_api_lambda_key = HTTPException(
         "message": ErrorCode.INVALID_API_LAMBDA_KEY
     },
 )
+
+validate_credentials = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail={"message": ErrorCode.VALIDATE_CREDENTIALS},
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+user_invalid = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail={"message": ErrorCode.USER_INVALID},
+    headers={"WWW-Authenticate": "Bearer"},
+)

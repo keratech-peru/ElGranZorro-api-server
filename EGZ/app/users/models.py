@@ -17,6 +17,10 @@ class AppUsers(Base):
     password = Column(String)
     what_team_are_you_fan = Column(String)
     from_what_age_are_you_fan = Column(String)
+    imagen = Column(String)
+    username = Column(String)
+    team_name = Column(String)
+    team_logo = Column(String)
 
     enrolled_user = relationship("EnrolledUsers", back_populates="appuser")
 
