@@ -5,9 +5,10 @@ from sqlalchemy.orm import Session
 from app.users.service import AppUsers_
 from app.users import schemas
 from app.users.models import AppUsers
+from app.users import exception
 from app.database import get_db
 from app.security import create_token, valid_header
-from app.config import ApiKey
+from app.config import ApiKey, TOKEN_SCONDS_EXP
 
 
 
@@ -20,6 +21,9 @@ def user_create(
     db: Session = Depends(get_db),
     ) -> Dict[str, object]:
         valid_header(request, ApiKey.USERS)
+        user = db.query(AppUsers).filter(AppUsers.email == user_in.email).first()
+        if user:
+            raise exception.email_already_used
         new_user = AppUsers_.create(user_in, db)
         return {"status": "done", "user_id": new_user.id}
 
@@ -37,7 +41,6 @@ def user_put(
 
     return {"status": "done", "user_id": user_id}
 
-
 @router.post("/login", status_code=status.HTTP_201_CREATED)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -47,5 +50,6 @@ def login(
     access_token_jwt = create_token({"email":user.email})
     return {
         "access_token": access_token_jwt,
-        "token_type": "bearder"
+        "token_type": "bearder",
+        "expires_in": TOKEN_SCONDS_EXP
     }

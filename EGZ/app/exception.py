@@ -22,6 +22,12 @@ validate_credentials = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
+expired_token = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail={"message": ErrorCode.EXPIRED_TOKEN},
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
 user_invalid = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail={"message": ErrorCode.USER_INVALID},

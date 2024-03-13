@@ -3,3 +3,4 @@ class ErrorCode:
     INVALID_API_LAMBDA_KEY = "Api-Lambda-Key invalido"
     VALIDATE_CREDENTIALS = "Credenciales invalidas "
     USER_INVALID = "Usuario invalido"
+    EXPIRED_TOKEN = "Token Expirado"

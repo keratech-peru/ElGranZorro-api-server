@@ -1,7 +1,7 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.security import oauth2_scheme
-from app.exception import validate_credentials, user_invalid
+from app.exception import validate_credentials, expired_token
 from app.database import CRUD, get_db
 from app.users.models import AppUsers
 from app.users import schemas
@@ -57,7 +57,7 @@ class AppUsers_(CRUD):
             if username == None:
                 raise validate_credentials
         except JWTError:
-            raise validate_credentials
+            raise expired_token
         user = AppUsers_.get(db, username)
         if not user:
             raise validate_credentials
