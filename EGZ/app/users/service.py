@@ -3,7 +3,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.security import oauth2_scheme
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD, get_db
-from app.users.models import AppUsers
+from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers
+from app.tournaments.models import Tournaments, FootballGames
 from app.users import schemas
 from app.users.utils import get_hash
 from sqlalchemy.orm import Session
@@ -12,7 +13,7 @@ from app.config import SECRETE_KEY
 from jose import jwt, JWTError
 class AppUsers_(CRUD):
     @staticmethod
-    def create(user_in: schemas.AppUsers, db: Session) -> AppUsers:
+    def create(db: Session, user_in: schemas.AppUsers) -> AppUsers:
         user_in.password = get_hash(user_in.password)
         new_user = AppUsers(**user_in.dict())
         CRUD.insert(db, new_user)
@@ -50,19 +51,21 @@ class AppUsers_(CRUD):
             raise validate_credentials
         return user
 
-    def get_user_current(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
-        try:
-            token_decode = jwt.decode(token, key=SECRETE_KEY, algorithms=["HS256"])
-            username = token_decode.get("email")
-            if username == None:
-                raise validate_credentials
-        except JWTError:
-            raise expired_token
-        user = AppUsers_.get(db, username)
-        if not user:
-            raise validate_credentials
-        return user
+    def enrollment(db: Session, user: AppUsers, tournaments: Tournaments):
+        new_user_enrollment = EnrollmentUsers(
+            appuser_id=user.id,
+            tournaments_id=tournaments.id,
+            state="EN ESPERA"
+        )
+        CRUD.insert(db, new_user_enrollment)
+        return new_user_enrollment
 
-    def get_user_disabled_current(user: AppUsers):
-        return user
-
+    def plays_footballgames(db: Session, user: AppUsers, play_users: schemas.PlaysUsers):
+        new_user_play_footballgame = PlaysUsers(
+            appuser_id=user.id,
+            football_games_id=play_users.football_games_id,
+            score_local=play_users.score_local,
+            score_visit=play_users.score_visit
+        )
+        CRUD.insert(db, new_user_play_footballgame)
+        return new_user_play_footballgame

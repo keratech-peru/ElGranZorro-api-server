@@ -26,7 +26,13 @@ class UpdateAppUser(BaseModel):
     team_name: Optional[str] = None
     team_logo: Optional[str] = None
 
+class EnrollmentUsers(BaseModel):
+    appuser_id: int
+    tournaments_id: int
+    state: str = "EN ESPERA"
 
-class AppUsersLogin(BaseModel):
-    email: str
-    password: str
+class PlaysUsers(BaseModel):
+    appuser_id: Optional[int] = None
+    football_games_id: int
+    score_local: int
+    score_visit: int

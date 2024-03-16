@@ -6,6 +6,7 @@ from typing import Dict
 from app.database import Base, engine
 from app.users.routers import router as users
 from app.admin.routers import router as admin
+from app.tournaments.routers import router as tournaments
 
 # Creacion de la BD
 Base.metadata.create_all(bind=engine)
@@ -23,6 +24,7 @@ app.add_middleware(
 
 app.include_router(users)
 app.include_router(admin)
+app.include_router(tournaments)
 
 @app.get("/")
 def root() -> Dict[str, object]:

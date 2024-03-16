@@ -22,14 +22,24 @@ class AppUsers(Base):
     team_name = Column(String)
     team_logo = Column(String)
 
-    enrolled_user = relationship("EnrolledUsers", back_populates="appuser")
+    enrollment_user = relationship("EnrollmentUsers", back_populates="appuser")
+    plays_users = relationship("PlaysUsers", back_populates="appuser")
 
-class EnrolledUsers(Base):
-    __tablename__= "users_enrolled_users"
+class EnrollmentUsers(Base):
+    __tablename__= "users_enrollment_users"
     id=Column(Integer, primary_key=True, autoincrement=True )
     appuser_id = Column(Integer, ForeignKey("users_appusers.id"))
     tournaments_id = Column(Integer)
-    soccer_game_id = Column(Integer)
     state = Column(String)
 
-    appuser = relationship("AppUsers", back_populates="enrolled_user")
+    appuser = relationship("AppUsers", back_populates="enrollment_user")
+
+class PlaysUsers(Base):
+    __tablename__= "users_plays_users"
+    id=Column(Integer, primary_key=True, autoincrement=True )
+    appuser_id = Column(Integer, ForeignKey("users_appusers.id"))
+    football_games_id = Column(Integer)
+    score_local = Column(Integer)
+    score_visit = Column(Integer)
+
+    appuser = relationship("AppUsers", back_populates="plays_users")
