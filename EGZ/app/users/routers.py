@@ -84,7 +84,7 @@ def user_tournaments(
         tournaments = db.query(models.Tournaments).filter(models.Tournaments.id.in_(list_tournaments_id)).all()
         return {"status": "done", "tournaments": tournaments}
 
-@router.get("/tournaments/{tournament_id}")
+@router.get("/plays/{tournament_id}")
 def user_tournaments_footballgames(
     tournament_id: str,
     db: Session = Depends(get_db),
