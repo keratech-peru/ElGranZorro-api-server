@@ -4,13 +4,15 @@ from app.security import oauth2_scheme
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD, get_db
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers
-from app.tournaments.models import Tournaments, FootballGames
+from app.tournaments.models import Tournaments, GroupStage
 from app.users import schemas
 from app.users.utils import get_hash
 from sqlalchemy.orm import Session
 from typing import List
 from app.config import SECRETE_KEY
 from jose import jwt, JWTError
+import random
+
 class AppUsers_(CRUD):
     @staticmethod
     def create(db: Session, user_in: schemas.AppUsers) -> AppUsers:
@@ -58,6 +60,10 @@ class AppUsers_(CRUD):
             state="EN ESPERA"
         )
         CRUD.insert(db, new_user_enrollment)
+        ### Revisar por que new_user_enrollment retorna vacio.
+        group = random.choice( db.query(GroupStage).filter(GroupStage.tournament_cod == tournaments.codigo ,GroupStage.appuser_id == None).all() )
+        group.appuser_id = user.id
+        CRUD.update(db, group)
         return new_user_enrollment
 
     def plays_footballgames(db: Session, user: AppUsers, play_users: schemas.PlaysUsers):

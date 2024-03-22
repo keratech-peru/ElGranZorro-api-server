@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from typing import Optional
 from sqlalchemy.orm import Session
-from app.tournaments.schemas import Tourmaments as SchemasTournaments, FootballGames as SchemasFootballGames
+from app.tournaments.schemas import Tourmaments as SchemasTournaments, FootballGames as SchemasFootballGames, UpdateFootballGames as SchemasUpdateFootballGames
 from app.tournaments.models import Tournaments as ModelsTournaments, FootballGames as ModelsFootballGames
 from app.tournaments.service import Tournaments_, FootballGames_
 from app.tournaments.utils import code_generator_tournaments
@@ -83,6 +83,24 @@ async def create_footballgames(request: Request,
     contex =  {"request": request ,"resources":RESOURCES}
     return templates.TemplateResponse("create_footballgames.html",contex)
 
+@router.post("/footballgames/{footballgame_id}", response_class=HTMLResponse)
+async def update_footballgames(request: Request,
+            footballgame_id: str,
+            home_team: str = Form(...),
+            away_team: str = Form(...),
+            home_score: str = Form(...),
+            away_score: str = Form(...),
+            db: Session = Depends(get_db)):
+    update_footballgame_in = SchemasUpdateFootballGames(
+        home_team=home_team,
+        away_team=away_team,
+        home_score=home_score,
+        away_score=away_score
+    )
+    FootballGames_.update(int(footballgame_id), update_footballgame_in, db)
+    contex =  {"request": request ,"resources":RESOURCES}
+    return templates.TemplateResponse("update_footballgames.html",contex)
+
 
 #------------------------------------------------------------------------------------------------
 
@@ -110,3 +128,10 @@ def view_create_record_in_table(request: Request, table_name: str, access_token:
     valid_access_token(access_token)
     contex = {"request": request,"resources":RESOURCES}
     return templates.TemplateResponse(f"create_{table_name}.html", contex)
+
+@router.get("/footballgames/update/{pk}", response_class=HTMLResponse)
+def view_update_record_in_table(request: Request, pk: str, access_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    valid_access_token(access_token)
+    footballgame = db.query(ModelsFootballGames).filter(ModelsFootballGames.id == pk).first()
+    contex = {"request": request,"resources":RESOURCES, "pk": pk ,"footballgame":footballgame}
+    return templates.TemplateResponse(f"update_footballgames.html", contex)

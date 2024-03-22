@@ -19,6 +19,14 @@ class Tournaments(Base):
 
     football_game = relationship("FootballGames", back_populates="tournament")
 
+class GroupStage(Base):
+    __tablename__= "tournaments_group_stage"
+    id=Column(Integer, primary_key=True, autoincrement=True )
+    tournament_cod = Column(String)
+    appuser_id = Column(Integer)
+    group = Column(String)
+
+
 class FootballGames(Base):
     __tablename__= "tournaments_football_games"
     id=Column(Integer, primary_key=True, autoincrement=True )

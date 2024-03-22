@@ -1,7 +1,8 @@
 from app.database import CRUD
 from app.users.models import PlaysUsers
-from app.tournaments.models import Tournaments, FootballGames
+from app.tournaments.models import Tournaments, FootballGames, GroupStage
 from app.tournaments import schemas
+from app.tournaments.constants import GROUPS
 from sqlalchemy.orm import Session
 from typing import List 
 from datetime import datetime, timezone, timedelta
@@ -45,7 +46,16 @@ class FootballGames_(CRUD):
         new_football_game = FootballGames(**football_game_in.dict())
         CRUD.insert(db, new_football_game)
         return new_football_game
-    
+
+    def update(footballgame_id:int , update_footballgame_in: schemas.UpdateFootballGames, db: Session) :
+        footballgame = db.query(FootballGames).filter(FootballGames.id == footballgame_id).first()
+        if footballgame:
+            footballgame.home_team = update_footballgame_in.home_team
+            footballgame.away_team = update_footballgame_in.away_team
+            footballgame.home_score = update_footballgame_in.home_score
+            footballgame.away_score = update_footballgame_in.away_score
+            CRUD.update(db, footballgame)       
+
     def list_all(db: Session) -> List[FootballGames]:
         # db.query(FootballGames, Tournaments.codigo).join(Tournaments).all()
         data = jsonable_encoder(db.query(FootballGames).all())
@@ -71,6 +81,11 @@ class FootballGames_(CRUD):
                     away_score=None                                                                                     
                 )
                 CRUD.insert(db, FootballGames(**obj_temp.dict()))
+        
+        for group in GROUPS:
+            for i in range(4):
+                obj_temp = schemas.GroupStage(tournament_cod=codigo, group=group)
+                CRUD.insert(db, GroupStage(**obj_temp.dict()))
     
     def create_eighths_stage(id: int , codigo:str, start_date:str, db: Session):
         cont = 0
