@@ -37,10 +37,3 @@ class PlaysUsers(BaseModel):
     score_local: int
     score_visit: int
 
-class ConfrontationsUsers(BaseModel):
-    appuser_1_id: int
-    appuser_2_id: int
-    football_games_cod: str
-    tournaments_id: int
-    points_1: Optional[int] = None
-    points_2: Optional[int] = None

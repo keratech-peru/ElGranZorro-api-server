@@ -44,12 +44,3 @@ class PlaysUsers(Base):
 
     appuser = relationship("AppUsers", back_populates="plays_users")
 
-class ConfrontationsUsers(Base):
-    __tablename__= "users_confrontations_users"
-    id=Column(Integer, primary_key=True, autoincrement=True )
-    appuser_1_id = Column(Integer)
-    appuser_2_id = Column(Integer)
-    football_games_cod = Column(String)
-    tournaments_id = Column(String)
-    points_1 = Column(Integer)
-    points_2 = Column(Integer)

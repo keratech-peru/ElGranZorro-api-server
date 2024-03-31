@@ -40,3 +40,8 @@ class CRUD(Generic[T]):
     @staticmethod
     def delete(db: Session, model: T) -> None:
         db.query(model).delete()
+
+    @staticmethod
+    def bulk_insert(db: Session, model_list: list[T]) -> None:
+        db.add_all(model_list)
+        db.commit()

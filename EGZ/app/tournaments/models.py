@@ -25,7 +25,27 @@ class GroupStage(Base):
     tournament_cod = Column(String)
     appuser_id = Column(Integer)
     group = Column(String)
+    position = Column(Integer)
 
+class ConfrontationsGroupStage(Base):
+    __tablename__= "tournaments_confrontations_group_stage"
+    id=Column(Integer, primary_key=True, autoincrement=True )
+    group_stage_1_id = Column(Integer)
+    group_stage_2_id = Column(Integer)
+    football_games_cod = Column(String)
+    tournaments_id = Column(String)
+    points_1 = Column(Integer)
+    points_2 = Column(Integer)
+
+class ConfrontationsKeyStage(Base):
+    __tablename__= "tournaments_confrontations_key_stage"
+    id=Column(Integer, primary_key=True, autoincrement=True )
+    appuser_1_id = Column(Integer)
+    appuser_2_id = Column(Integer)
+    football_games_cod = Column(String)
+    tournaments_id = Column(String)
+    points_1 = Column(Integer)
+    points_2 = Column(Integer)
 
 class FootballGames(Base):
     __tablename__= "tournaments_football_games"

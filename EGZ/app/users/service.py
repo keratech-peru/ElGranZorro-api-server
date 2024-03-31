@@ -4,7 +4,7 @@ from app.security import oauth2_scheme
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD, get_db
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers
-from app.tournaments.models import Tournaments, GroupStage
+from app.tournaments.models import Tournaments, GroupStage, FootballGames
 from app.users import schemas
 from app.users.utils import get_hash
 from sqlalchemy.orm import Session
@@ -59,11 +59,10 @@ class AppUsers_(CRUD):
             tournaments_id=tournaments.id,
             state="EN ESPERA"
         )
-        CRUD.insert(db, new_user_enrollment)
-        ### Revisar por que new_user_enrollment retorna vacio.
         group = random.choice( db.query(GroupStage).filter(GroupStage.tournament_cod == tournaments.codigo ,GroupStage.appuser_id == None).all() )
         group.appuser_id = user.id
         CRUD.update(db, group)
+        CRUD.insert(db, new_user_enrollment)
         return new_user_enrollment
 
     def plays_footballgames(db: Session, user: AppUsers, play_users: schemas.PlaysUsers):
@@ -75,3 +74,17 @@ class AppUsers_(CRUD):
         )
         CRUD.insert(db, new_user_play_footballgame)
         return new_user_play_footballgame
+
+    def play_users_points(db: Session, footballgame_id: int, footballgame_type: str, home_score: str, away_score: str):
+        plays_users = db.query(PlaysUsers).filter(PlaysUsers.football_games_id == footballgame_id).all()
+        appuser_id_point_plays = {}
+        for play in plays_users:
+            if footballgame_type == 'SCORE':
+                point = 3 if play.score_local == int(home_score) and play.score_visit == int(away_score)  else 0
+
+            if  footballgame_type == 'RESULT':
+                point_score = 1 if play.score_local == int(home_score) and play.score_visit == int(away_score)  else 0
+                point_result = 1 if (play.score_local >= play.score_visit) == (int(home_score) >= int(away_score)) else 0
+                point = point_score + point_result
+            appuser_id_point_plays[play.appuser_id] = point
+        return appuser_id_point_plays

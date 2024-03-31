@@ -4,10 +4,11 @@ from fastapi.templating import Jinja2Templates
 from typing import Optional
 from sqlalchemy.orm import Session
 from app.tournaments.schemas import Tourmaments as SchemasTournaments, FootballGames as SchemasFootballGames, UpdateFootballGames as SchemasUpdateFootballGames
-from app.tournaments.models import Tournaments as ModelsTournaments, FootballGames as ModelsFootballGames
-from app.tournaments.service import Tournaments_, FootballGames_
+from app.tournaments.models import Tournaments as ModelsTournaments, FootballGames as ModelsFootballGames, GroupStage as ModelsGroupStage, ConfrontationsGroupStage as ModelsConfrontationsGroupStage
+from app.tournaments.service import Tournaments_, FootballGames_, Confrontations_
 from app.tournaments.utils import code_generator_tournaments
 from app.tournaments.constants import Players
+from app.users.models import PlaysUsers as ModelsPlaysUsers
 from app.users.service import AppUsers_
 from app.database import get_db, CRUD
 from app.security import valid_access_token, create_token
@@ -88,8 +89,8 @@ async def update_footballgames(request: Request,
             footballgame_id: str,
             home_team: str = Form(...),
             away_team: str = Form(...),
-            home_score: str = Form(...),
-            away_score: str = Form(...),
+            home_score: str = Form(None),
+            away_score: str = Form(None),
             db: Session = Depends(get_db)):
     update_footballgame_in = SchemasUpdateFootballGames(
         home_team=home_team,
@@ -98,8 +99,20 @@ async def update_footballgames(request: Request,
         away_score=away_score
     )
     FootballGames_.update(int(footballgame_id), update_footballgame_in, db)
-    contex =  {"request": request ,"resources":RESOURCES}
-    return templates.TemplateResponse("update_footballgames.html",contex)
+    if home_score != None and away_score != None:
+        footballgame = db.query(ModelsFootballGames).filter(ModelsFootballGames.id == footballgame_id).first()
+        footballgame_cod = footballgame.codigo
+        footballgame_type = footballgame.type_footballgames
+        if "GP" in footballgame_cod:
+            appuser_id_point_plays = AppUsers_.play_users_points(db, footballgame_id, footballgame_type, home_score, away_score)
+            Confrontations_.allocation_points_group_stage(db, appuser_id_point_plays,footballgame_cod)
+            Confrontations_.orden_update_group_stage(db, footballgame_cod[:-3])
+            if "GP9" in footballgame_cod:
+                Confrontations_.registration_teams_eighths(db, footballgame_cod[:-3])
+
+    list_all = FootballGames_.list_all(db)
+    contex =  {"request": request ,"resources":RESOURCES,"tablas":list_all}
+    return templates.TemplateResponse("table_footballgames.html",contex)
 
 
 #------------------------------------------------------------------------------------------------

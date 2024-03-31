@@ -14,7 +14,23 @@ class GroupStage(BaseModel):
     tournament_cod: str
     appuser_id: Optional[int]
     group: str
+    position: int
 
+class ConfrontationsGroupStage(BaseModel):
+    group_stage_1_id: int
+    group_stage_2_id: int
+    football_games_cod: str
+    tournaments_id: int
+    points_1: Optional[int] = None
+    points_2: Optional[int] = None
+
+class ConfrontationsKeyStage(BaseModel):
+    appuser_1_id: Optional[int] = None
+    appuser_2_id: Optional[int] = None
+    football_games_cod: str
+    tournaments_id: int
+    points_1: Optional[int] = None
+    points_2: Optional[int] = None
 
 class FootballGames(BaseModel):
     codigo: str

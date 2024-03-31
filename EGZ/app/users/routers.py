@@ -44,7 +44,7 @@ def user_get(
             \n- El servicio requiere autorizacion via token
             \n- El servicio tiene excepcion si el token es invalido o expiro
         """
-        return user
+        return {"status":"done", "data":user}
 
 @router.put("/")
 def user_put(
@@ -98,7 +98,7 @@ def user_enrollment(
         new_user_enrollment = AppUsers_.enrollment(db, user, tournament)
         return {"status": "done", "new_user_enrollment": new_user_enrollment}
 
-@router.post("/plays/{footballgames_id}", status_code=status.HTTP_201_CREATED)
+@router.post("/plays", status_code=status.HTTP_201_CREATED)
 def user_plays_footballgames(
     play_user_in: schemas.PlaysUsers,
     db: Session = Depends(get_db),
