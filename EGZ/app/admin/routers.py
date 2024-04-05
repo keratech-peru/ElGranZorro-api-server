@@ -101,15 +101,10 @@ async def update_footballgames(request: Request,
     FootballGames_.update(int(footballgame_id), update_footballgame_in, db)
     if home_score != None and away_score != None:
         footballgame = db.query(ModelsFootballGames).filter(ModelsFootballGames.id == footballgame_id).first()
-        footballgame_cod = footballgame.codigo
-        footballgame_type = footballgame.type_footballgames
-        if "GP" in footballgame_cod:
-            appuser_id_point_plays = AppUsers_.play_users_points(db, footballgame_id, footballgame_type, home_score, away_score)
-            Confrontations_.allocation_points_group_stage(db, appuser_id_point_plays,footballgame_cod)
-            Confrontations_.orden_update_group_stage(db, footballgame_cod[:-3])
-            if "GP9" in footballgame_cod:
-                Confrontations_.registration_teams_eighths(db, footballgame_cod[:-3])
-
+        if "GP" in footballgame.codigo:
+            FootballGames_.update_group_stage(footballgame, home_score, away_score, db)
+        else:
+            FootballGames_.update_key_stage(footballgame, home_score, away_score, db)
     list_all = FootballGames_.list_all(db)
     contex =  {"request": request ,"resources":RESOURCES,"tablas":list_all}
     return templates.TemplateResponse("table_footballgames.html",contex)

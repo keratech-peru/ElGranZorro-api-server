@@ -34,7 +34,7 @@ def user_create(
         new_user = AppUsers_.create(db, user_in)
         return {"status": "done", "user_id": new_user.id}
 
-@router.get("/")
+@router.get("/", status_code=status.HTTP_200_OK)
 def user_get(
     user: AppUsers = Depends(get_user_current)
     ) -> Dict[str, object]:
@@ -46,7 +46,7 @@ def user_get(
         """
         return {"status":"done", "data":user}
 
-@router.put("/")
+@router.put("/", status_code=status.HTTP_200_OK)
 def user_put(
     user_new: schemas.UpdateAppUser,
     db: Session = Depends(get_db),

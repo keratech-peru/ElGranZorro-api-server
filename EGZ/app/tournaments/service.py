@@ -1,4 +1,5 @@
 from app.database import CRUD
+from app.users.service import AppUsers_
 from app.users.models import PlaysUsers
 from app.tournaments.models import Tournaments, FootballGames, GroupStage, ConfrontationsGroupStage, ConfrontationsKeyStage
 from app.tournaments import schemas
@@ -28,16 +29,18 @@ class Tournaments_(CRUD):
             dif = datetime_now - datetime.strptime(footballgame.date, '%d/%m/%y').replace(tzinfo=timezone.utc)
             footballgame_dict = footballgame.__dict__
             play_user = db.query(PlaysUsers).filter(PlaysUsers.id == footballgame.id,PlaysUsers.appuser_id == user_id).first()
-            if int(dif.days) == 0:
-                del footballgame_dict["home_score"]
-                del footballgame_dict["away_score"]
-                footballgame_dict["score_local_user"] = play_user["score_local"] if play_user else None
-                footballgame_dict["score_visit_user"] = play_user["score_local"] if play_user else None
-                football_of_the_day.append(footballgame_dict)
-            if int(dif.days) > 0:
-                footballgame_dict["score_local_user"] = play_user["score_local"] if play_user else None
-                footballgame_dict["score_visit_user"] = play_user["score_local"] if play_user else None
-                football_past.append(footballgame_dict)
+            # print("footballgame_dict : ",footballgame_dict)
+            # print("play_user : ",play_user,"\n")
+            # if int(dif.days) == 0:
+            #     del footballgame_dict["home_score"]
+            #     del footballgame_dict["away_score"]
+            #     footballgame_dict["score_local_user"] = play_user["score_local"] if play_user else None
+            #     footballgame_dict["score_visit_user"] = play_user["score_local"] if play_user else None
+            #     football_of_the_day.append(footballgame_dict)
+            # if int(dif.days) > 0:
+            #     footballgame_dict["score_local_user"] = play_user["score_local"] if play_user else None
+            #     footballgame_dict["score_visit_user"] = play_user["score_local"] if play_user else None
+            #     football_past.append(footballgame_dict)
         return football_of_the_day, football_past
 
 class FootballGames_(CRUD):
@@ -180,6 +183,37 @@ class FootballGames_(CRUD):
         CRUD.bulk_insert(db, list_footballgames)
         Confrontations_.create_final_stage(id, db, codigo)
 
+    def update_group_stage(footballgame: FootballGames, home_score: int,  away_score: int, db: Session):
+        tournament_cod = footballgame.codigo[:-3]
+        appuser_id_point_plays = AppUsers_.play_users_points(db, footballgame.id, footballgame.type_footballgames, home_score, away_score)
+        Confrontations_.allocation_points_group_stage(db, appuser_id_point_plays,footballgame.codigo)
+        Confrontations_.orden_update_group_stage(db, tournament_cod)
+        if "GP9" in footballgame.codigo:
+            Confrontations_.registration_teams_eighths(db, tournament_cod)
+    
+    def update_key_stage(footballgame: FootballGames, home_score: int,  away_score: int, db: Session):
+        tournament_cod = footballgame.codigo[:-3]
+        appuser_id_point_plays = AppUsers_.play_users_points(db, footballgame.id, footballgame.type_footballgames, home_score, away_score)
+        if "OC" in footballgame.codigo:
+            Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
+            if "OC3" in footballgame.codigo:
+                Confrontations_.registration_teams_quarter(db, tournament_cod)
+        elif "CU" in footballgame.codigo:
+            print("Aqui se debe hacer el codigo para que se registre los puntos de los partidos de CU")
+            Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
+            if "CU3" in footballgame.codigo:
+                Confrontations_.registration_teams_semifinal(db, tournament_cod)
+        elif "SF" in footballgame.codigo:
+            print("Aqui se debe hacer el codigo para que se registre los puntos de los partidos de SF")
+            Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
+            if "SF3" in footballgame.codigo: 
+                Confrontations_.registration_teams_final(db, tournament_cod)
+        else:
+            print("decidir que hacer con el ganador ...")
+            Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
+            
+
+    
 class Confrontations_(CRUD):
     @staticmethod
     def create_groups_stage(tournament_id: int ,db: Session, tournament_cod: str):
@@ -292,6 +326,20 @@ class Confrontations_(CRUD):
                 confront.points_2 = dict_ids_point[confront.group_stage_2_id]
                 CRUD.update(db, confront)
 
+    def allocation_points_key_stage(db: Session, appuser_id_point_plays, footballgame_cod: str):
+        appuser_id_plays = list(appuser_id_point_plays.keys())
+        confrontations_key_stage = db.query(ConfrontationsKeyStage).filter(
+            or_(ConfrontationsKeyStage.appuser_1_id.in_(appuser_id_plays) , ConfrontationsKeyStage.appuser_2_id.in_(appuser_id_plays)),
+            ConfrontationsKeyStage.football_games_cod == footballgame_cod
+            ).order_by(ConfrontationsKeyStage.id).all()
+        for confront in confrontations_key_stage:
+            if confront.appuser_1_id in appuser_id_plays:
+                confront.points_1 = appuser_id_point_plays[confront.appuser_1_id]
+                CRUD.update(db, confront)
+            if confront.appuser_2_id in appuser_id_plays:
+                confront.points_2 = appuser_id_point_plays[confront.appuser_2_id]
+                CRUD.update(db, confront)
+
     def orden_update_group_stage(db: Session, cod_tournament: str):
         for group_ in GROUPS:
             groups_stage =  db.query(GroupStage).filter(GroupStage.tournament_cod == cod_tournament, GroupStage.group == group_).all()
@@ -303,11 +351,10 @@ class Confrontations_(CRUD):
                 point = 0
                 for confront in confront_group_stage:
                     if confront.group_stage_1_id == group.id:
-                        point = point + confront.points_1 if confront.points_1 else 0
+                        point = point + (confront.points_1 if confront.points_1 else 0) 
                     if confront.group_stage_2_id == group.id:
-                        point = point + confront.points_2 if confront.points_2 else 0
+                        point = point + (confront.points_2 if confront.points_2 else 0)
                 group_stage_point[group.id] = point
-            
             group_stage_id_and_points_orden = sorted(group_stage_point.items(), key=lambda x: x[1], reverse=True)
             for i in range(1,len(group_stage_id_and_points_orden)+1):
                 groups_stage =  db.query(GroupStage).filter(GroupStage.id == group_stage_id_and_points_orden[i-1][0]).first()
@@ -315,19 +362,107 @@ class Confrontations_(CRUD):
                 CRUD.update(db, groups_stage)
     
     def registration_teams_eighths(db, cod_tournament: str):
-        groups_stage_first_place =  db.query(GroupStage).filter(GroupStage.tournament_cod == cod_tournament, GroupStage.position == 1).all()
-        groups_stage_first_place_dict = {groups_stage.group:groups_stage.appuser_id for groups_stage in groups_stage_first_place}
-        groups_stage_second_place =  db.query(GroupStage).filter(GroupStage.tournament_cod == cod_tournament, GroupStage.position == 2).all()
-        groups_stage_second_place_dict = {groups_stage.group:groups_stage.appuser_id for groups_stage in groups_stage_second_place}
-        confrontations_key_stage = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == cod_tournament[-1], ConfrontationsKeyStage.football_games_cod.contains("OC")).all()
-        
+        tournaments_id = str(int(cod_tournament[-3:]))
+        first_place = {groups_stage.group:groups_stage.appuser_id for groups_stage in db.query(GroupStage).filter(GroupStage.tournament_cod == cod_tournament, GroupStage.position == 1).order_by(GroupStage.id).all()}
+        second_place = {groups_stage.group:groups_stage.appuser_id for groups_stage in db.query(GroupStage).filter(GroupStage.tournament_cod == cod_tournament, GroupStage.position == 2).order_by(GroupStage.id).all()}
+        key_stage_oc = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("OC")).order_by(ConfrontationsKeyStage.id).all()
         cont = 0
-        for i in range(1,5):
-            for _ in range(1,7):
-                confrontations_key_stage[cont].appuser_1_id = groups_stage_first_place_dict[GROUPS[i-1]]
-                confrontations_key_stage[cont].appuser_2_id = groups_stage_second_place_dict[GROUPS[i]]
-                if i == 4:
-                    confrontations_key_stage[cont].appuser_1_id = groups_stage_first_place_dict[GROUPS[i]]
-                    confrontations_key_stage[cont].appuser_2_id = groups_stage_second_place_dict[GROUPS[i-1]]
-                CRUD.update(db, confrontations_key_stage[cont])
+        for i in range(1,9,2):
+            for j in range(1,7):
+                if j >= 4:
+                    key_stage_oc[cont].appuser_1_id = first_place[GROUPS[i]]
+                    key_stage_oc[cont].appuser_2_id = second_place[GROUPS[i-1]]
+                else:
+                    key_stage_oc[cont].appuser_1_id = first_place[GROUPS[i-1]]
+                    key_stage_oc[cont].appuser_2_id = second_place[GROUPS[i]]
+                CRUD.update(db, key_stage_oc[cont])
                 cont = cont + 1
+
+    def registration_teams_quarter(db, cod_tournament: str):
+        tournaments_id = str(int(cod_tournament[-3:]))
+        eighths = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("OC")).order_by(ConfrontationsKeyStage.id).all()
+        quarter = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("CU")).order_by(ConfrontationsKeyStage.id).all()
+        for i in range(4):
+            key_stage_oc_group = eighths[6*i:6*(i+1)]
+            points_grupo_a = {key_stage_oc.id:[key_stage_oc.points_1 if key_stage_oc.points_1 is not None else 0,key_stage_oc.points_2 if key_stage_oc.points_2 is not None else 0] for key_stage_oc in key_stage_oc_group[:3]}
+            points_grupo_b = {key_stage_oc.id:[key_stage_oc.points_1 if key_stage_oc.points_1 is not None else 0,key_stage_oc.points_2 if key_stage_oc.points_2 is not None else 0] for key_stage_oc in key_stage_oc_group[3:]}
+            points_local_a = 0
+            poitns_visit_a = 0
+            for points_grupo in list(points_grupo_a.values()):
+                points_local_a = points_local_a + points_grupo[0]
+                poitns_visit_a = poitns_visit_a + points_grupo[1]
+            points_local_b = 0
+            poitns_visit_b = 0
+            for points_grupo in list(points_grupo_b.values()):
+                points_local_b = points_local_b + points_grupo[0]
+                poitns_visit_b = poitns_visit_b + points_grupo[1]
+            if points_local_a >= poitns_visit_a:
+                appuser_1_id = key_stage_oc_group[0].appuser_1_id
+            else:
+                appuser_1_id = key_stage_oc_group[0].appuser_2_id
+            if points_local_b >= poitns_visit_b:
+                appuser_2_id = key_stage_oc_group[5].appuser_1_id
+            else:
+                appuser_2_id = key_stage_oc_group[5].appuser_2_id
+            
+            key_stage_cu_group = quarter[3*i:3*(i+1)]
+            for cu in key_stage_cu_group:
+                cu.appuser_1_id = appuser_1_id
+                cu.appuser_2_id = appuser_2_id
+                CRUD.update(db, cu)
+
+    def registration_teams_semifinal(db, cod_tournament: str):
+        tournaments_id = str(int(cod_tournament[-3:]))
+        quarter = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("CU")).order_by(ConfrontationsKeyStage.id).all()
+        semifinal = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("SF")).order_by(ConfrontationsKeyStage.id).all()
+        for i in range(2):
+            key_stage_oc_group = quarter[6*i:6*(i+1)]
+            points_grupo_a = {key_stage_oc.id:[key_stage_oc.points_1 if key_stage_oc.points_1 is not None else 0,key_stage_oc.points_2 if key_stage_oc.points_2 is not None else 0] for key_stage_oc in key_stage_oc_group[:3]}
+            points_grupo_b = {key_stage_oc.id:[key_stage_oc.points_1 if key_stage_oc.points_1 is not None else 0,key_stage_oc.points_2 if key_stage_oc.points_2 is not None else 0] for key_stage_oc in key_stage_oc_group[3:]}
+            points_local_a = 0
+            poitns_visit_a = 0
+            for points_grupo in list(points_grupo_a.values()):
+                points_local_a = points_local_a + points_grupo[0]
+                poitns_visit_a = poitns_visit_a + points_grupo[1]
+            points_local_b = 0
+            poitns_visit_b = 0
+            for points_grupo in list(points_grupo_b.values()):
+                points_local_b = points_local_b + points_grupo[0]
+                poitns_visit_b = poitns_visit_b + points_grupo[1]
+            if points_local_a >= poitns_visit_a:
+                appuser_1_id = key_stage_oc_group[0].appuser_1_id
+            else:
+                appuser_1_id = key_stage_oc_group[0].appuser_2_id
+            if points_local_b >= poitns_visit_b:
+                appuser_2_id = key_stage_oc_group[5].appuser_1_id
+            else:
+                appuser_2_id = key_stage_oc_group[5].appuser_2_id
+            
+            key_stage_sf_group = semifinal[3*i:3*(i+1)]
+            for sf in key_stage_sf_group:
+                sf.appuser_1_id = appuser_1_id
+                sf.appuser_2_id = appuser_2_id
+                CRUD.update(db, sf)
+
+    def registration_teams_final(db, cod_tournament: str):
+        tournaments_id = str(int(cod_tournament[-3:]))
+        semifinal = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("SF")).order_by(ConfrontationsKeyStage.id).all()
+        final = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("FI")).order_by(ConfrontationsKeyStage.id).all()
+        key_stage_sf_group = semifinal[0:6]
+        points_local_1 = [key_stage_oc.points_1 if key_stage_oc.points_1 != None else 0 for key_stage_oc in key_stage_sf_group[:3]]
+        points_visit_1 = [key_stage_oc.points_1 if key_stage_oc.points_1 != None else 0 for key_stage_oc in key_stage_sf_group[:3]]
+        points_local_2 = [key_stage_oc.points_1 if key_stage_oc.points_1 != None else 0 for key_stage_oc in key_stage_sf_group[3:]]
+        points_visit_2 = [key_stage_oc.points_1 if key_stage_oc.points_1 != None else 0 for key_stage_oc in key_stage_sf_group[3:]]
+        if sum(points_local_1) >= sum(points_visit_1):
+            appuser_1_id = key_stage_sf_group[0].appuser_1_id
+        else:
+            appuser_1_id = key_stage_sf_group[5].appuser_1_id
+        if sum(points_local_2) >= sum(points_visit_2):
+            appuser_2_id = key_stage_sf_group[0].appuser_2_id
+        else:
+            appuser_2_id = key_stage_sf_group[5].appuser_2_id
+
+        for fi in final:
+            fi.appuser_1_id = appuser_1_id
+            fi.appuser_2_id = appuser_2_id
+            CRUD.update(db, fi)

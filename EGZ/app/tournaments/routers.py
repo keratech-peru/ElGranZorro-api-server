@@ -16,7 +16,7 @@ from app.config import ApiKey, TOKEN_SCONDS_EXP
 
 router = APIRouter(prefix="/tournaments", tags=["tournaments"])
 
-@router.get("/", status_code=status.HTTP_201_CREATED)
+@router.get("/", status_code=status.HTTP_200_OK)
 def tournaments_get(
     db: Session = Depends(get_db),
     __: AppUsers = Depends(get_user_current)
@@ -31,7 +31,7 @@ def tournaments_get(
         tournaments = Tournaments_.list_all(db)
         return {"status": "done", "data": tournaments}
 
-@router.get("/user")
+@router.get("/user", status_code=status.HTTP_200_OK)
 def tournaments_user(
     db: Session = Depends(get_db),
     user: AppUsers = Depends(get_user_current)
@@ -47,7 +47,7 @@ def tournaments_user(
         tournaments = db.query(Tournaments).filter(Tournaments.id.in_(list_tournaments_id)).all()
         return {"status": "done", "tournaments": tournaments}
 
-@router.get("/{tournament_id}")
+@router.get("/{tournament_id}", status_code=status.HTTP_200_OK)
 def tournament_user(
     tournament_id: str,
     db: Session = Depends(get_db),
