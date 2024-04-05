@@ -21,7 +21,7 @@ class Tournaments_(CRUD):
         return db.query(Tournaments).all()
     
     def get_footballgames(db: Session, tournament_id: int, user_id: int):
-        footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).all()
+        footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).order_by(FootballGames.id).all()
         datetime_now = datetime.now(pytz.timezone("America/Lima"))
         football_of_the_day = []
         football_past = []
@@ -29,18 +29,16 @@ class Tournaments_(CRUD):
             dif = datetime_now - datetime.strptime(footballgame.date, '%d/%m/%y').replace(tzinfo=timezone.utc)
             footballgame_dict = footballgame.__dict__
             play_user = db.query(PlaysUsers).filter(PlaysUsers.id == footballgame.id,PlaysUsers.appuser_id == user_id).first()
-            # print("footballgame_dict : ",footballgame_dict)
-            # print("play_user : ",play_user,"\n")
-            # if int(dif.days) == 0:
-            #     del footballgame_dict["home_score"]
-            #     del footballgame_dict["away_score"]
-            #     footballgame_dict["score_local_user"] = play_user["score_local"] if play_user else None
-            #     footballgame_dict["score_visit_user"] = play_user["score_local"] if play_user else None
-            #     football_of_the_day.append(footballgame_dict)
-            # if int(dif.days) > 0:
-            #     footballgame_dict["score_local_user"] = play_user["score_local"] if play_user else None
-            #     footballgame_dict["score_visit_user"] = play_user["score_local"] if play_user else None
-            #     football_past.append(footballgame_dict)
+            if int(dif.days) == 0:
+                del footballgame_dict["home_score"]
+                del footballgame_dict["away_score"]
+                footballgame_dict["score_local_user"] = play_user.score_local if play_user else None
+                footballgame_dict["score_visit_user"] = play_user.score_visit if play_user else None
+                football_of_the_day.append(footballgame_dict)
+            if int(dif.days) > 0:
+                footballgame_dict["score_local_user"] = play_user.score_local if play_user else None
+                footballgame_dict["score_visit_user"] = play_user.score_visit if play_user else None
+                football_past.append(footballgame_dict)
         return football_of_the_day, football_past
 
 class FootballGames_(CRUD):
@@ -199,17 +197,14 @@ class FootballGames_(CRUD):
             if "OC3" in footballgame.codigo:
                 Confrontations_.registration_teams_quarter(db, tournament_cod)
         elif "CU" in footballgame.codigo:
-            print("Aqui se debe hacer el codigo para que se registre los puntos de los partidos de CU")
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
             if "CU3" in footballgame.codigo:
                 Confrontations_.registration_teams_semifinal(db, tournament_cod)
         elif "SF" in footballgame.codigo:
-            print("Aqui se debe hacer el codigo para que se registre los puntos de los partidos de SF")
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
             if "SF3" in footballgame.codigo: 
                 Confrontations_.registration_teams_final(db, tournament_cod)
         else:
-            print("decidir que hacer con el ganador ...")
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
             
 
@@ -416,9 +411,9 @@ class Confrontations_(CRUD):
         quarter = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("CU")).order_by(ConfrontationsKeyStage.id).all()
         semifinal = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("SF")).order_by(ConfrontationsKeyStage.id).all()
         for i in range(2):
-            key_stage_oc_group = quarter[6*i:6*(i+1)]
-            points_grupo_a = {key_stage_oc.id:[key_stage_oc.points_1 if key_stage_oc.points_1 is not None else 0,key_stage_oc.points_2 if key_stage_oc.points_2 is not None else 0] for key_stage_oc in key_stage_oc_group[:3]}
-            points_grupo_b = {key_stage_oc.id:[key_stage_oc.points_1 if key_stage_oc.points_1 is not None else 0,key_stage_oc.points_2 if key_stage_oc.points_2 is not None else 0] for key_stage_oc in key_stage_oc_group[3:]}
+            key_stage_cu_group = quarter[6*i:6*(i+1)]
+            points_grupo_a = {key_stage_cu.id:[key_stage_cu.points_1 if key_stage_cu.points_1 is not None else 0,key_stage_cu.points_2 if key_stage_cu.points_2 is not None else 0] for key_stage_cu in key_stage_cu_group[:3]}
+            points_grupo_b = {key_stage_cu.id:[key_stage_cu.points_1 if key_stage_cu.points_1 is not None else 0,key_stage_cu.points_2 if key_stage_cu.points_2 is not None else 0] for key_stage_cu in key_stage_cu_group[3:]}
             points_local_a = 0
             poitns_visit_a = 0
             for points_grupo in list(points_grupo_a.values()):
@@ -430,13 +425,13 @@ class Confrontations_(CRUD):
                 points_local_b = points_local_b + points_grupo[0]
                 poitns_visit_b = poitns_visit_b + points_grupo[1]
             if points_local_a >= poitns_visit_a:
-                appuser_1_id = key_stage_oc_group[0].appuser_1_id
+                appuser_1_id = key_stage_cu_group[0].appuser_1_id
             else:
-                appuser_1_id = key_stage_oc_group[0].appuser_2_id
+                appuser_1_id = key_stage_cu_group[0].appuser_2_id
             if points_local_b >= poitns_visit_b:
-                appuser_2_id = key_stage_oc_group[5].appuser_1_id
+                appuser_2_id = key_stage_cu_group[5].appuser_1_id
             else:
-                appuser_2_id = key_stage_oc_group[5].appuser_2_id
+                appuser_2_id = key_stage_cu_group[5].appuser_2_id
             
             key_stage_sf_group = semifinal[3*i:3*(i+1)]
             for sf in key_stage_sf_group:
@@ -449,16 +444,24 @@ class Confrontations_(CRUD):
         semifinal = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("SF")).order_by(ConfrontationsKeyStage.id).all()
         final = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("FI")).order_by(ConfrontationsKeyStage.id).all()
         key_stage_sf_group = semifinal[0:6]
-        points_local_1 = [key_stage_oc.points_1 if key_stage_oc.points_1 != None else 0 for key_stage_oc in key_stage_sf_group[:3]]
-        points_visit_1 = [key_stage_oc.points_1 if key_stage_oc.points_1 != None else 0 for key_stage_oc in key_stage_sf_group[:3]]
-        points_local_2 = [key_stage_oc.points_1 if key_stage_oc.points_1 != None else 0 for key_stage_oc in key_stage_sf_group[3:]]
-        points_visit_2 = [key_stage_oc.points_1 if key_stage_oc.points_1 != None else 0 for key_stage_oc in key_stage_sf_group[3:]]
-        if sum(points_local_1) >= sum(points_visit_1):
+        points_grupo_a = {key_stage_sf.id:[key_stage_sf.points_1 if key_stage_sf.points_1 is not None else 0,key_stage_sf.points_2 if key_stage_sf.points_2 is not None else 0] for key_stage_sf in key_stage_sf_group[:3]}
+        points_grupo_b = {key_stage_sf.id:[key_stage_sf.points_1 if key_stage_sf.points_1 is not None else 0,key_stage_sf.points_2 if key_stage_sf.points_2 is not None else 0] for key_stage_sf in key_stage_sf_group[3:]}
+        points_local_a = 0
+        poitns_visit_a = 0
+        for points_grupo in list(points_grupo_a.values()):
+            points_local_a = points_local_a + points_grupo[0]
+            poitns_visit_a = poitns_visit_a + points_grupo[1]
+        points_local_b = 0
+        poitns_visit_b = 0
+        for points_grupo in list(points_grupo_b.values()):
+            points_local_b = points_local_b + points_grupo[0]
+            poitns_visit_b = poitns_visit_b + points_grupo[1]
+        if points_local_a >= poitns_visit_a:
             appuser_1_id = key_stage_sf_group[0].appuser_1_id
         else:
-            appuser_1_id = key_stage_sf_group[5].appuser_1_id
-        if sum(points_local_2) >= sum(points_visit_2):
-            appuser_2_id = key_stage_sf_group[0].appuser_2_id
+            appuser_1_id = key_stage_sf_group[0].appuser_2_id
+        if points_local_b >= poitns_visit_b:
+            appuser_2_id = key_stage_sf_group[5].appuser_1_id
         else:
             appuser_2_id = key_stage_sf_group[5].appuser_2_id
 
