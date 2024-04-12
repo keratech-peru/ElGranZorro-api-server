@@ -4,7 +4,7 @@ from app.security import oauth2_scheme
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD, get_db
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers
-from app.tournaments.models import Tournaments, GroupStage, FootballGames
+from app.tournaments.models import Tournaments, GroupStage, ConfrontationsKeyStage
 from app.users import schemas
 from app.users.utils import get_hash
 from sqlalchemy.orm import Session
@@ -88,3 +88,18 @@ class AppUsers_(CRUD):
                 point = point_score + point_result
             appuser_id_point_plays[play.appuser_id] = point
         return appuser_id_point_plays
+    
+    def eliminated_group_stage(db: Session, cod_tournament: str):
+        eliminateds = db.query(GroupStage.appuser_id, GroupStage.group, GroupStage.position).filter(GroupStage.tournament_cod == cod_tournament, GroupStage.position != 1, GroupStage.position != 2).order_by(GroupStage.id).all()
+        for eliminated in eliminateds:
+            if eliminated[0]:
+                enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.appuser_id == eliminated[0]).first()
+                enrollment_users.state = "ELIMINADO - GP"
+                CRUD.update(db,enrollment_users)
+
+    def eliminated_key_stage(db: Session, key: str, list_appuser_id: List[int], tournament_id: int):
+        enrollments_en_proceso = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id,EnrollmentUsers.state == "EN PROCESO").all()
+        for enrollment in enrollments_en_proceso:
+            if enrollment.appuser_id not in  list_appuser_id:
+                enrollment.state = f"ELIMINADO - {key}"
+                CRUD.update(db, enrollment)
