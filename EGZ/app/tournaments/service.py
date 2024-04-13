@@ -17,7 +17,10 @@ class Tournaments_(CRUD):
         CRUD.insert(db, new_tourmament)
         return new_tourmament
     
-    def list_all(db: Session, appuser_id: int) -> List[Tournaments]:
+    def list_all(db: Session) -> List[Tournaments]:
+        return db.query(Tournaments).all()
+
+    def list_all_is_enrollend_user(db: Session, appuser_id: int) -> List[Tournaments]:
         tournaments_ = []
         tournaments = db.query(Tournaments).all()
         for tournament in tournaments:

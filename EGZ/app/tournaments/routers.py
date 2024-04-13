@@ -29,7 +29,7 @@ def tournaments_get(
             \n- El servicio tiene excepcion si el token es invalido o expiro
         """
         ### Se debe considerar solo retornar los torneos activos
-        tournaments = Tournaments_.list_all(db, user.id)
+        tournaments = Tournaments_.list_all_is_enrollend_user(db, user.id)
         return {"status": "done", "data": tournaments}
 
 @router.get("/user", status_code=status.HTTP_200_OK)
