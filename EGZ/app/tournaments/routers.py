@@ -19,16 +19,17 @@ router = APIRouter(prefix="/tournaments", tags=["tournaments"])
 @router.get("/", status_code=status.HTTP_200_OK)
 def tournaments_get(
     db: Session = Depends(get_db),
-    __: AppUsers = Depends(get_user_current)
+    user: AppUsers = Depends(get_user_current)
     ) -> Dict[str, object]:
         """
-        **Descripcion** : El servicio brinda la informacion de todos los torneos disponibles.
+        **Descripcion** : El servicio brinda la informacion de todos los torneos disponibles,
+        se envia un booleano para saber si el usuario esta inscrito al torneo o no.
         \n**Excepcion** : 
             \n- El servicio requiere autorizacion via token
             \n- El servicio tiene excepcion si el token es invalido o expiro
         """
         ### Se debe considerar solo retornar los torneos activos
-        tournaments = Tournaments_.list_all(db)
+        tournaments = Tournaments_.list_all(db, user.id)
         return {"status": "done", "data": tournaments}
 
 @router.get("/user", status_code=status.HTTP_200_OK)

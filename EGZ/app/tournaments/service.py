@@ -17,8 +17,17 @@ class Tournaments_(CRUD):
         CRUD.insert(db, new_tourmament)
         return new_tourmament
     
-    def list_all(db: Session) -> List[Tournaments]:
-        return db.query(Tournaments).all()
+    def list_all(db: Session, appuser_id: int) -> List[Tournaments]:
+        tournaments_ = []
+        tournaments = db.query(Tournaments).all()
+        for tournament in tournaments:
+            tournament_ = tournament.__dict__
+            tournament_["is_enrolled_user"] = True if  db.query(EnrollmentUsers).filter(
+                EnrollmentUsers.tournaments_id == tournament.id,
+                EnrollmentUsers.appuser_id == appuser_id
+                ).first() else False
+            tournaments_.append(tournament_)
+        return tournaments_
     
     def get_footballgames(db: Session, tournament_id: int, user_id: int):
         footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).order_by(FootballGames.id).all()
