@@ -40,6 +40,7 @@ class Tournaments_(CRUD):
             tournament_ = tournament.__dict__
             dif = datetime_now - datetime.strptime(tournament_["start_date"], '%d/%m/%y').replace(tzinfo=timezone.utc)
             tournament_["is_last"] = int(dif.days) > 0
+            tournament_["number_enrollment"] = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament.id).count()
             if codigo in tournament_["codigo"]:
                 tournaments_.append(tournament_)
         return tournaments_
