@@ -3,28 +3,14 @@ d{% extends "layout.html" %}
 <div class="col-12">
   <div class="card">
       <div class="card-header">
-        <form action="/admin/login" method="get" class="w-100">
+        <form action="/admin/appusers/list/1" method="get" class="w-100">
           <div class="d-flex">
-            <div class="text-muted">
-                    {{ ('show') }}
-                    <div class="mx-2 d-inline-block">
-                        <input
-                          type="text"
-                          class="form-control"
-                          value="11"
-                          size="2"
-                          name="page_size"
-                          aria-label="entries count"
-                        />
-                    </div>
-                    {{ ('entries') }}
-            </div>
             <div class="d-flex ms-auto">
               <div class="mx-2">
                 <div class="text-muted">
-                  Name : 
+                  Email : 
                   <div class="d-inline-block">
-                    <input class="form-control" type="text" name="name" value placeholder="">
+                    <input class="form-control" type="text" name="email" value placeholder="">
                   </div>
                 </div>
               </div>
@@ -103,9 +89,26 @@ d{% extends "layout.html" %}
         </table>
       </div>
       <div class="card-footer d-flex align-items-center">
-        <p class="m-0 text-muted">
-          Showing 1 to 10 of 1 entries
-        </p>
+        <p class="m-0 text-muted"> Showing {{page_number}} to {{total_page}} of {{total_items}} entries </p>
+        <ul class="pagination m-0 ms-auto">
+          <li class="page-item {% if page_number <= 1 %} disabled {% endif %}">
+            <a class="page-link" href="/admin/appusers/list/{{page_number-1}}" tabindex="-1" aria-disabled="true">
+              <i class="ti ti-chevron-left"></i>
+              prev_page
+            </a>
+          </li>
+          {% for i in range(1,total_page+1) %}
+            <li class="page-item {% if i == (page_number or 1) %} active {% endif %}">
+              <a class="page-link" href="/admin/appusers/list/{{i}}" >{{i}}</a>
+            </li>
+          {% endfor %}
+          <li class="page-item {% if page_number >= total_page %} disabled {% endif %}">
+            <a class="page-link" href="/admin/appusers/list/{{page_number+1}}">
+              next_page
+              <i class="ti ti-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
 
       </div>
 

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Request, Form, UploadFile, File, Depends, Cookie
+from fastapi import APIRouter, Request, Form, Query, Depends, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from typing import Optional
+from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_302_FOUND
+from typing import Optional, List
 from sqlalchemy.orm import Session
 from app.tournaments.schemas import Tourmaments as SchemasTournaments, FootballGames as SchemasFootballGames, UpdateFootballGames as SchemasUpdateFootballGames
 from app.tournaments.models import Tournaments as ModelsTournaments, FootballGames as ModelsFootballGames, GroupStage as ModelsGroupStage, ConfrontationsGroupStage as ModelsConfrontationsGroupStage
@@ -12,8 +13,8 @@ from app.users.models import PlaysUsers as ModelsPlaysUsers
 from app.users.service import AppUsers_
 from app.database import get_db, CRUD
 from app.security import valid_access_token, create_token
-from app.admin import exception
-from app.admin.constants import RESOURCES
+from app.admin import exception, utils
+from app.admin.constants import RESOURCES, ErrorAdmin
 from app.config import USERNAME, PASSWORD, TOKEN_SCONDS_EXP
 import os
 
@@ -26,9 +27,9 @@ templates = Jinja2Templates(directory="app/admin/templates")
 @router.post("/login", response_class=HTMLResponse)
 def get_login(request: Request, username: str = Form(...), password: str = Form(...)):
     if not (username == USERNAME and password == PASSWORD):
-        return templates.TemplateResponse("login.html", {"request": request, "error":True})
+        return templates.TemplateResponse("login.html",status_code=HTTP_401_UNAUTHORIZED, context = {"request": request, "error":ErrorAdmin.LOGIN})
     token = create_token({"username":username})
-    return RedirectResponse("/admin/tournaments/list", status_code=302, headers={"set-cookie" : f"access_token={token}; Max-Age={TOKEN_SCONDS_EXP}"})  
+    return RedirectResponse("/admin/tournaments/list/1", status_code=HTTP_302_FOUND, headers={"set-cookie" : f"access_token={token}; Max-Age={TOKEN_SCONDS_EXP}"})  
 
 @router.post("/tournaments", response_class=HTMLResponse)
 async def create_tournaments(request: Request,
@@ -105,8 +106,8 @@ async def update_footballgames(request: Request,
             FootballGames_.update_group_stage(footballgame, home_score, away_score, db)
         else:
             FootballGames_.update_key_stage(footballgame, home_score, away_score, db)
-    list_all = FootballGames_.list_all(db)
-    contex =  {"request": request ,"resources":RESOURCES,"tablas":list_all}
+    list_all = FootballGames_.list_search_codigo(db, "")
+    contex =  utils.get_context_view_pagination(request, "footballgames", 1, list_all)
     return templates.TemplateResponse("table_footballgames.html",contex)
 
 
@@ -116,19 +117,26 @@ async def update_footballgames(request: Request,
 def view_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-@router.get("/{table_name}/list", response_class=HTMLResponse)
-def view_table(request: Request ,table_name: str, access_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+@router.get("/{table_name}/list/{page_number}", response_class=HTMLResponse)
+def view_table(
+        request: Request ,
+        table_name: str,
+        page_number :int,
+        codigo: str = '',
+        email: str = '',
+        access_token: Optional[str] = Cookie(None),
+        db: Session = Depends(get_db)):
     valid_access_token(access_token)
     list_all = []
     if table_name in 'tournaments':
-        list_all = Tournaments_.list_all(db)
+        list_all = Tournaments_.list_search_codigo(db, codigo)
     elif table_name in 'footballgames':
-        list_all = FootballGames_.list_all(db)
+        list_all = FootballGames_.list_search_codigo(db, codigo)
     elif table_name in 'appusers':
-        list_all = AppUsers_.list_all(db)
+        list_all = AppUsers_.list_search_email(db, email)
     else:
         raise exception.table_does_not_exist
-    contex = {"request": request,"resources":RESOURCES, "title": "Hi", "table_name":table_name , "tablas":list_all}
+    contex = utils.get_context_view_pagination(request, table_name, page_number, list_all)
     return templates.TemplateResponse(f"table_{table_name}.html",contex)
 
 @router.get("/{table_name}/create", response_class=HTMLResponse)

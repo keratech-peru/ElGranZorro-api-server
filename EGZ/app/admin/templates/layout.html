@@ -18,7 +18,7 @@
                     <ul class="navbar-nav pt-lg-3">
                         {% for resource in resources %}
                             <li class="nav-item">
-                                <a class="nav-link" href="/admin/{{ resource.label }}/list">
+                                <a class="nav-link" href="/admin/{{ resource.label }}/list/1">
                                     <span class="nav-link-icon d-md-none d-lg-inline-block">
                                         <i class="fas fa-file-code"></i>
                                     </span>
@@ -45,8 +45,8 @@
                     {% block page_header %}
                         <div class="row align-items-center">
                             <div class="col">
-                                <div class="page-pretitle">{{ page_pre_title or '' }}</div>
-                                <h2 class="page-title">{{ page_title or '' }}</h2>
+                                <div class="page-pretitle">El Gran zorro</div>
+                                <h2 class="page-title">{{ table_name or '' }}</h2>
                             </div>
                         </div>
                         {% block page_title_actions %} {% endblock %} {% endblock %}

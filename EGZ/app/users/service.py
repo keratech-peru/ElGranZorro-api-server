@@ -21,8 +21,8 @@ class AppUsers_(CRUD):
         CRUD.insert(db, new_user)
         return new_user
     
-    def list_all(db: Session) -> List[AppUsers]:
-        return db.query(AppUsers).all()
+    def list_search_email(db: Session, email: str) -> List[AppUsers]:
+        return db.query(AppUsers).filter(AppUsers.email.like(f"%{email}%")).all()
     
     def get(db: Session, email: str):
         return db.query(AppUsers).filter(AppUsers.email == email).first()

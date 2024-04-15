@@ -31,6 +31,18 @@ class Tournaments_(CRUD):
                 ).first() else False
             tournaments_.append(tournament_)
         return tournaments_
+
+    def list_search_codigo(db: Session, codigo: str) -> List[Tournaments]:
+        tournaments_ = []
+        tournaments = db.query(Tournaments).all()
+        datetime_now = datetime.now(pytz.timezone("America/Lima"))
+        for tournament in tournaments:
+            tournament_ = tournament.__dict__
+            dif = datetime_now - datetime.strptime(tournament_["start_date"], '%d/%m/%y').replace(tzinfo=timezone.utc)
+            tournament_["is_last"] = int(dif.days) > 0
+            if codigo in tournament_["codigo"]:
+                tournaments_.append(tournament_)
+        return tournaments_
     
     def get_footballgames(db: Session, tournament_id: int, user_id: int):
         footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).order_by(FootballGames.id).all()
@@ -75,13 +87,23 @@ class FootballGames_(CRUD):
             footballgame.away_score = update_footballgame_in.away_score
             CRUD.update(db, footballgame)       
 
-    def list_all(db: Session) -> List[FootballGames]:
-        # db.query(FootballGames, Tournaments.codigo).join(Tournaments).all()
-        data = jsonable_encoder(db.query(FootballGames).all())
-        for i in range(len(data)):
-            data[i]["tournament_codigo"] = db.query(Tournaments.codigo).filter(Tournaments.id == data[i]["tournament_id"]).first()[0]
-        return data
-    
+    def list_search_codigo(db: Session, codigo: str) -> List[FootballGames]:
+        footballgames_ = []
+        footballgames = db.query(FootballGames).order_by(FootballGames.id.desc()).all()
+        datetime_now = datetime.now(pytz.timezone("America/Lima"))
+        for footballgame in footballgames:
+            footballgame_ = footballgame.__dict__
+            dif = datetime_now - datetime.strptime(footballgame.date, '%d/%m/%y').replace(tzinfo=timezone.utc)
+            footballgame_["tournament_codigo"] = db.query(Tournaments.codigo).filter(Tournaments.id == footballgame.tournament_id).first()[0]
+            footballgame_["is_last"] = int(dif.days) > 0
+            footballgame_["home_team"] = str(footballgame.home_team)
+            footballgame_["away_team"] = str(footballgame.away_team)
+            footballgame_["home_score"] = str(footballgame.home_score)
+            footballgame_["away_score"] = str(footballgame.away_score)
+            if codigo in footballgame_["codigo"]:
+                footballgames_.append(footballgame_)
+        return footballgames_
+
     def create_groups_stage(id: int , codigo:str, start_date:str, db: Session):
         list_footballgames = []
         cont = 0

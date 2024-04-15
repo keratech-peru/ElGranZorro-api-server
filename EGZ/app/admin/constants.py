@@ -6,3 +6,8 @@ class ErrorCode:
 
 
 RESOURCES = [{"label":"footballgames"}, {"label":"tournaments"}, {"label":"appusers"}]
+
+class ErrorAdmin:
+    LOGIN = "Credenciales invalidas"
+
+PAGINATION = {"tournaments" : 10, "footballgames": 20, "appusers": 10}
