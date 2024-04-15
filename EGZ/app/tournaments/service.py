@@ -17,6 +17,14 @@ class Tournaments_(CRUD):
         CRUD.insert(db, new_tourmament)
         return new_tourmament
     
+    def update(tourmament_id:int , update_tournament_in: schemas.UpdateTourmaments, db: Session):
+        tourmament = db.query(Tournaments).filter(Tournaments.id == tourmament_id).first()
+        if tourmament:
+            tourmament.name = update_tournament_in.name
+            tourmament.logo = update_tournament_in.logo
+            tourmament.tournament_rules = update_tournament_in.tournament_rules
+            CRUD.update(db, tourmament)
+
     def list_all(db: Session) -> List[Tournaments]:
         return db.query(Tournaments).all()
 

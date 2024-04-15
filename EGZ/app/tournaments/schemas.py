@@ -48,3 +48,8 @@ class UpdateFootballGames(BaseModel):
     away_team: Optional[str]
     home_score: Optional[int]
     away_score: Optional[int]
+
+class UpdateTourmaments(BaseModel):
+    name: Optional[str]
+    logo: Optional[str]
+    tournament_rules: Optional[str]

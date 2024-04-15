@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_302_FOUND
 from typing import Optional, List
 from sqlalchemy.orm import Session
-from app.tournaments.schemas import Tourmaments as SchemasTournaments, FootballGames as SchemasFootballGames, UpdateFootballGames as SchemasUpdateFootballGames
+from app.tournaments.schemas import Tourmaments as SchemasTournaments, FootballGames as SchemasFootballGames, UpdateFootballGames as SchemasUpdateFootballGames, UpdateTourmaments as SchemasUpdateTourmaments
 from app.tournaments.models import Tournaments as ModelsTournaments, FootballGames as ModelsFootballGames, GroupStage as ModelsGroupStage, ConfrontationsGroupStage as ModelsConfrontationsGroupStage
 from app.tournaments.service import Tournaments_, FootballGames_, Confrontations_
 from app.tournaments.utils import code_generator_tournaments
@@ -110,6 +110,23 @@ async def update_footballgames(request: Request,
     contex =  utils.get_context_view_pagination(request, "footballgames", 1, list_all)
     return templates.TemplateResponse("table_footballgames.html",contex)
 
+@router.post("/tournaments/{tournament_id}", response_class=HTMLResponse)
+async def update_tournaments(request: Request,
+            tournament_id: str,
+            name: str = Form(...),
+            logo: str = Form(...),
+            tournament_rules: str = Form(...),
+            db: Session = Depends(get_db)):
+    update_tournament_in = SchemasUpdateTourmaments(
+        name=name,
+        logo=logo,
+        tournament_rules=tournament_rules
+    )
+    Tournaments_.update(int(tournament_id), update_tournament_in, db)
+    list_all = Tournaments_.list_search_codigo(db, "")
+    contex =  utils.get_context_view_pagination(request, "tournaments", 1, list_all)
+    return templates.TemplateResponse("table_tournaments.html",contex)
+
 
 #------------------------------------------------------------------------------------------------
 
@@ -151,3 +168,10 @@ def view_update_record_in_table(request: Request, pk: str, access_token: Optiona
     footballgame = db.query(ModelsFootballGames).filter(ModelsFootballGames.id == pk).first()
     contex = {"request": request,"resources":RESOURCES, "pk": pk ,"footballgame":footballgame}
     return templates.TemplateResponse(f"update_footballgames.html", contex)
+
+@router.get("/tournaments/update/{pk}", response_class=HTMLResponse)
+def view_update_record_in_table(request: Request, pk: str, access_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    valid_access_token(access_token)
+    tournament = db.query(ModelsTournaments).filter(ModelsTournaments.id == pk).first()
+    contex = {"request": request,"resources":RESOURCES, "pk": pk ,"tournament":tournament}
+    return templates.TemplateResponse(f"update_tournaments.html", contex)
