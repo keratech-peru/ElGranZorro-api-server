@@ -94,7 +94,8 @@ class Tournaments_(CRUD):
                                     "team_visit_name":None if team_visit_name is None else team_visit_name[0],
                                     "team_visit_logo":None if team_visit_logo is None else team_visit_logo[0],
                                     "plays_visit":plays_visit,
-                                    "points_visit":confrontation.points_2
+                                    "points_visit":confrontation.points_2,
+                                    "is_user_play": user_id in [appuser_id_local, appuser_id_visit]
                                     })
                 footballgame_dict["plays"] = plays_
                 football_stage_group[footballgame.tournament_stage[:7]].append(footballgame_dict)
@@ -118,7 +119,8 @@ class Tournaments_(CRUD):
                                     "team_visit_logo":appuser_visit.team_logo if appuser_visit else None,
                                     "plays_visit":plays_visit,
                                     "points_visit":confrontation.points_2,
-                                    "key_side": "A" if len(confrontations_key_stage)/2 >= cont else "B" 
+                                    "is_user_play": user_id in [confrontation.appuser_1_id, confrontation.appuser_2_id],
+                                    "key_side": "A" if len(confrontations_key_stage)/2 >= cont else "B"
                                     })
                 footballgame_dict["plays"] = plays_
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
