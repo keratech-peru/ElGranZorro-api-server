@@ -59,9 +59,11 @@ class Tournaments_(CRUD):
         group_user = db.query(GroupStage.group).filter(GroupStage.tournament_cod == tournament_cod[0], GroupStage.appuser_id == user_id).first()
         group_stage_table = []
         groups_stage = db.query(GroupStage).filter(GroupStage.group == group_user[0], GroupStage.tournament_cod == tournament_cod[0]).order_by(GroupStage.position).all()
+        group_stage_point = Confrontations_.get_group_stage_point(db, tournament_cod[0],  group_user[0])
         for group_stage in groups_stage:
             group_stage_ = group_stage.__dict__
             group_stage_["team"] = db.query(AppUsers.team_name, AppUsers.team_logo).filter(AppUsers.id == group_stage_['appuser_id']).first()
+            group_stage_["points"] = group_stage_point[group_stage.id]
             group_stage_table.append(group_stage_)
         datetime_now = datetime.now(pytz.timezone("America/Lima"))
         football_stage_group = {'Fecha 1': [], 'Fecha 2': [], 'Fecha 3': []}
@@ -463,6 +465,22 @@ class Confrontations_(CRUD):
                 groups_stage =  db.query(GroupStage).filter(GroupStage.id == group_stage_id_and_points_orden[i-1][0]).first()
                 groups_stage.position = i
                 CRUD.update(db, groups_stage)
+
+    def get_group_stage_point(db: Session, cod_tournament: str, group: str):
+        groups_stage =  db.query(GroupStage).filter(GroupStage.tournament_cod == cod_tournament, GroupStage.group == group).all()
+        group_stage_point = {}
+        for group in groups_stage:
+            confront_group_stage = db.query(ConfrontationsGroupStage).filter(
+                or_(ConfrontationsGroupStage.group_stage_1_id.in_([group.id]) ,
+                ConfrontationsGroupStage.group_stage_2_id.in_([group.id]))).all()
+            point = 0
+            for confront in confront_group_stage:
+                if confront.group_stage_1_id == group.id:
+                    point = point + (confront.points_1 if confront.points_1 else 0) 
+                if confront.group_stage_2_id == group.id:
+                    point = point + (confront.points_2 if confront.points_2 else 0)
+            group_stage_point[group.id] = point
+        return group_stage_point
     
     def registration_teams_eighths(db, cod_tournament: str):
         tournaments_id = str(int(cod_tournament[-3:]))
