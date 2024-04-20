@@ -68,11 +68,8 @@ class Tournaments_(CRUD):
         football_stage_keys = {'OCTAVOS':[], 'CUARTOS':[], 'SEMI-FINAL':[], 'FINAL':[]}
         group_stage_ids_list = [group.id for group in groups_stage]
         for footballgame in footballgames:
-            play_user = db.query(PlaysUsers).filter(PlaysUsers.id == footballgame.id,PlaysUsers.appuser_id == user_id).first()
             dif = datetime_now - datetime.strptime(footballgame.date, '%d/%m/%y').replace(tzinfo=timezone.utc)
             footballgame_dict = footballgame.__dict__
-            footballgame_dict["score_local_user"] = play_user.score_local if play_user else None
-            footballgame_dict["score_visit_user"] = play_user.score_visit if play_user else None
             footballgame_dict["is_past"] = int(dif.days) > 0
             if "GRUPOS" in footballgame.tournament_stage:
                 confrontations_group_stage = db.query(ConfrontationsGroupStage).filter(ConfrontationsGroupStage.football_games_cod == footballgame.codigo,or_(ConfrontationsGroupStage.group_stage_1_id.in_(group_stage_ids_list) , ConfrontationsGroupStage.group_stage_2_id.in_(group_stage_ids_list))).all()
@@ -100,6 +97,28 @@ class Tournaments_(CRUD):
                 footballgame_dict["plays"] = plays_
                 football_stage_group[footballgame.tournament_stage[:7]].append(footballgame_dict)
             else:
+                confrontations_key_stage = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.football_games_cod == footballgame.codigo).order_by(ConfrontationsKeyStage.id).all()
+                plays_ = []
+                cont = 0
+                for confrontation in confrontations_key_stage:
+                    plays_local = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == confrontation.appuser_1_id, PlaysUsers.football_games_id == footballgame.id).first()
+                    plays_visit = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == confrontation.appuser_2_id, PlaysUsers.football_games_id == footballgame.id).first()
+                    appuser_local  = db.query(AppUsers).filter(AppUsers.id == confrontation.appuser_1_id).first()
+                    appuser_visit  = db.query(AppUsers).filter(AppUsers.id == confrontation.appuser_2_id).first()
+                    cont = cont + 1
+                    plays_.append({ "id_local":confrontation.appuser_1_id,
+                                    "team_local_name":appuser_local.team_name if appuser_local else None,
+                                    "team_local_logo":appuser_local.team_logo if appuser_local else None,
+                                    "plays_local":plays_local,
+                                    "points_local":confrontation.points_1,
+                                    "id_visit":confrontation.appuser_2_id,
+                                    "team_visit_name":appuser_visit.team_name if appuser_visit else None,
+                                    "team_visit_logo":appuser_visit.team_logo if appuser_visit else None,
+                                    "plays_visit":plays_visit,
+                                    "points_visit":confrontation.points_2,
+                                    "key_side": "A" if len(confrontations_key_stage)/2 >= cont else "B" 
+                                    })
+                footballgame_dict["plays"] = plays_
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
 
         return group_stage_table, football_stage_group, football_stage_keys
