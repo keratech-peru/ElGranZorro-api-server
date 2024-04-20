@@ -82,12 +82,18 @@ class Tournaments_(CRUD):
                     appuser_id_visit  = db.query(GroupStage.appuser_id).filter(GroupStage.id == confrontation.group_stage_2_id).first()[0]
                     plays_local = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_local, PlaysUsers.football_games_id == footballgame.id).first()
                     plays_visit = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_visit, PlaysUsers.football_games_id == footballgame.id).first()
+                    team_local_name = db.query(AppUsers.team_name).filter(AppUsers.id == appuser_id_local).first()
+                    team_local_logo = db.query(AppUsers.team_logo).filter(AppUsers.id == appuser_id_local).first()
+                    team_visit_name = db.query(AppUsers.team_name).filter(AppUsers.id == appuser_id_visit).first()
+                    team_visit_logo = db.query(AppUsers.team_logo).filter(AppUsers.id == appuser_id_visit).first()
                     plays_.append({ "id_local":appuser_id_local,
-                                    "team_local":db.query(AppUsers.team_name, AppUsers.team_logo).filter(AppUsers.id == appuser_id_local).first(),
+                                    "team_local_name":None if team_local_name is None else team_local_name[0],
+                                    "team_local_logo":None if team_local_logo is None else team_local_logo[0],
                                     "plays_local":plays_local,
                                     "points_local":confrontation.points_1,
                                     "id_visit":appuser_id_visit,
-                                    "team_visit":db.query(AppUsers.team_name, AppUsers.team_logo).filter(AppUsers.id == appuser_id_visit).first(),
+                                    "team_visit_name":None if team_visit_name is None else team_visit_name[0],
+                                    "team_visit_logo":None if team_visit_logo is None else team_visit_logo[0],
                                     "plays_visit":plays_visit,
                                     "points_visit":confrontation.points_2
                                     })
