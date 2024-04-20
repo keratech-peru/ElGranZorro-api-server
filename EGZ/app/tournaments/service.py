@@ -1,6 +1,6 @@
 from app.database import CRUD
 from app.users.service import AppUsers_
-from app.users.models import PlaysUsers, EnrollmentUsers
+from app.users.models import PlaysUsers, EnrollmentUsers, AppUsers
 from app.tournaments.models import Tournaments, FootballGames, GroupStage, ConfrontationsGroupStage, ConfrontationsKeyStage
 from app.tournaments import schemas
 from app.tournaments.constants import GROUPS
@@ -30,7 +30,7 @@ class Tournaments_(CRUD):
 
     def list_all_is_enrollend_user(db: Session, appuser_id: int) -> List[Tournaments]:
         tournaments_ = []
-        tournaments = db.query(Tournaments).all()
+        tournaments = db.query(Tournaments).order_by(Tournaments.id).all()
         for tournament in tournaments:
             tournament_ = tournament.__dict__
             tournament_["is_enrolled_user"] = True if  db.query(EnrollmentUsers).filter(
@@ -55,24 +55,48 @@ class Tournaments_(CRUD):
     
     def get_footballgames(db: Session, tournament_id: int, user_id: int):
         footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).order_by(FootballGames.id).all()
+        tournament_cod = db.query(Tournaments.codigo).filter(Tournaments.id == tournament_id).first()
+        group_user = db.query(GroupStage.group).filter(GroupStage.tournament_cod == tournament_cod[0], GroupStage.appuser_id == user_id).first()
+        group_stage_table = []
+        groups_stage = db.query(GroupStage).filter(GroupStage.group == group_user[0], GroupStage.tournament_cod == tournament_cod[0]).order_by(GroupStage.position).all()
+        for group_stage in groups_stage:
+            group_stage_ = group_stage.__dict__
+            group_stage_["team"] = db.query(AppUsers.team_name, AppUsers.team_logo).filter(AppUsers.id == group_stage_['appuser_id']).first()
+            group_stage_table.append(group_stage_)
         datetime_now = datetime.now(pytz.timezone("America/Lima"))
-        football_of_the_day = []
-        football_past = []
+        football_stage_group = {'Fecha 1': [], 'Fecha 2': [], 'Fecha 3': []}
+        football_stage_keys = {'OCTAVOS':[], 'CUARTOS':[], 'SEMI-FINAL':[], 'FINAL':[]}
+        group_stage_ids_list = [group.id for group in groups_stage]
         for footballgame in footballgames:
+            play_user = db.query(PlaysUsers).filter(PlaysUsers.id == footballgame.id,PlaysUsers.appuser_id == user_id).first()
             dif = datetime_now - datetime.strptime(footballgame.date, '%d/%m/%y').replace(tzinfo=timezone.utc)
             footballgame_dict = footballgame.__dict__
-            play_user = db.query(PlaysUsers).filter(PlaysUsers.id == footballgame.id,PlaysUsers.appuser_id == user_id).first()
-            if int(dif.days) == 0:
-                del footballgame_dict["home_score"]
-                del footballgame_dict["away_score"]
-                footballgame_dict["score_local_user"] = play_user.score_local if play_user else None
-                footballgame_dict["score_visit_user"] = play_user.score_visit if play_user else None
-                football_of_the_day.append(footballgame_dict)
-            if int(dif.days) > 0:
-                footballgame_dict["score_local_user"] = play_user.score_local if play_user else None
-                footballgame_dict["score_visit_user"] = play_user.score_visit if play_user else None
-                football_past.append(footballgame_dict)
-        return football_of_the_day, football_past
+            footballgame_dict["score_local_user"] = play_user.score_local if play_user else None
+            footballgame_dict["score_visit_user"] = play_user.score_visit if play_user else None
+            footballgame_dict["is_past"] = int(dif.days) > 0
+            if "GRUPOS" in footballgame.tournament_stage:
+                confrontations_group_stage = db.query(ConfrontationsGroupStage).filter(ConfrontationsGroupStage.football_games_cod == footballgame.codigo,or_(ConfrontationsGroupStage.group_stage_1_id.in_(group_stage_ids_list) , ConfrontationsGroupStage.group_stage_2_id.in_(group_stage_ids_list))).all()
+                plays_ = []
+                for confrontation in confrontations_group_stage:
+                    appuser_id_local  = db.query(GroupStage.appuser_id).filter(GroupStage.id == confrontation.group_stage_1_id).first()[0]
+                    appuser_id_visit  = db.query(GroupStage.appuser_id).filter(GroupStage.id == confrontation.group_stage_2_id).first()[0]
+                    plays_local = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_local, PlaysUsers.football_games_id == footballgame.id).first()
+                    plays_visit = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_visit, PlaysUsers.football_games_id == footballgame.id).first()
+                    plays_.append({ "id_local":appuser_id_local,
+                                    "team_local":db.query(AppUsers.team_name, AppUsers.team_logo).filter(AppUsers.id == appuser_id_local).first(),
+                                    "plays_local":plays_local,
+                                    "points_local":confrontation.points_1,
+                                    "id_visit":appuser_id_visit,
+                                    "team_visit":db.query(AppUsers.team_name, AppUsers.team_logo).filter(AppUsers.id == appuser_id_visit).first(),
+                                    "plays_visit":plays_visit,
+                                    "points_visit":confrontation.points_2
+                                    })
+                footballgame_dict["plays"] = plays_
+                football_stage_group[footballgame.tournament_stage[:7]].append(footballgame_dict)
+            else:
+                football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
+
+        return group_stage_table, football_stage_group, football_stage_keys
 
     def start(db: Session, tournament_cod: str):
         enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == int(tournament_cod[-3:])).all()
