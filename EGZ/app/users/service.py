@@ -66,14 +66,19 @@ class AppUsers_(CRUD):
         return new_user_enrollment
 
     def plays_footballgames(db: Session, user: AppUsers, play_users: schemas.PlaysUsers):
-        new_user_play_footballgame = PlaysUsers(
-            appuser_id=user.id,
-            football_games_id=play_users.football_games_id,
-            score_local=play_users.score_local,
-            score_visit=play_users.score_visit
-        )
-        CRUD.insert(db, new_user_play_footballgame)
-        return new_user_play_footballgame
+        playusers = db.query(PlaysUsers).filter(PlaysUsers.appuser_id==user.id, PlaysUsers.football_games_id == play_users.football_games_id).first()
+        if playusers:
+            playusers.score_local=play_users.score_local
+            playusers.score_visit=play_users.score_visit
+            CRUD.update(db, playusers)
+        else:
+            new_user_play_footballgame = PlaysUsers(
+                appuser_id=user.id,
+                football_games_id=play_users.football_games_id,
+                score_local=play_users.score_local,
+                score_visit=play_users.score_visit
+            )
+            CRUD.insert(db, new_user_play_footballgame)
 
     def play_users_points(db: Session, footballgame_id: int, footballgame_type: str, home_score: str, away_score: str):
         plays_users = db.query(PlaysUsers).filter(PlaysUsers.football_games_id == footballgame_id).all()

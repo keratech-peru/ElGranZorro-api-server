@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status, Request
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from typing import Dict
+from typing import Dict, List
 from sqlalchemy.orm import Session
 from app.users.service import AppUsers_
 from app.users import schemas
@@ -98,25 +98,26 @@ def user_enrollment(
         new_user_enrollment = AppUsers_.enrollment(db, user, tournament)
         return {"status": "done", "new_user_enrollment": new_user_enrollment}
 
-@router.post("/plays", status_code=status.HTTP_201_CREATED)
+@router.put("/plays", status_code=status.HTTP_201_CREATED)
 def user_plays_footballgames(
-    play_user_in: schemas.PlaysUsers,
+    play_user_list: List[schemas.PlaysUsers],
     db: Session = Depends(get_db),
     user: AppUsers = Depends(get_user_current)
     ) -> Dict[str, object]:
         """
-        **Descripcion** : El servicio permite que el usuario inscriba su jugada de una partida especifica.
+        **Descripcion** : El servicio permite que el usuario inscriba sus tres jugadas de la fecha.
         \n**Excepcion** : 
             \n- El servicio requiere autorizacion via token
             \n- El servicio tiene excepcion si el token es invalido o expiro
             \n- El servicio tiene excepcion si el footballgame_id no existe
             \n- El servicio tiene excepcion si el usuario quiere escribir su jugada a un footballgame de un torneo al cual no esta inscrito.
         """
-        footballgame = db.query(models.FootballGames).filter(models.FootballGames.id == play_user_in.football_games_id).first() 
-        if not footballgame:
-            raise exception_tournaments.footballgames_not_exist
-        enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == footballgame.tournament_id, EnrollmentUsers.appuser_id == user.id).first()
-        if not enrollment:
-            raise exception.user_not_registered_in_footballgame
-        new_play_footballgame = AppUsers_.plays_footballgames(db, user, play_user_in)
-        return {"status": "done", "play_footballgame_id": new_play_footballgame.id}
+        for play_user_in in play_user_list:
+            footballgame = db.query(models.FootballGames).filter(models.FootballGames.id == play_user_in.football_games_id).first() 
+            if not footballgame:
+                raise exception_tournaments.footballgames_not_exist
+            enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == footballgame.tournament_id, EnrollmentUsers.appuser_id == user.id).first()
+            if not enrollment:
+                raise exception.user_not_registered_in_footballgame
+            AppUsers_.plays_footballgames(db, user, play_user_in)
+        return {"status": "done"}
