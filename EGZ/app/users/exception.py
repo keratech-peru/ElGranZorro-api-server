@@ -15,6 +15,20 @@ user_already_registered_tournament = HTTPException(
     },
 )
 
+user_already_not_registered = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.USER_ALREADY_NOT_REGISTERED
+    },
+)
+
+user_cannot_withdraw_tournament_already_started = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.USER_CANNOT_TOURNAMENT_ALREADY_STARTED
+    },
+)
+
 user_not_enrolled_in_tournament = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail={

@@ -10,6 +10,8 @@ from app.users import exception
 from app.database import get_db
 from app.security import create_token, valid_header, get_user_current
 from app.config import ApiKey, TOKEN_SCONDS_EXP
+from datetime import datetime, timezone, timedelta
+import pytz
 
 
 
@@ -97,6 +99,33 @@ def user_enrollment(
             raise exception_tournaments.full_tournament
         new_user_enrollment = AppUsers_.enrollment(db, user, tournament)
         return {"status": "done", "new_user_enrollment": new_user_enrollment}
+
+@router.delete("/declining/{tournaments_id}", status_code=status.HTTP_200_OK)
+def user_declining(
+    tournaments_id: str,
+    db: Session = Depends(get_db),
+    user: AppUsers = Depends(get_user_current)
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio que retira al usuario a un torneo especifico.
+        \n**Excepcion** : 
+            \n- El servicio requiere autorizacion via token
+            \n- El servicio tiene excepcion si el token es invalido o expiro
+            \n- El servicio tiene excepcion cuando se ingresa un tournaments_id inexistente
+            \n- El servicio tiene excepcion si el usuario quiere retirarse en un torneo al cual no esta inscrito.
+            \n- El servicio tiene excepcion si el usuario quiere retirarse de un torneo que ya empezo.
+        """
+        tournament = db.query(models.Tournaments).filter(models.Tournaments.id == tournaments_id).first() 
+        if not tournament:
+            raise exception_tournaments.tournament_not_exist
+        enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournaments_id, EnrollmentUsers.appuser_id == user.id).first()
+        if not enrollment:
+            raise exception.user_already_not_registered
+        dif = datetime.now(pytz.timezone("America/Lima")) - datetime.strptime(tournament.start_date, '%d/%m/%y').replace(tzinfo=timezone.utc)
+        if int(dif.days) > 0:
+            raise exception.user_cannot_withdraw_tournament_already_started
+        AppUsers_.decline(db, user, tournament.codigo, enrollment)
+        return {"status": "done"}
 
 @router.put("/plays", status_code=status.HTTP_201_CREATED)
 def user_plays_footballgames(
