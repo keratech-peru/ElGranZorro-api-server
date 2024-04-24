@@ -40,14 +40,13 @@ d{% extends "layout.html" %}
                       <input class="form-check-input m-0 align-middle" type="checkbox" id="checkbox-select-all"/>
                     </th>
                     <th>id</th>
-                    <th>created_at</th>
                     <th>codigo</th>
                     <th>Name</th>
-                    <th>logo</th>
                     <th>start_date</th>
                     <th>max_number_of_players</th>
                     <th>number_enrollment</th>
                     <th>game_mode</th>
+                    <th>logo</th>
                     <th>tournament_rules</th>
                     <th></th>
             </tr>
@@ -59,10 +58,8 @@ d{% extends "layout.html" %}
                         <input data-id="{{ tabla.id|int }}" class="form-check-input m-0 align-middle checkbox-select-item" type="checkbox"/>
                       </td>
                       <td>{{ tabla.id }}</td>
-                      <td>{{ tabla.created_at }}</td>
                       <td>{{ tabla.codigo }}</td>  
                       <td>{{ tabla.name }}</td>
-                      <td>{{ tabla.logo }}</td>
                       <td>
                         {% if tabla.is_last %}
                           <span class="badge bg-red">
@@ -74,6 +71,7 @@ d{% extends "layout.html" %}
                       <td>{{ tabla.max_number_of_players }}</td>
                       <td>{{ tabla.number_enrollment }}</td>
                       <td>{{ tabla.game_mode }}</td>
+                      <td>{{ tabla.logo }}</td>
                       <td>{{ tabla.tournament_rules }}</td>
                       <td class="text-end">
                         <span class="dropdown">
