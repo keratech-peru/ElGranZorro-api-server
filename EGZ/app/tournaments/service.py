@@ -69,7 +69,7 @@ class Tournaments_(CRUD):
         group_stage_ids_list = [group.id for group in groups_stage]
         for footballgame in footballgames:
             footballgame_dict = footballgame.__dict__
-            footballgame_dict["is_past"] = is_past(footballgame.start_date, footballgame.hour)
+            footballgame_dict["is_past"] = is_past(footballgame.date, footballgame.hour)
             if "GRUPOS" in footballgame.tournament_stage:
                 confrontations_group_stage = db.query(ConfrontationsGroupStage).filter(ConfrontationsGroupStage.football_games_cod == footballgame.codigo,or_(ConfrontationsGroupStage.group_stage_1_id.in_(group_stage_ids_list) , ConfrontationsGroupStage.group_stage_2_id.in_(group_stage_ids_list))).all()
                 plays_ = []
