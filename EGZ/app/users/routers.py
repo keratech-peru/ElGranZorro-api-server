@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.users.service import AppUsers_
 from app.users import schemas
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers
-from app.tournaments import models, exception as exception_tournaments
+from app.tournaments import models, utils, exception as exception_tournaments
 from app.users import exception
 from app.database import get_db
 from app.security import create_token, valid_header, get_user_current
@@ -121,8 +121,7 @@ def user_declining(
         enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournaments_id, EnrollmentUsers.appuser_id == user.id).first()
         if not enrollment:
             raise exception.user_already_not_registered
-        dif = datetime.now(pytz.timezone("America/Lima")) - datetime.strptime(tournament.start_date, '%d/%m/%y').replace(tzinfo=timezone.utc)
-        if int(dif.days) > 0:
+        if utils.is_past(tournament.start_date):
             raise exception.user_cannot_withdraw_tournament_already_started
         AppUsers_.decline(db, user, tournament.codigo, enrollment)
         return {"status": "done"}

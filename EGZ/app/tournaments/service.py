@@ -4,6 +4,7 @@ from app.users.models import PlaysUsers, EnrollmentUsers, AppUsers
 from app.tournaments.models import Tournaments, FootballGames, GroupStage, ConfrontationsGroupStage, ConfrontationsKeyStage
 from app.tournaments import schemas
 from app.tournaments.constants import GROUPS
+from app.tournaments.utils import is_past
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List 
@@ -43,11 +44,9 @@ class Tournaments_(CRUD):
     def list_search_codigo(db: Session, codigo: str) -> List[Tournaments]:
         tournaments_ = []
         tournaments = db.query(Tournaments).all()
-        datetime_now = datetime.now(pytz.timezone("America/Lima"))
         for tournament in tournaments:
             tournament_ = tournament.__dict__
-            dif = datetime_now - datetime.strptime(tournament_["start_date"], '%d/%m/%y').replace(tzinfo=timezone.utc)
-            tournament_["is_last"] = int(dif.days) > 0
+            tournament_["is_last"] = is_past(tournament.start_date)
             tournament_["number_enrollment"] = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament.id).count()
             if codigo in tournament_["codigo"]:
                 tournaments_.append(tournament_)
@@ -65,14 +64,12 @@ class Tournaments_(CRUD):
             group_stage_["team"] = db.query(AppUsers.team_name, AppUsers.team_logo).filter(AppUsers.id == group_stage_['appuser_id']).first()
             group_stage_["points"] = group_stage_point[group_stage.id]
             group_stage_table.append(group_stage_)
-        datetime_now = datetime.now(pytz.timezone("America/Lima"))
         football_stage_group = {'Fecha 1': [], 'Fecha 2': [], 'Fecha 3': []}
         football_stage_keys = {'OCTAVOS':[], 'CUARTOS':[], 'SEMI-FINAL':[], 'FINAL':[]}
         group_stage_ids_list = [group.id for group in groups_stage]
         for footballgame in footballgames:
-            dif = datetime_now - datetime.strptime(footballgame.date, '%d/%m/%y').replace(tzinfo=timezone.utc)
             footballgame_dict = footballgame.__dict__
-            footballgame_dict["is_past"] = int(dif.days) > 0
+            footballgame_dict["is_past"] = is_past(footballgame.start_date, footballgame.hour)
             if "GRUPOS" in footballgame.tournament_stage:
                 confrontations_group_stage = db.query(ConfrontationsGroupStage).filter(ConfrontationsGroupStage.football_games_cod == footballgame.codigo,or_(ConfrontationsGroupStage.group_stage_1_id.in_(group_stage_ids_list) , ConfrontationsGroupStage.group_stage_2_id.in_(group_stage_ids_list))).all()
                 plays_ = []
@@ -81,18 +78,16 @@ class Tournaments_(CRUD):
                     appuser_id_visit  = db.query(GroupStage.appuser_id).filter(GroupStage.id == confrontation.group_stage_2_id).first()[0]
                     plays_local = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_local, PlaysUsers.football_games_id == footballgame.id).first()
                     plays_visit = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_visit, PlaysUsers.football_games_id == footballgame.id).first()
-                    team_local_name = db.query(AppUsers.team_name).filter(AppUsers.id == appuser_id_local).first()
-                    team_local_logo = db.query(AppUsers.team_logo).filter(AppUsers.id == appuser_id_local).first()
-                    team_visit_name = db.query(AppUsers.team_name).filter(AppUsers.id == appuser_id_visit).first()
-                    team_visit_logo = db.query(AppUsers.team_logo).filter(AppUsers.id == appuser_id_visit).first()
+                    appuser_local  = db.query(AppUsers).filter(AppUsers.id == appuser_id_local).first()
+                    appuser_visit  = db.query(AppUsers).filter(AppUsers.id == appuser_id_visit).first()
                     plays_.append({ "id_local":appuser_id_local,
-                                    "team_local_name":None if team_local_name is None else team_local_name[0],
-                                    "team_local_logo":None if team_local_logo is None else team_local_logo[0],
+                                    "team_local_name":None if appuser_local is None else appuser_local.team_name,
+                                    "team_local_logo":None if appuser_local is None else appuser_local.team_logo,
                                     "plays_local":plays_local,
                                     "points_local":confrontation.points_1,
                                     "id_visit":appuser_id_visit,
-                                    "team_visit_name":None if team_visit_name is None else team_visit_name[0],
-                                    "team_visit_logo":None if team_visit_logo is None else team_visit_logo[0],
+                                    "team_visit_name":None if appuser_visit is None else appuser_visit.team_name,
+                                    "team_visit_logo":None if appuser_visit is None else appuser_visit.team_logo,
                                     "plays_visit":plays_visit,
                                     "points_visit":confrontation.points_2,
                                     "is_user_play": user_id in [appuser_id_local, appuser_id_visit]
@@ -143,6 +138,7 @@ class FootballGames_(CRUD):
     def update(footballgame_id:int , update_footballgame_in: schemas.UpdateFootballGames, db: Session) :
         footballgame = db.query(FootballGames).filter(FootballGames.id == footballgame_id).first()
         if footballgame:
+            footballgame.hour = update_footballgame_in.hour
             footballgame.home_team = update_footballgame_in.home_team
             footballgame.away_team = update_footballgame_in.away_team
             footballgame.home_score = update_footballgame_in.home_score
@@ -152,12 +148,10 @@ class FootballGames_(CRUD):
     def list_search_codigo(db: Session, codigo: str) -> List[FootballGames]:
         footballgames_ = []
         footballgames = db.query(FootballGames).order_by(FootballGames.id.desc()).all()
-        datetime_now = datetime.now(pytz.timezone("America/Lima"))
         for footballgame in footballgames:
             footballgame_ = footballgame.__dict__
-            dif = datetime_now - datetime.strptime(footballgame.date, '%d/%m/%y').replace(tzinfo=timezone.utc)
             footballgame_["tournament_codigo"] = db.query(Tournaments.codigo).filter(Tournaments.id == footballgame.tournament_id).first()[0]
-            footballgame_["is_last"] = int(dif.days) > 0
+            footballgame_["is_last"] = is_past(footballgame.date,footballgame.hour)
             footballgame_["home_team"] = str(footballgame.home_team)
             footballgame_["away_team"] = str(footballgame.away_team)
             footballgame_["home_score"] = str(footballgame.home_score)
@@ -178,7 +172,8 @@ class FootballGames_(CRUD):
                     tournament_id=id,
                     tournament_stage=f"Fecha {i} - GRUPOS",
                     date=datetime.strftime(date,'%d/%m/%y'),
-                    type_footballgames= "RESULT" if i*j%2 == 0 else "SCORE",
+                    hour=None,
+                    type_footballgames= "RESULT" if cont%2 == 0 else "SCORE",
                     home_team=None,
                     away_team=None,
                     home_score=None,
@@ -207,7 +202,8 @@ class FootballGames_(CRUD):
                 tournament_id=id,
                 tournament_stage=f"OCTAVOS",
                 date=datetime.strftime(date,'%d/%m/%y'),
-                type_footballgames= "RESULT" if i%2 == 0 else "SCORE",
+                hour=None,
+                type_footballgames= "RESULT" if cont%2 == 0 else "SCORE",
                 home_team=None,
                 away_team=None,
                 home_score=None,
@@ -229,7 +225,8 @@ class FootballGames_(CRUD):
                 tournament_id=id,
                 tournament_stage=f"CUARTOS",
                 date=datetime.strftime(date,'%d/%m/%y'),
-                type_footballgames= "RESULT" if i%2 == 0 else "SCORE",
+                hour=None,
+                type_footballgames= "RESULT" if cont%2 == 0 else "SCORE",
                 home_team=None,
                 away_team=None,
                 home_score=None,
@@ -251,7 +248,8 @@ class FootballGames_(CRUD):
                 tournament_id=id,
                 tournament_stage=f"SEMI-FINAL",
                 date=datetime.strftime(date,'%d/%m/%y'),
-                type_footballgames= "RESULT" if i%2 == 0 else "SCORE",
+                hour=None,
+                type_footballgames= "RESULT" if cont%2 == 0 else "SCORE",
                 home_team=None,
                 away_team=None,
                 home_score=None,
@@ -273,7 +271,8 @@ class FootballGames_(CRUD):
                 tournament_id=id,
                 tournament_stage=f"FINAL",
                 date=datetime.strftime(date,'%d/%m/%y'),
-                type_footballgames= "RESULT" if i%2 == 0 else "SCORE",
+                hour=None,
+                type_footballgames= "RESULT" if cont%2 == 0 else "SCORE",
                 home_team=None,
                 away_team=None,
                 home_score=None,

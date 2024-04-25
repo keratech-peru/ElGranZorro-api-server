@@ -54,6 +54,7 @@ class FootballGames(Base):
     tournament_id = Column(Integer, ForeignKey("tournaments_tournaments.id"))
     tournament_stage = Column(String)
     date = Column(String)
+    hour = Column(String)
     type_footballgames = Column(String)
     home_team = Column(String)
     away_team = Column(String)

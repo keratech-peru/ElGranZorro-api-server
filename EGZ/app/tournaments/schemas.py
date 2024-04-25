@@ -37,6 +37,7 @@ class FootballGames(BaseModel):
     tournament_id: int
     tournament_stage: str
     date: str
+    hour: Optional[str]
     type_footballgames: str
     home_team: Optional[str]
     away_team: Optional[str]
@@ -44,6 +45,7 @@ class FootballGames(BaseModel):
     away_score: Optional[int]
 
 class UpdateFootballGames(BaseModel):
+    hour: Optional[str]
     home_team: Optional[str]
     away_team: Optional[str]
     home_score: Optional[int]

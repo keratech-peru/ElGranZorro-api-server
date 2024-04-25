@@ -3,6 +3,8 @@ from app.tournaments.constants import Players
 from app.database import get_db
 from fastapi import Depends
 from sqlalchemy.orm import Session
+from datetime import datetime, timezone, timedelta
+import pytz
 
 
 def code_generator_tournaments(db: Session = Depends(get_db)):
@@ -16,3 +18,10 @@ def code_generator_tournaments(db: Session = Depends(get_db)):
         id = str(id_next)
     return "T" + Players.MAXIMO + id, id_next
 
+def is_past(start_date: str, hour: str=None):
+    datetime_now = datetime.now(pytz.timezone("America/Lima"))
+    if hour:
+        dif = datetime_now - datetime.strptime(f'{start_date} {hour}', '%d/%m/%y %H:%M:%S').replace(tzinfo=timezone.utc)
+    else:
+        dif = datetime_now - datetime.strptime(f'{start_date}', '%d/%m/%y').replace(tzinfo=timezone.utc)
+    return int(dif.days) > 0
