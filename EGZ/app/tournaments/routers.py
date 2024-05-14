@@ -69,4 +69,4 @@ def tournament_user(
         if not enrollment:
             raise exception_users.user_not_enrolled_in_tournament
         group_stage_table, football_stage_group, football_stage_keys = Tournaments_.get_footballgames(db, tournament_id, user.id)
-        return {"status": "done", "tournament":tournament ,"group_stage_table":group_stage_table, "football_stage_group":football_stage_group, "football_stage_keys":football_stage_keys }
+        return {"status": "done", "user":{"id":user.id},"tournament":tournament ,"group_stage_table":group_stage_table, "football_stage_group":football_stage_group, "football_stage_keys":football_stage_keys }
