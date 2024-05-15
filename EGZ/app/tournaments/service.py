@@ -4,7 +4,7 @@ from app.users.models import PlaysUsers, EnrollmentUsers, AppUsers
 from app.tournaments.models import Tournaments, FootballGames, GroupStage, ConfrontationsGroupStage, ConfrontationsKeyStage
 from app.tournaments import schemas
 from app.tournaments.constants import GROUPS
-from app.tournaments.utils import is_past
+from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List 
@@ -52,72 +52,86 @@ class Tournaments_(CRUD):
                 tournaments_.append(tournament_)
         return tournaments_
     
-    def get_footballgames(db: Session, tournament_id: int, user_id: int):
-        footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).order_by(FootballGames.id).all()
+    def get_data_group_table(db: Session, tournament_id: int , user_id: int):
         tournament_cod = db.query(Tournaments.codigo).filter(Tournaments.id == tournament_id).first()
         group_user = db.query(GroupStage.group).filter(GroupStage.tournament_cod == tournament_cod[0], GroupStage.appuser_id == user_id).first()
         group_stage_table = []
         groups_stage = db.query(GroupStage).filter(GroupStage.group == group_user[0], GroupStage.tournament_cod == tournament_cod[0]).order_by(GroupStage.position).all()
         group_stage_point = Confrontations_.get_group_stage_point(db, tournament_cod[0],  group_user[0])
+        group_stage_ids_list = [group.id for group in groups_stage]
         for group_stage in groups_stage:
             group_stage_ = group_stage.__dict__
             group_stage_["team"] = db.query(AppUsers.team_name, AppUsers.team_logo).filter(AppUsers.id == group_stage_['appuser_id']).first()
             group_stage_["points"] = group_stage_point[group_stage.id]
             group_stage_table.append(group_stage_)
+        return group_stage_table, group_stage_ids_list
+
+    def get_data_group_stage_plays(db: Session, footballgame: FootballGames, group_stage_ids_list, footballgame_dict, user_id: int):
+        confrontations_group_stage = db.query(ConfrontationsGroupStage).filter(
+            ConfrontationsGroupStage.football_games_cod == footballgame.codigo,
+            or_(ConfrontationsGroupStage.group_stage_1_id.in_(group_stage_ids_list) , ConfrontationsGroupStage.group_stage_2_id.in_(group_stage_ids_list))).all()
+        plays_ = []
+        for confrontation in confrontations_group_stage:
+            appuser_id_local  = db.query(GroupStage.appuser_id).filter(GroupStage.id == confrontation.group_stage_1_id).first()[0]
+            appuser_id_visit  = db.query(GroupStage.appuser_id).filter(GroupStage.id == confrontation.group_stage_2_id).first()[0]
+            plays_local = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_local, PlaysUsers.football_games_id == footballgame.id).first()
+            plays_visit = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_visit, PlaysUsers.football_games_id == footballgame.id).first()
+            appuser_local  = db.query(AppUsers).filter(AppUsers.id == appuser_id_local).first()
+            appuser_visit  = db.query(AppUsers).filter(AppUsers.id == appuser_id_visit).first()  
+            plays_.append({ "id_local":appuser_id_local,
+                            "team_local_name":None if appuser_local is None else appuser_local.team_name,
+                            "team_local_logo":None if appuser_local is None else appuser_local.team_logo,
+                            "plays_local": hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_local, plays_local),
+                            "points_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_local, confrontation.points_1),
+                            "id_visit":appuser_id_visit,
+                            "team_visit_name":None if appuser_visit is None else appuser_visit.team_name,
+                            "team_visit_logo":None if appuser_visit is None else appuser_visit.team_logo,
+                            "plays_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_visit, plays_visit),
+                            "points_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_visit, confrontation.points_2),
+                            "is_user_play": user_id in [appuser_id_local, appuser_id_visit],
+                            "is_appuser_local": user_id == appuser_id_local
+                        })
+        footballgame_dict["plays"] = plays_
+        return footballgame_dict
+
+    def get_data_group_key_plays(db: Session, footballgame: FootballGames, footballgame_dict, user_id: int):
+        confrontations_key_stage = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.football_games_cod == footballgame.codigo).order_by(ConfrontationsKeyStage.id).all()
+        plays_ = []
+        cont = 0
+        for confrontation in confrontations_key_stage:
+            plays_local = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == confrontation.appuser_1_id, PlaysUsers.football_games_id == footballgame.id).first()
+            plays_visit = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == confrontation.appuser_2_id, PlaysUsers.football_games_id == footballgame.id).first()
+            appuser_local  = db.query(AppUsers).filter(AppUsers.id == confrontation.appuser_1_id).first()
+            appuser_visit  = db.query(AppUsers).filter(AppUsers.id == confrontation.appuser_2_id).first()
+            cont = cont + 1
+            plays_.append({ "id_local":confrontation.appuser_1_id,
+                            "team_local_name":appuser_local.team_name if appuser_local else None,
+                            "team_local_logo":appuser_local.team_logo if appuser_local else None,
+                            "plays_local":plays_local,
+                            "points_local":confrontation.points_1,
+                            "id_visit":confrontation.appuser_2_id,
+                            "team_visit_name":appuser_visit.team_name if appuser_visit else None,
+                            "team_visit_logo":appuser_visit.team_logo if appuser_visit else None,
+                            "plays_visit":plays_visit,
+                            "points_visit":confrontation.points_2,
+                            "is_user_play": user_id in [confrontation.appuser_1_id, confrontation.appuser_2_id],
+                            "key_side": "A" if len(confrontations_key_stage)/2 >= cont else "B"
+                            })
+        footballgame_dict["plays"] = plays_
+
+    def get_footballgames(db: Session, tournament_id: int, user_id: int):
         football_stage_group = {'Fecha 1': [], 'Fecha 2': [], 'Fecha 3': []}
         football_stage_keys = {'OCTAVOS':[], 'CUARTOS':[], 'SEMI-FINAL':[], 'FINAL':[]}
-        group_stage_ids_list = [group.id for group in groups_stage]
+        footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).order_by(FootballGames.id).all()
+        group_stage_table, group_stage_ids_list = Tournaments_.get_data_group_table(db, tournament_id, user_id)
         for footballgame in footballgames:
             footballgame_dict = footballgame.__dict__
             footballgame_dict["is_past"] = is_past(footballgame.date, footballgame.hour)
             if "GRUPOS" in footballgame.tournament_stage:
-                confrontations_group_stage = db.query(ConfrontationsGroupStage).filter(ConfrontationsGroupStage.football_games_cod == footballgame.codigo,or_(ConfrontationsGroupStage.group_stage_1_id.in_(group_stage_ids_list) , ConfrontationsGroupStage.group_stage_2_id.in_(group_stage_ids_list))).all()
-                plays_ = []
-                for confrontation in confrontations_group_stage:
-                    appuser_id_local  = db.query(GroupStage.appuser_id).filter(GroupStage.id == confrontation.group_stage_1_id).first()[0]
-                    appuser_id_visit  = db.query(GroupStage.appuser_id).filter(GroupStage.id == confrontation.group_stage_2_id).first()[0]
-                    plays_local = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_local, PlaysUsers.football_games_id == footballgame.id).first()
-                    plays_visit = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == appuser_id_visit, PlaysUsers.football_games_id == footballgame.id).first()
-                    appuser_local  = db.query(AppUsers).filter(AppUsers.id == appuser_id_local).first()
-                    appuser_visit  = db.query(AppUsers).filter(AppUsers.id == appuser_id_visit).first()
-                    plays_.append({ "id_local":appuser_id_local,
-                                    "team_local_name":None if appuser_local is None else appuser_local.team_name,
-                                    "team_local_logo":None if appuser_local is None else appuser_local.team_logo,
-                                    "plays_local":plays_local,
-                                    "points_local":confrontation.points_1,
-                                    "id_visit":appuser_id_visit,
-                                    "team_visit_name":None if appuser_visit is None else appuser_visit.team_name,
-                                    "team_visit_logo":None if appuser_visit is None else appuser_visit.team_logo,
-                                    "plays_visit":plays_visit,
-                                    "points_visit":confrontation.points_2,
-                                    "is_user_play": user_id in [appuser_id_local, appuser_id_visit]
-                                    })
-                footballgame_dict["plays"] = plays_
+                footballgame_dict = Tournaments_.get_data_group_stage_plays(db, footballgame, group_stage_ids_list, footballgame_dict, user_id)
                 football_stage_group[footballgame.tournament_stage[:7]].append(footballgame_dict)
             else:
-                confrontations_key_stage = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.football_games_cod == footballgame.codigo).order_by(ConfrontationsKeyStage.id).all()
-                plays_ = []
-                cont = 0
-                for confrontation in confrontations_key_stage:
-                    plays_local = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == confrontation.appuser_1_id, PlaysUsers.football_games_id == footballgame.id).first()
-                    plays_visit = db.query(PlaysUsers.score_local, PlaysUsers.score_visit).filter(PlaysUsers.appuser_id == confrontation.appuser_2_id, PlaysUsers.football_games_id == footballgame.id).first()
-                    appuser_local  = db.query(AppUsers).filter(AppUsers.id == confrontation.appuser_1_id).first()
-                    appuser_visit  = db.query(AppUsers).filter(AppUsers.id == confrontation.appuser_2_id).first()
-                    cont = cont + 1
-                    plays_.append({ "id_local":confrontation.appuser_1_id,
-                                    "team_local_name":appuser_local.team_name if appuser_local else None,
-                                    "team_local_logo":appuser_local.team_logo if appuser_local else None,
-                                    "plays_local":plays_local,
-                                    "points_local":confrontation.points_1,
-                                    "id_visit":confrontation.appuser_2_id,
-                                    "team_visit_name":appuser_visit.team_name if appuser_visit else None,
-                                    "team_visit_logo":appuser_visit.team_logo if appuser_visit else None,
-                                    "plays_visit":plays_visit,
-                                    "points_visit":confrontation.points_2,
-                                    "is_user_play": user_id in [confrontation.appuser_1_id, confrontation.appuser_2_id],
-                                    "key_side": "A" if len(confrontations_key_stage)/2 >= cont else "B"
-                                    })
-                footballgame_dict["plays"] = plays_
+                footballgame_dict = Tournaments_.get_data_group_key_plays(db, footballgame, footballgame_dict, user_id)
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
 
         return group_stage_table, football_stage_group, football_stage_keys
@@ -634,8 +648,6 @@ class Confrontations_(CRUD):
                     cont_2 = cont_2 + 1
                 elif (play_users_update_at_1[i] != None) and (play_users_update_at_2[i] == None):
                     cont_1 = cont_1 + 1
-                #elif (play_users_update_at_1[i] == None) and (play_users_update_at_2[i] == None):
-                #    print("")
                 elif play_users_update_at_1[i][0] > play_users_update_at_2[i][0]:
                     cont_1 = cont_1 + 1
                 elif play_users_update_at_1[i][0] < play_users_update_at_2[i][0]:
