@@ -405,19 +405,17 @@ class Confrontations_(CRUD):
             list_confrontations.append(ConfrontationsKeyStage(**obj_temp.dict()))
         CRUD.bulk_insert(db, list_confrontations)
 
-    def ids_point_play_and_not_play_group_stage(db: Session, footballgame_cod: str, appuser_id_plays: List[int], point_plays: List[int]):
-        group_stage_ids =  db.query(GroupStage.id).filter(GroupStage.tournament_cod == footballgame_cod[:-3], GroupStage.appuser_id.in_(appuser_id_plays)).all()
+    def ids_point_play_and_not_play_group_stage(db: Session, footballgame_cod: str, appuser_id_point_plays):
+        group_stage_ids =  db.query(GroupStage.id,GroupStage.appuser_id).filter(GroupStage.tournament_cod == footballgame_cod[:-3], GroupStage.appuser_id.in_(list(appuser_id_point_plays.keys()))).all()
         group_stage_ids_all =  db.query(GroupStage.id).filter(GroupStage.tournament_cod == footballgame_cod[:-3]).all()   
         ids_list = [ group_stage_id[0] for group_stage_id in  group_stage_ids ]
         ids_list_all = [ group_stage_id[0] for group_stage_id in  group_stage_ids_all ]
-        ids_point_play = { ids_list[i]:point_plays[i] for i in range(len(group_stage_ids)) }
+        ids_point_play = { group_stage_id[0]:appuser_id_point_plays[group_stage_id[1]] for group_stage_id in  group_stage_ids }
         ids_point_not_play = { ids:0 for ids in ids_list_all if ids not in ids_list }
         return ids_point_play , ids_point_not_play
 
     def allocation_points_group_stage(db: Session, appuser_id_point_plays, footballgame_cod: str):
-        appuser_id_plays = list(appuser_id_point_plays.keys())
-        point_plays = list(appuser_id_point_plays.values())
-        ids_point_play , ids_point_not_play = Confrontations_.ids_point_play_and_not_play_group_stage(db,footballgame_cod,appuser_id_plays, point_plays)
+        ids_point_play , ids_point_not_play = Confrontations_.ids_point_play_and_not_play_group_stage(db,footballgame_cod, appuser_id_point_plays)
         dict_ids_point = ids_point_play | ids_point_not_play
         group_stage_ids_list = list(dict_ids_point.keys())
         confrontations_group_stage = db.query(ConfrontationsGroupStage).filter(
