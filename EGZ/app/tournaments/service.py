@@ -107,14 +107,15 @@ class Tournaments_(CRUD):
             plays_.append({ "id_local":confrontation.appuser_1_id,
                             "team_local_name":appuser_local.team_name if appuser_local else None,
                             "team_local_logo":appuser_local.team_logo if appuser_local else None,
-                            "plays_local":plays_local,
-                            "points_local":confrontation.points_1,
+                            "plays_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_1_id, plays_local),
+                            "points_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_1_id, confrontation.points_1),
                             "id_visit":confrontation.appuser_2_id,
                             "team_visit_name":appuser_visit.team_name if appuser_visit else None,
                             "team_visit_logo":appuser_visit.team_logo if appuser_visit else None,
-                            "plays_visit":plays_visit,
-                            "points_visit":confrontation.points_2,
+                            "plays_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_2_id, plays_visit),
+                            "points_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_2_id, confrontation.points_2),
                             "is_user_play": user_id in [confrontation.appuser_1_id, confrontation.appuser_2_id],
+                            "is_appuser_local": user_id == confrontation.appuser_1_id,
                             "key_side": "A" if len(confrontations_key_stage)/2 >= cont else "B"
                             })
         footballgame_dict["plays"] = plays_
