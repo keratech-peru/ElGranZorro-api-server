@@ -119,6 +119,7 @@ class Tournaments_(CRUD):
                             "key_side": "A" if len(confrontations_key_stage)/2 >= cont else "B"
                             })
         footballgame_dict["plays"] = plays_
+        return footballgame_dict
 
     def get_footballgames(db: Session, tournament_id: int, user_id: int):
         football_stage_group = {'Fecha 1': [], 'Fecha 2': [], 'Fecha 3': []}
