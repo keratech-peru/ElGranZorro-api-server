@@ -68,5 +68,5 @@ def tournament_user(
         enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id, EnrollmentUsers.appuser_id == user.id).first()
         if not enrollment:
             raise exception_users.user_not_enrolled_in_tournament
-        group_stage_table, football_stage_group, football_stage_keys = Tournaments_.get_footballgames(db, tournament_id, user.id)
-        return {"status": "done", "user":{"id":user.id},"tournament":tournament ,"group_stage_table":group_stage_table, "football_stage_group":football_stage_group, "football_stage_keys":football_stage_keys }
+        tournament_, group_stage_table, football_stage_group, football_stage_keys = Tournaments_.get_footballgames(db, tournament, user.id)
+        return {"status": "done", "user":{"id":user.id},"tournament":tournament_ ,"group_stage_table":group_stage_table, "football_stage_group":football_stage_group, "football_stage_keys":football_stage_keys }

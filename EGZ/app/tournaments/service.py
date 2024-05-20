@@ -121,22 +121,26 @@ class Tournaments_(CRUD):
         footballgame_dict["plays"] = plays_
         return footballgame_dict
 
-    def get_footballgames(db: Session, tournament_id: int, user_id: int):
+    def get_footballgames(db: Session, tournament: Tournaments, user_id: int):
         football_stage_group = {'Fecha 1': [], 'Fecha 2': [], 'Fecha 3': []}
         football_stage_keys = {'OCTAVOS':[], 'CUARTOS':[], 'SEMI-FINAL':[], 'FINAL':[]}
-        footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).order_by(FootballGames.id).all()
-        group_stage_table, group_stage_ids_list = Tournaments_.get_data_group_table(db, tournament_id, user_id)
+        footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament.id).order_by(FootballGames.id).all()
+        group_stage_table, group_stage_ids_list = Tournaments_.get_data_group_table(db, tournament.id, user_id)
+        tournament_stage = []
         for footballgame in footballgames:
             footballgame_dict = footballgame.__dict__
             footballgame_dict["is_past"] = is_past(footballgame.date, footballgame.hour)
+            if footballgame_dict["is_past"]:
+                tournament_stage.append(footballgame.tournament_stage)
             if "GRUPOS" in footballgame.tournament_stage:
                 footballgame_dict = Tournaments_.get_data_group_stage_plays(db, footballgame, group_stage_ids_list, footballgame_dict, user_id)
                 football_stage_group[footballgame.tournament_stage[:7]].append(footballgame_dict)
             else:
                 footballgame_dict = Tournaments_.get_data_group_key_plays(db, footballgame, footballgame_dict, user_id)
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
-
-        return group_stage_table, football_stage_group, football_stage_keys
+        tournament_ = tournament.__dict__
+        tournament_["tournament_stage"] = tournament_stage[-1] if len(tournament_stage) > 0 else "AUN NO EMPIEZA"
+        return tournament_, group_stage_table, football_stage_group, football_stage_keys
 
     def start(db: Session, tournament_cod: str):
         enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == int(tournament_cod[-3:])).all()
