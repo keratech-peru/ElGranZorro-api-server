@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.config import SECRETE_KEY
 from jose import jwt, JWTError
+from datetime import datetime
 import random
 
 class AppUsers_(CRUD):
@@ -74,6 +75,7 @@ class AppUsers_(CRUD):
     def plays_footballgames(db: Session, user: AppUsers, play_users: schemas.PlaysUsers):
         playusers = db.query(PlaysUsers).filter(PlaysUsers.appuser_id==user.id, PlaysUsers.football_games_id == play_users.football_games_id).first()
         if playusers:
+            playusers.updated_at = datetime.now()
             playusers.score_local=play_users.score_local
             playusers.score_visit=play_users.score_visit
             CRUD.update(db, playusers)
