@@ -60,6 +60,8 @@ def user_put(
             \n- El servicio requiere autorizacion via token
             \n- El servicio tiene excepcion si el token es invalido o expiro
         """
+        if user_new.email and db.query(AppUsers).filter(AppUsers.email==user_new.email).first():
+            raise exception.email_cannot_updated
         user_id = AppUsers_.update(db ,user, user_new)
         return {"status": "done", "user_id": user_id}
 

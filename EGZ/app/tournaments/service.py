@@ -337,8 +337,6 @@ class FootballGames_(CRUD):
             if "FI5" in footballgame.codigo:
                 list_appuser_id = Confrontations_.first_place(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "FI", list_appuser_id, tournament_id)
-            
-
     
 class Confrontations_(CRUD):
     @staticmethod

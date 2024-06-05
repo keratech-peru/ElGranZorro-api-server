@@ -42,3 +42,10 @@ user_not_registered_in_footballgame = HTTPException(
         "message": ErrorCode.USER_NOT_REGISTERED_IN_THAT_FOOTBALLGAME
     },
 )
+
+email_cannot_updated = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.EMAIL_CANNOT_UPDATE
+    },
+)

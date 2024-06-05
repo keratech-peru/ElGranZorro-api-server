@@ -34,7 +34,7 @@ class AppUsers_(CRUD):
         user_old.lastname = user_new_["lastname"] if user_new_["lastname"] else user_old.lastname
         user_old.birthdate = user_new_["birthdate"] if user_new_["birthdate"] else user_old.birthdate
         user_old.phone = user_new_["phone"] if user_new_["phone"] else user_old.phone
-        #user.email = user_.get("email",user.email)
+        user_old.email = user_new_["email"] if user_new_["email"] else user_old.email
         #user.password = user_.get("name",user.password)
         #user.what_team_are_you_fan = user_.get("name",user.what_team_are_you_fan)
         #user.from_what_age_are_you_fan = user_.get("name",user.from_what_age_are_you_fan)
