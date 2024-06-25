@@ -49,7 +49,7 @@ def tournaments_user(
         return {"status": "done", "tournaments": tournaments}
 
 @router.get("/{tournament_id}", status_code=status.HTTP_200_OK)
-def tournament_user(
+def tournament_id(
     tournament_id: str,
     db: Session = Depends(get_db),
     user: AppUsers = Depends(get_user_current)
@@ -69,4 +69,23 @@ def tournament_user(
         if not enrollment:
             raise exception_users.user_not_enrolled_in_tournament
         tournament_, group_stage_table, football_stage_group, football_stage_keys = Tournaments_.get_footballgames(db, tournament, user.id)
-        return {"status": "done", "user":{"id":user.id},"tournament":tournament_ ,"group_stage_table":group_stage_table, "football_stage_group":football_stage_group, "football_stage_keys":football_stage_keys }
+        return {"status": "done", "user":{"id":user.id, "stage":enrollment.state},"tournament":tournament_ ,"group_stage_table":group_stage_table, "football_stage_group":football_stage_group, "football_stage_keys":football_stage_keys }
+
+@router.delete("/{tournaments_id}", status_code=status.HTTP_200_OK)
+def tournament_delete(
+    tournaments_id: str,
+    db: Session = Depends(get_db)
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio que elimina un torneo.
+        \n**Excepcion** : 
+            \n- El servicio requiere autorizacion via token
+            \n- El servicio tiene excepcion si el token es invalido o expiro
+            \n- El servicio tiene excepcion cuando se ingresa un tournaments_id inexistente
+        """
+        tournament = db.query(Tournaments).filter(Tournaments.id == tournaments_id).first() 
+        if not tournament:
+            raise exception.tournament_not_exist
+        # Falta excepcion cuando el torneo aun no termina.
+        Tournaments_.delete(tournament, db)
+        return {"status": "done"}

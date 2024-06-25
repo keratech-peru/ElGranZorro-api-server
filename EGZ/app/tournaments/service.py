@@ -26,6 +26,15 @@ class Tournaments_(CRUD):
             tourmament.tournament_rules = update_tournament_in.tournament_rules
             CRUD.update(db, tourmament)
 
+    def delete(tourmament:Tournaments , db: Session):
+        db.query(FootballGames).filter(FootballGames.tournament_id==tourmament.id).delete()
+        db.query(GroupStage).filter(GroupStage.tournament_cod==tourmament.codigo).delete()
+        db.query(ConfrontationsGroupStage).filter(ConfrontationsGroupStage.tournaments_id==str(tourmament.id)).delete()
+        db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id==str(tourmament.id)).delete()        
+        db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id==tourmament.id).delete()
+        db.query(Tournaments).filter(Tournaments.id==tourmament.id).delete()
+        db.commit()
+
     def list_all(db: Session) -> List[Tournaments]:
         return db.query(Tournaments).all()
 
@@ -140,6 +149,7 @@ class Tournaments_(CRUD):
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
         tournament_ = tournament.__dict__
         tournament_["tournament_stage"] = tournament_stage[-1] if len(tournament_stage) > 0 else "AUN NO EMPIEZA"
+
         return tournament_, group_stage_table, football_stage_group, football_stage_keys
 
     def start(db: Session, tournament_cod: str):
