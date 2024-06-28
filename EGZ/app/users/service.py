@@ -106,6 +106,7 @@ class AppUsers_(CRUD):
                 enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.appuser_id == eliminated[0]).first()
                 enrollment_users.state = "ELIMINADO - GP"
                 CRUD.update(db,enrollment_users)
+                db.commit()
 
     def eliminated_key_stage(db: Session, key: str, list_appuser_id: List[int], tournament_id: int):
         enrollments_en_proceso = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id,EnrollmentUsers.state == "EN PROCESO").all()

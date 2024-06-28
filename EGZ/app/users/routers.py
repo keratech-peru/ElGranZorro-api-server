@@ -48,8 +48,8 @@ def user_get(
         """
         return {"status":"done", "data":user}
 
-@router.put("/", status_code=status.HTTP_200_OK)
-def user_put(
+@router.patch("/", status_code=status.HTTP_200_OK)
+def user_patch(
     user_new: schemas.UpdateAppUser,
     db: Session = Depends(get_db),
     user: AppUsers = Depends(get_user_current)
@@ -59,6 +59,7 @@ def user_put(
         \n**Excepcion** : 
             \n- El servicio requiere autorizacion via token
             \n- El servicio tiene excepcion si el token es invalido o expiro
+            \n- El servicio tiene una excepcion cuando el correo a actualizar ya esta siendo utilizado
         """
         if user_new.email and db.query(AppUsers).filter(AppUsers.email==user_new.email).first():
             raise exception.email_cannot_updated
