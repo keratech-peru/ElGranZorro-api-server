@@ -1,9 +1,10 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from app.notifications.utils import send_email
 from app.security import oauth2_scheme
-from app.exception import validate_credentials, expired_token
+from app.exception import validate_credentials, expired_token, user_password_recovery, user_maximum_password_recovery
 from app.database import CRUD, get_db
-from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers
+from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
 from app.tournaments.models import Tournaments, GroupStage, ConfrontationsKeyStage
 from app.users import schemas
 from app.users.utils import get_hash
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.config import SECRETE_KEY
 from jose import jwt, JWTError
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 
 class AppUsers_(CRUD):
@@ -114,3 +115,23 @@ class AppUsers_(CRUD):
             if enrollment.appuser_id not in  list_appuser_id:
                 enrollment.state = f"ELIMINADO - {key}"
                 CRUD.update(db, enrollment)
+
+    def recovery_password(db: Session, recovery_in: schemas.PasswordRecoveryUsers, user: AppUsers):
+        val_1 = user.email == recovery_in.email
+        val_2 = user.what_team_are_you_fan == recovery_in.what_team_are_you_fan
+        val_3 = user.from_what_age_are_you_fan == recovery_in.from_what_age_are_you_fan
+        current_time = datetime.utcnow()
+        ten_weeks_ago = current_time - timedelta(minutes=10)
+        number_events_log = db.query(EventLogUser).filter(
+            EventLogUser.appuser_id == user.id,
+            EventLogUser.due_date > ten_weeks_ago
+        ).count()
+        if number_events_log > 3:
+            raise user_maximum_password_recovery 
+        if not (val_1 and val_2 and val_3):
+            new_event_log = EventLogUser(due_date = current_time,appuser_id = user.id, servicio = "recovery_password - 400")
+            CRUD.insert(db, new_event_log)
+            raise user_password_recovery
+        send_email(user.password, user.email)
+        new_event_log = EventLogUser(due_date = current_time,appuser_id = user.id, servicio = "recovery_password - 200")
+        CRUD.insert(db, new_event_log)

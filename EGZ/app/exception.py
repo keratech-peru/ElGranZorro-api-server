@@ -33,3 +33,17 @@ user_invalid = HTTPException(
     detail={"message": ErrorCode.USER_INVALID},
     headers={"WWW-Authenticate": "Bearer"},
 )
+
+user_password_recovery = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.RECOVERY_PASSWORD
+    },
+)
+
+user_maximum_password_recovery = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.MAX_RECOVERY_PASSWORD
+    },
+)

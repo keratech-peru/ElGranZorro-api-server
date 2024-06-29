@@ -14,3 +14,7 @@ SQLALCHEMY_DATABASE_URI = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{PO
 
 class ApiKey:
     USERS = config("API_KEY_USERS")
+
+class Email:
+    REMITENTE = config("EMAIL_REMITENTE")
+    PASSWORD = config("EMAIL_PASSWORD")

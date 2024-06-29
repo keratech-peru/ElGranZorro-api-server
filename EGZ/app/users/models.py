@@ -24,6 +24,7 @@ class AppUsers(Base):
 
     enrollment_user = relationship("EnrollmentUsers", back_populates="appuser")
     plays_users = relationship("PlaysUsers", back_populates="appuser")
+    event_log_users = relationship("EventLogUser", back_populates="appuser")
 
 class EnrollmentUsers(Base):
     __tablename__= "users_enrollment_users"
@@ -46,3 +47,11 @@ class PlaysUsers(Base):
 
     appuser = relationship("AppUsers", back_populates="plays_users")
 
+class EventLogUser(Base):
+    __tablename__= "users_event_log_users"
+    id=Column(Integer, primary_key=True, autoincrement=True )
+    due_date = Column(DateTime, default=datetime.now())
+    appuser_id = Column(Integer, ForeignKey("users_appusers.id"))
+    servicio = Column(String)
+
+    appuser = relationship("AppUsers", back_populates="event_log_users")

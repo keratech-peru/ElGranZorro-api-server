@@ -152,3 +152,19 @@ def user_plays_footballgames(
                 raise exception.user_not_registered_in_footballgame
             AppUsers_.plays_footballgames(db, user, play_user_in)
         return {"status": "done"}
+
+@router.post("/recovery", status_code=status.HTTP_201_CREATED)
+def user_recovery_password(
+    recovery_in: schemas.PasswordRecoveryUsers,
+    db: Session = Depends(get_db),
+    user: AppUsers = Depends(get_user_current)
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio que inscribe al usuario a un torneo especifico.
+        \n**Excepcion** : 
+            \n- El servicio requiere autorizacion via token
+            \n- El servicio tiene excepcion si el token es invalido o expiro
+            \n- El servicio tiene excepcion cuando es llamado mas de 3 veces en la ultima media hora
+        """
+        AppUsers_.recovery_password(db, recovery_in, user)
+        return {"status": "done"}
