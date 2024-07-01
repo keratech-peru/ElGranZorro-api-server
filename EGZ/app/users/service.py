@@ -117,7 +117,7 @@ class AppUsers_(CRUD):
                 enrollment.state = f"ELIMINADO - {key}"
                 CRUD.update(db, enrollment)
 
-    def password_update_validation(db: Session, recovery_in: schemas.PasswordUpdateValidation, user: AppUsers, current_time: datetime):
+    def password_update_validation(db: Session, recovery_in: schemas.PasswordUpdateValidation, user: AppUsers):
         val_1 = user.email == recovery_in.email
         val_2 = user.what_team_are_you_fan == recovery_in.what_team_are_you_fan
         val_3 = user.from_what_age_are_you_fan == recovery_in.from_what_age_are_you_fan
