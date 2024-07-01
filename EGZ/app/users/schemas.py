@@ -26,7 +26,7 @@ class UpdateAppUser(BaseModel):
     team_name: Optional[str] = None
     team_logo: Optional[str] = None
 
-class PasswordRecoveryUsers(BaseModel):
+class PasswordUpdateValidation(BaseModel):
     email: str
     what_team_are_you_fan: str
     from_what_age_are_you_fan: str

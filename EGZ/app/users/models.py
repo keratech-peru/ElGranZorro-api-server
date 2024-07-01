@@ -50,8 +50,9 @@ class PlaysUsers(Base):
 class EventLogUser(Base):
     __tablename__= "users_event_log_users"
     id=Column(Integer, primary_key=True, autoincrement=True )
-    due_date = Column(DateTime, default=datetime.now())
+    due_date = Column(DateTime, default=datetime.utcnow())
     appuser_id = Column(Integer, ForeignKey("users_appusers.id"))
     servicio = Column(String)
+    status = Column(Integer)
 
     appuser = relationship("AppUsers", back_populates="event_log_users")

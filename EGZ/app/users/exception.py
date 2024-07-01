@@ -49,3 +49,24 @@ email_cannot_updated = HTTPException(
         "message": ErrorCode.EMAIL_CANNOT_UPDATE
     },
 )
+
+email_unregistered = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.EMAIL_UNREGISTERED
+    },
+)
+
+user_max_attemps_validate_password_update = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.USER_MAX_ATTEMPS_VALIDATE_PASSWORD_UPDATE
+    },
+)
+
+user_failed_validate_password_update = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.USER_FAILED_VALIDATE_PASSWORD_UPDATE
+    },
+)

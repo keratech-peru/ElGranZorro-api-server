@@ -4,7 +4,7 @@ from typing import Dict, List
 from sqlalchemy.orm import Session
 from app.users.service import AppUsers_
 from app.users import schemas
-from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers
+from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
 from app.tournaments import models, utils, exception as exception_tournaments
 from app.users import exception
 from app.database import get_db
@@ -153,18 +153,30 @@ def user_plays_footballgames(
             AppUsers_.plays_footballgames(db, user, play_user_in)
         return {"status": "done"}
 
-@router.post("/recovery", status_code=status.HTTP_201_CREATED)
-def user_recovery_password(
-    recovery_in: schemas.PasswordRecoveryUsers,
-    db: Session = Depends(get_db),
-    user: AppUsers = Depends(get_user_current)
+@router.post("/validation/password", status_code=status.HTTP_200_OK)
+def user_password_update_validation(
+    password_update_validation_in: schemas.PasswordUpdateValidation,
+    db: Session = Depends(get_db)
     ) -> Dict[str, object]:
         """
-        **Descripcion** : El servicio que inscribe al usuario a un torneo especifico.
+        **Descripcion** : El servicio que valida si el usuario puede cambiar su contraseña.
         \n**Excepcion** : 
             \n- El servicio requiere autorizacion via token
             \n- El servicio tiene excepcion si el token es invalido o expiro
             \n- El servicio tiene excepcion cuando es llamado mas de 3 veces en la ultima media hora
         """
-        AppUsers_.recovery_password(db, recovery_in, user)
+        user = db.query(AppUsers).filter(AppUsers.email == password_update_validation_in.email).first()
+        if not user:
+            raise exception.email_unregistered
+        current_time = datetime.utcnow()
+        ten_weeks_ago = current_time - timedelta(minutes=10)
+        number_events_log = db.query(EventLogUser).filter(
+            EventLogUser.appuser_id == user.id,
+            EventLogUser.due_date > ten_weeks_ago,
+            EventLogUser.servicio == "password_update_validation",
+            EventLogUser.status == 400
+            ).count()
+        if number_events_log > 3:
+            raise exception.user_max_attemps_validate_password_update 
+        AppUsers_.password_update_validation(db, password_update_validation_in, user)
         return {"status": "done"}

@@ -2,11 +2,12 @@ from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.notifications.utils import send_email
 from app.security import oauth2_scheme
-from app.exception import validate_credentials, expired_token, user_password_recovery, user_maximum_password_recovery
+from app.exception import validate_credentials, expired_token
 from app.database import CRUD, get_db
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
 from app.tournaments.models import Tournaments, GroupStage, ConfrontationsKeyStage
 from app.users import schemas
+from app.users import exception
 from app.users.utils import get_hash
 from sqlalchemy.orm import Session
 from typing import List
@@ -36,7 +37,7 @@ class AppUsers_(CRUD):
         user_old.birthdate = user_new_["birthdate"] if user_new_["birthdate"] else user_old.birthdate
         user_old.phone = user_new_["phone"] if user_new_["phone"] else user_old.phone
         user_old.email = user_new_["email"] if user_new_["email"] else user_old.email
-        #user.password = user_.get("name",user.password)
+        #user_old.password = get_hash(user_new_["password"]) if user_new_["password"] else user_old.password
         #user.what_team_are_you_fan = user_.get("name",user.what_team_are_you_fan)
         #user.from_what_age_are_you_fan = user_.get("name",user.from_what_age_are_you_fan)
         user_old.imagen = user_new_["imagen"] if user_new_["imagen"] else user_old.imagen
@@ -116,22 +117,13 @@ class AppUsers_(CRUD):
                 enrollment.state = f"ELIMINADO - {key}"
                 CRUD.update(db, enrollment)
 
-    def recovery_password(db: Session, recovery_in: schemas.PasswordRecoveryUsers, user: AppUsers):
+    def password_update_validation(db: Session, recovery_in: schemas.PasswordUpdateValidation, user: AppUsers, current_time: datetime):
         val_1 = user.email == recovery_in.email
         val_2 = user.what_team_are_you_fan == recovery_in.what_team_are_you_fan
         val_3 = user.from_what_age_are_you_fan == recovery_in.from_what_age_are_you_fan
-        current_time = datetime.utcnow()
-        ten_weeks_ago = current_time - timedelta(minutes=10)
-        number_events_log = db.query(EventLogUser).filter(
-            EventLogUser.appuser_id == user.id,
-            EventLogUser.due_date > ten_weeks_ago
-        ).count()
-        if number_events_log > 3:
-            raise user_maximum_password_recovery 
         if not (val_1 and val_2 and val_3):
-            new_event_log = EventLogUser(due_date = current_time,appuser_id = user.id, servicio = "recovery_password - 400")
+            new_event_log = EventLogUser(appuser_id = user.id, servicio = "password_update_validation", status = 400)
             CRUD.insert(db, new_event_log)
-            raise user_password_recovery
-        send_email(user.password, user.email)
-        new_event_log = EventLogUser(due_date = current_time,appuser_id = user.id, servicio = "recovery_password - 200")
-        CRUD.insert(db, new_event_log)
+            raise exception.user_failed_validate_password_update
+        new_event_log = EventLogUser(appuser_id = user.id, servicio = "password_update_validation", status = 200)
+        CRUD.insert(db, new_event_log)                          
