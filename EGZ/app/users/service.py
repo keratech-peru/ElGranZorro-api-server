@@ -118,12 +118,12 @@ class AppUsers_(CRUD):
                 CRUD.update(db, enrollment)
 
     def password_update_validation(db: Session, recovery_in: schemas.PasswordUpdateValidation, user: AppUsers):
-        val_1 = user.email == recovery_in.email
-        val_2 = user.what_team_are_you_fan == recovery_in.what_team_are_you_fan
-        val_3 = user.from_what_age_are_you_fan == recovery_in.from_what_age_are_you_fan
+        val_1 = user.email.lower() == recovery_in.email.lower()
+        val_2 = user.what_team_are_you_fan.lower() == recovery_in.what_team_are_you_fan.lower()
+        val_3 = user.from_what_age_are_you_fan.lower() == recovery_in.from_what_age_are_you_fan.lower()
         if not (val_1 and val_2 and val_3):
-            new_event_log = EventLogUser(appuser_id = user.id, servicio = "password_update_validation", status = 400)
+            new_event_log = EventLogUser(due_date = datetime.utcnow(), appuser_id = user.id, servicio = "password_update_validation", status = 400)
             CRUD.insert(db, new_event_log)
             raise exception.user_failed_validate_password_update
-        new_event_log = EventLogUser(appuser_id = user.id, servicio = "password_update_validation", status = 200)
+        new_event_log = EventLogUser(due_date = datetime.utcnow(), appuser_id = user.id, servicio = "password_update_validation", status = 200)
         CRUD.insert(db, new_event_log)                          

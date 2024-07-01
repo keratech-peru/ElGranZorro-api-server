@@ -165,7 +165,7 @@ def user_password_update_validation(
             \n- El servicio tiene excepcion si el token es invalido o expiro
             \n- El servicio tiene excepcion cuando es llamado mas de 3 veces en la ultima media hora
         """
-        user = db.query(AppUsers).filter(AppUsers.email == password_update_validation_in.email).first()
+        user = db.query(AppUsers).filter(AppUsers.email == password_update_validation_in.email.lower()).first()
         if not user:
             raise exception.email_unregistered
         current_time = datetime.utcnow()
