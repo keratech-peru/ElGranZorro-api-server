@@ -180,3 +180,22 @@ def user_password_update_validation(
             raise exception.user_max_attemps_validate_password_update 
         AppUsers_.password_update_validation(db, password_update_validation_in, user)
         return {"status": "done"}
+
+@router.patch("/password", status_code=status.HTTP_200_OK)
+def user_password_patch(
+    request: Request,
+    password_update_in: schemas.PasswordUpdate,
+    db: Session = Depends(get_db)
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio permite actualizar la contraseña.
+        \n**Excepcion** : 
+            \n- El servicio requiere api-key.
+            \n- El servicio tiene una excepcion cuando el correo no pertenece a una cuenta.
+        """
+        valid_header(request, ApiKey.USERS)
+        user = db.query(AppUsers).filter(AppUsers.email == password_update_in.email.lower()).first()
+        if not user:
+            raise exception.email_unregistered
+        user_id = AppUsers_.update_password(db ,user, password_update_in)
+        return {"status": "done", "user_id": user_id}

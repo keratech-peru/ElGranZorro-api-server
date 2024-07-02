@@ -31,6 +31,12 @@ class PasswordUpdateValidation(BaseModel):
     what_team_are_you_fan: str
     from_what_age_are_you_fan: str
 
+class PasswordUpdate(BaseModel):
+    email: str
+    what_team_are_you_fan: str
+    from_what_age_are_you_fan: str
+    password: str
+
 class EnrollmentUsers(BaseModel):
     appuser_id: int
     tournaments_id: int
