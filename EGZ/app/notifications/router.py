@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status, Request
 from typing import Dict
 from sqlalchemy.orm import Session
 from app.notifications.schemas import NotificationsEmail
-from app.notifications.utils import send_email
+from app.notifications.service import Notificaciones_
 from app.database import get_db
 from app.security import valid_header
 from app.config import ApiKey
@@ -25,5 +25,5 @@ def user_create(
             \n- El servicio tiene excepcion si el email ya pertenece a otro usuario.
         """
         valid_header(request, ApiKey.USERS)
-        send_email(notification_in.mensaje, notification_in.email, "SOPORTE-EGZ : " + notification_in.asunto)
+        Notificaciones_.send_email(notification_in.mensaje, notification_in.email, "SOPORTE-EGZ : " + notification_in.asunto)
         return {"status": "done"}

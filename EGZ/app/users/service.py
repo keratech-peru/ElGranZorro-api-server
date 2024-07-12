@@ -1,6 +1,5 @@
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from app.notifications.utils import send_email
 from app.security import oauth2_scheme
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD, get_db
