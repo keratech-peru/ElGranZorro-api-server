@@ -1,9 +1,10 @@
 from app.users.utils import get_hash
 from sqlalchemy.orm import Session
 from typing import List
-from app.config import Email
+from app.config import Email, Whatsapp
 from email.message import EmailMessage
 import smtplib
+import requests
 
 class Notificaciones_:
     @staticmethod
@@ -23,5 +24,8 @@ class Notificaciones_:
         smtp.quit()
 
     @staticmethod
-    def send_whatsapp(db: Session, email: str):
-        print("Hola mundo")
+    def send_whatsapp(phone: str, message: str):
+        body = {"message":message,"phone":phone}
+        response = requests.post(Whatsapp.URL_SEND, json = body)
+        #print(response.text)
+        #print(response.status_code)

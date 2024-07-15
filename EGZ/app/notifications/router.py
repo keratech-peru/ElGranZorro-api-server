@@ -26,4 +26,5 @@ def user_create(
         """
         valid_header(request, ApiKey.USERS)
         Notificaciones_.send_email(notification_in.mensaje, notification_in.email, "SOPORTE-EGZ : " + notification_in.asunto)
+        #Notificaciones_.send_whatsapp("51936224658", "Hola mundo...")
         return {"status": "done"}

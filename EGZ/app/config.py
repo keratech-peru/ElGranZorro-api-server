@@ -11,8 +11,6 @@ POSTGRES_SERVER = config("POSTGRES_SERVER")
 USERNAME = config("USERNAME")
 PASSWORD = config("PASSWORD")
 SQLALCHEMY_DATABASE_URI = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}/{POSTGRES_DB}"
-TOKEN_META = config("TOKEN_META")
-URL_META = config("URL_META")
 
 class ApiKey:
     USERS = config("API_KEY_USERS")
@@ -20,3 +18,6 @@ class ApiKey:
 class Email:
     REMITENTE = config("EMAIL_REMITENTE")
     PASSWORD = config("EMAIL_PASSWORD")
+
+class Whatsapp:
+    URL_SEND = config("URL_SEND_WHATSAPP")
