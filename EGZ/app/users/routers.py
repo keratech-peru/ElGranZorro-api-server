@@ -130,7 +130,7 @@ def user_declining(
         if utils.is_past(tournament.start_date):
             raise exception.user_cannot_withdraw_tournament_already_started
         AppUsers_.decline(db, user, tournament.codigo, enrollment)
-        Notificaciones_.send_whatsapp(user.phone , TextToSend.enrollment(tournament))
+        Notificaciones_.send_whatsapp(user.phone , TextToSend.enrollment(tournament, user.name))
         return {"status": "done"}
 
 @router.put("/plays", status_code=status.HTTP_201_CREATED)
