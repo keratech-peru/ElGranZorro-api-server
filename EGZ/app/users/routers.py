@@ -10,9 +10,9 @@ from app.users import exception
 from app.database import get_db
 from app.security import create_token, valid_header, get_user_current
 from app.config import ApiKey, TOKEN_SCONDS_EXP
-from datetime import datetime, timezone, timedelta
-import pytz
-
+from datetime import datetime, timedelta
+from app.notifications.service import Notificaciones_
+from app.notifications.constants import TextToSend
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -32,8 +32,9 @@ def user_create(
         valid_header(request, ApiKey.USERS)
         user = db.query(AppUsers).filter(AppUsers.email == user_in.email).first()
         if user:
-            raise exception.email_already_used
-        new_user = AppUsers_.create(db, user_in)
+           raise exception.email_already_used
+        new_user, otp = AppUsers_.create(db, user_in)
+        Notificaciones_.send_whatsapp_otp(user_in.phone , otp)
         return {"status": "done", "user_id": new_user.id}
 
 @router.get("/", status_code=status.HTTP_200_OK)

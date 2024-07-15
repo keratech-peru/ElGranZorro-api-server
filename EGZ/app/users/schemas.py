@@ -51,3 +51,9 @@ class PlaysUsers(BaseModel):
 class EventLogUser(BaseModel):
     appuser_id: int
     servicio: str
+
+class VerifiedNumbersUsers(BaseModel):
+    appuser_id: int
+    otp: str
+    is_verification: bool = False
+    is_user_respond: bool = False

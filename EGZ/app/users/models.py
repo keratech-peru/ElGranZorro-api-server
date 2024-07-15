@@ -25,6 +25,7 @@ class AppUsers(Base):
     enrollment_user = relationship("EnrollmentUsers", back_populates="appuser")
     plays_users = relationship("PlaysUsers", back_populates="appuser")
     event_log_users = relationship("EventLogUser", back_populates="appuser")
+    verified_numbers_users = relationship("VerifiedNumbersUsers", back_populates="appuser")
 
 class EnrollmentUsers(Base):
     __tablename__= "users_enrollment_users"
@@ -56,3 +57,13 @@ class EventLogUser(Base):
     status = Column(Integer)
 
     appuser = relationship("AppUsers", back_populates="event_log_users")
+
+class VerifiedNumbersUsers(Base):
+    __tablename__= "users_verified_numbers_users"
+    id=Column(Integer, primary_key=True, autoincrement=True )
+    appuser_id = Column(Integer, ForeignKey("users_appusers.id"))
+    otp = Column(String)
+    is_verification = Column(Boolean)
+    is_user_respond = Column(Boolean)
+
+    appuser = relationship("AppUsers", back_populates="verified_numbers_users")

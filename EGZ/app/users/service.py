@@ -3,11 +3,11 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.security import oauth2_scheme
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD, get_db
-from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
+from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser, VerifiedNumbersUsers
 from app.tournaments.models import Tournaments, GroupStage, ConfrontationsKeyStage
 from app.users import schemas
 from app.users import exception
-from app.users.utils import get_hash
+from app.users.utils import get_hash, generate_otp_numeric
 from sqlalchemy.orm import Session
 from typing import List
 from app.config import SECRETE_KEY
@@ -21,7 +21,10 @@ class AppUsers_(CRUD):
         user_in.password = get_hash(user_in.password)
         new_user = AppUsers(**user_in.dict())
         CRUD.insert(db, new_user)
-        return new_user
+        otp = generate_otp_numeric()
+        new_validate_user = VerifiedNumbersUsers(appuser_id=new_user.id, otp=otp)
+        CRUD.insert(db, new_validate_user)
+        return new_user, otp
     
     def list_search_email(db: Session, email: str) -> List[AppUsers]:
         return db.query(AppUsers).filter(AppUsers.email.like(f"%{email}%")).all()

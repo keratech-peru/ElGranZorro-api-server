@@ -1,7 +1,5 @@
-from app.users.utils import get_hash
-from sqlalchemy.orm import Session
-from typing import List
 from app.config import Email, Whatsapp
+from app.notifications.constants import TextToSend
 from email.message import EmailMessage
 import smtplib
 import requests
@@ -24,8 +22,11 @@ class Notificaciones_:
         smtp.quit()
 
     @staticmethod
-    def send_whatsapp(phone: str, message: str):
-        body = {"message":message,"phone":phone}
+    def send_whatsapp(phone: str, message: str) -> None:
+        body = {"message":message,"phone":'51'+phone}
         response = requests.post(Whatsapp.URL_SEND, json = body)
         #print(response.text)
         #print(response.status_code)
+    
+    def send_whatsapp_otp(phone: str, otp: str) -> None:
+        Notificaciones_.send_whatsapp(phone, TextToSend.OTP + '*' + otp + '*')
