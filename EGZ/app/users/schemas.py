@@ -57,3 +57,8 @@ class VerifiedNumbersUsers(BaseModel):
     otp: str
     is_verification: bool = False
     is_user_respond: bool = False
+
+class Otp(BaseModel):
+    appuser_id: int
+    otp: str = None
+    phone: str = None

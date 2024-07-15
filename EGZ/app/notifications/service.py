@@ -30,3 +30,6 @@ class Notificaciones_:
     
     def send_whatsapp_otp(phone: str, otp: str) -> None:
         Notificaciones_.send_whatsapp(phone, TextToSend.OTP + '*' + otp + '*')
+
+    def send_whatsapp_welcome(phone: str) -> None:
+        Notificaciones_.send_whatsapp(phone, TextToSend.WELCOME)

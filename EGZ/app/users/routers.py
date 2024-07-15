@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status, Request
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Dict, List
 from sqlalchemy.orm import Session
-from app.users.service import AppUsers_
+from app.users.service import AppUsers_, VerifiedNumbersUsers_
 from app.users import schemas
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
 from app.tournaments import models, utils, exception as exception_tournaments
@@ -33,8 +33,9 @@ def user_create(
         user = db.query(AppUsers).filter(AppUsers.email == user_in.email).first()
         if user:
            raise exception.email_already_used
-        new_user, otp = AppUsers_.create(db, user_in)
-        Notificaciones_.send_whatsapp_otp(user_in.phone , otp)
+        new_user = AppUsers_.create(db, user_in)
+        verifica_user = VerifiedNumbersUsers_.create(db, new_user.id)
+        Notificaciones_.send_whatsapp_otp(user_in.phone , verifica_user.otp)
         return {"status": "done", "user_id": new_user.id}
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -200,3 +201,36 @@ def user_password_patch(
             raise exception.email_unregistered
         user_id = AppUsers_.update_password(db ,user, password_update_in)
         return {"status": "done", "user_id": user_id}
+
+@router.post("/otp/resend", status_code=status.HTTP_201_CREATED)
+def resend_otp(
+    request: Request,
+    otp_in: schemas.Otp,
+    db: Session = Depends(get_db),
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio re-envio de otp.
+        \n**Excepcion** : 
+            \n- El servicio requiere api-key.
+        """
+        valid_header(request, ApiKey.USERS)
+        otp, phone = VerifiedNumbersUsers_.resend(db, otp_in.appuser_id)
+        Notificaciones_.send_whatsapp_otp(phone , otp)
+        return {"status": "done", "user_id": otp_in.appuser_id}
+
+@router.post("/otp/validation", status_code=status.HTTP_201_CREATED)
+def validation_otp(
+    request: Request,
+    otp_in: schemas.Otp,
+    db: Session = Depends(get_db),
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio validacion de otp.
+        \n**Excepcion** : 
+            \n- El servicio requiere api-key.
+        """
+        valid_header(request, ApiKey.USERS)
+        valido = VerifiedNumbersUsers_.validate(db, otp_in.appuser_id, otp_in.otp)
+        if valido:
+            Notificaciones_.send_whatsapp_welcome(otp_in.phone)
+        return {"status": "done", "validate": valido}

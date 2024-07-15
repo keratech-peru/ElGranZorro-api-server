@@ -7,13 +7,14 @@ from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
 from app.tournaments.models import Tournaments, GroupStage, ConfrontationsKeyStage
 from app.users import schemas
 from app.users import exception
-from app.users.utils import get_hash, generate_otp_numeric
+from app.users.utils import get_hash
 from sqlalchemy.orm import Session
 from typing import List
 from app.config import SECRETE_KEY
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 import random
+from app.users.utils import generate_otp_numeric
 
 class AppUsers_(CRUD):
     @staticmethod
@@ -21,10 +22,7 @@ class AppUsers_(CRUD):
         user_in.password = get_hash(user_in.password)
         new_user = AppUsers(**user_in.dict())
         CRUD.insert(db, new_user)
-        otp = generate_otp_numeric()
-        new_validate_user = VerifiedNumbersUsers(appuser_id=new_user.id, otp=otp)
-        CRUD.insert(db, new_validate_user)
-        return new_user, otp
+        return new_user
     
     def list_search_email(db: Session, email: str) -> List[AppUsers]:
         return db.query(AppUsers).filter(AppUsers.email.like(f"%{email}%")).all()
@@ -139,4 +137,26 @@ class AppUsers_(CRUD):
             CRUD.insert(db, new_event_log)
             raise exception.user_failed_validate_password_update
         new_event_log = EventLogUser(due_date = datetime.utcnow(), appuser_id = user.id, servicio = "password_update_validation", status = 200)
-        CRUD.insert(db, new_event_log)                          
+        CRUD.insert(db, new_event_log)
+
+class VerifiedNumbersUsers_(CRUD):
+    @staticmethod
+    def create(db: Session, appuser_id: int) -> VerifiedNumbersUsers:
+        new_validate_user = VerifiedNumbersUsers(appuser_id = appuser_id, otp = generate_otp_numeric())
+        CRUD.insert(db, new_validate_user)
+        return new_validate_user
+    
+    def resend(db: Session, appuser_id: int) -> VerifiedNumbersUsers:
+        appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
+        verified_number_users = db.query(VerifiedNumbersUsers).filter(VerifiedNumbersUsers.appuser_id == appuser_id).first()
+        new_otp = generate_otp_numeric()
+        verified_number_users.otp = new_otp
+        CRUD.update(db, verified_number_users)
+        return new_otp, appuser.phone
+    
+    def validate(db: Session, appuser_id: int, otp: str) -> bool:
+        verified_number_users = db.query(VerifiedNumbersUsers).filter(VerifiedNumbersUsers.appuser_id == appuser_id).first()
+        otp_ = verified_number_users.otp
+        verified_number_users.is_verification = otp == otp_
+        CRUD.update(db, verified_number_users)
+        return otp == otp_
