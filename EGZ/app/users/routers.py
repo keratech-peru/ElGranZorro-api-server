@@ -35,7 +35,7 @@ def user_create(
            raise exception.email_already_used
         new_user = AppUsers_.create(db, user_in)
         verifica_user = VerifiedNumbersUsers_.create(db, new_user.id)
-        Notificaciones_.send_whatsapp_otp(user_in.phone , verifica_user.otp)
+        Notificaciones_.send_whatsapp(user_in.phone , TextToSend.otp(verifica_user.otp))
         return {"status": "done", "user_id": new_user.id}
 
 @router.get("/", status_code=status.HTTP_200_OK)
@@ -103,6 +103,7 @@ def user_enrollment(
         if enrollment_tournament_max <= len(list_enrollment):
             raise exception_tournaments.full_tournament
         new_user_enrollment = AppUsers_.enrollment(db, user, tournament)
+        Notificaciones_.send_whatsapp(user.phone , TextToSend.enrollment(tournament, user.name))
         return {"status": "done", "new_user_enrollment": new_user_enrollment}
 
 @router.delete("/declining/{tournaments_id}", status_code=status.HTTP_200_OK)
@@ -129,6 +130,7 @@ def user_declining(
         if utils.is_past(tournament.start_date):
             raise exception.user_cannot_withdraw_tournament_already_started
         AppUsers_.decline(db, user, tournament.codigo, enrollment)
+        Notificaciones_.send_whatsapp(user.phone , TextToSend.enrollment(tournament))
         return {"status": "done"}
 
 @router.put("/plays", status_code=status.HTTP_201_CREATED)
@@ -215,7 +217,7 @@ def resend_otp(
         """
         valid_header(request, ApiKey.USERS)
         otp, phone = VerifiedNumbersUsers_.resend(db, otp_in.appuser_id)
-        Notificaciones_.send_whatsapp_otp(phone , otp)
+        Notificaciones_.send_whatsapp(phone , TextToSend.otp(otp))
         return {"status": "done", "user_id": otp_in.appuser_id}
 
 @router.post("/otp/validation", status_code=status.HTTP_201_CREATED)
@@ -232,5 +234,5 @@ def validation_otp(
         valid_header(request, ApiKey.USERS)
         valido = VerifiedNumbersUsers_.validate(db, otp_in.appuser_id, otp_in.otp)
         if valido:
-            Notificaciones_.send_whatsapp_welcome(otp_in.phone)
+            Notificaciones_.send_whatsapp(otp_in.phone, TextToSend.welcome())
         return {"status": "done", "validate": valido}

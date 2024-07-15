@@ -25,11 +25,3 @@ class Notificaciones_:
     def send_whatsapp(phone: str, message: str) -> None:
         body = {"message":message,"phone":'51'+phone}
         response = requests.post(Whatsapp.URL_SEND, json = body)
-        #print(response.text)
-        #print(response.status_code)
-    
-    def send_whatsapp_otp(phone: str, otp: str) -> None:
-        Notificaciones_.send_whatsapp(phone, TextToSend.OTP + '*' + otp + '*')
-
-    def send_whatsapp_welcome(phone: str) -> None:
-        Notificaciones_.send_whatsapp(phone, TextToSend.WELCOME)
