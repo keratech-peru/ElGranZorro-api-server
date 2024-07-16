@@ -112,7 +112,7 @@ class AppUsers_(CRUD):
         eliminateds = db.query(GroupStage.appuser_id, GroupStage.group, GroupStage.position).filter(GroupStage.tournament_cod == cod_tournament, GroupStage.position != 1, GroupStage.position != 2).order_by(GroupStage.id).all()
         for eliminated in eliminateds:
             if eliminated[0]:
-                enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.appuser_id == eliminated[0]).first()
+                enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.appuser_id == eliminated[0], EnrollmentUsers.tournaments_id == int(cod_tournament[-3:])).first()
                 enrollment_users.state = "ELIMINADO - GP"
                 CRUD.update(db,enrollment_users)
                 db.commit()

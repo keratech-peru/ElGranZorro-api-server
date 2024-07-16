@@ -41,6 +41,7 @@ class Notificaciones_:
     @staticmethod
     def send_whatsapp_stage_passed(db: Session, tournament_cod: str, list_appuser_id: list[int], key:str) -> None:
         tournament = db.query(Tournaments).filter(Tournaments.codigo == tournament_cod).first()
+        print("list_appuser_id : ",list_appuser_id)
         for appuser_id in list_appuser_id:
             appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()        
             text = TextToSend.stage_passed(tournament, appuser.name, fase=ETAPAS[key])
