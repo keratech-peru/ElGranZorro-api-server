@@ -1,5 +1,10 @@
+from sqlalchemy.orm import Session
 from app.config import Email, Whatsapp
 from app.notifications.constants import TextToSend
+from app.database import CRUD
+from app.tournaments.models import Tournaments
+from app.tournaments.constants import ETAPAS
+from app.users.models import AppUsers
 from email.message import EmailMessage
 import smtplib
 import requests
@@ -25,4 +30,10 @@ class Notificaciones_:
     def send_whatsapp(phone: str, message: str) -> None:
         body = {"message":message,"phone":'51'+phone}
         response = requests.post(Whatsapp.URL_SEND, json = body)
-    #def send_whatsapp_eliminated_in_group_stage(phone: str) -> None:
+    
+    @staticmethod
+    def send_whatsapp_eliminated(db: Session, tournament_id: int, appuser_id: int, key:str) -> None:
+        tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
+        appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
+        text = TextToSend.eliminated(tournament, appuser.name, fase=ETAPAS[key])
+        Notificaciones_.send_whatsapp(appuser.phone, text)
