@@ -5,12 +5,11 @@ from app.tournaments.models import Tournaments, FootballGames, GroupStage, Confr
 from app.tournaments import schemas
 from app.tournaments.constants import GROUPS
 from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser
+from app.notifications.service import Notificaciones_
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List 
 from datetime import datetime, timezone, timedelta
-import pytz
-from fastapi.encoders import jsonable_encoder
 class Tournaments_(CRUD):
     @staticmethod
     def create(tourmament_in: schemas.Tourmaments, db: Session) -> Tournaments:
@@ -320,8 +319,9 @@ class FootballGames_(CRUD):
         if "GP1" in footballgame.codigo:
             Tournaments_.start(db, tournament_cod)
         if "GP9" in footballgame.codigo:
-            Confrontations_.registration_teams_eighths(db, tournament_cod)
+            list_appuser_id = Confrontations_.registration_teams_eighths(db, tournament_cod)
             AppUsers_.eliminated_group_stage(db, tournament_cod)
+            Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="GP")         
     
     def update_key_stage(footballgame: FootballGames, home_score: int,  away_score: int, db: Session):
         tournament_cod = footballgame.codigo[:-3]
@@ -332,21 +332,25 @@ class FootballGames_(CRUD):
             if "OC3" in footballgame.codigo:
                 list_appuser_id = Confrontations_.registration_teams_quarter(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "OC", list_appuser_id, tournament_id)
+                Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="OC")
         elif "CU" in footballgame.codigo:
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
             if "CU3" in footballgame.codigo:
                 list_appuser_id = Confrontations_.registration_teams_semifinal(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "CU", list_appuser_id, tournament_id)
+                Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="CU")
         elif "SF" in footballgame.codigo:
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
             if "SF3" in footballgame.codigo: 
                 list_appuser_id = Confrontations_.registration_teams_final(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "SF", list_appuser_id, tournament_id)
+                Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="SF")
         else:
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
             if "FI5" in footballgame.codigo:
                 list_appuser_id = Confrontations_.first_place(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "FI", list_appuser_id, tournament_id)
+                Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="FI")
     
 class Confrontations_(CRUD):
     @staticmethod
@@ -607,6 +611,8 @@ class Confrontations_(CRUD):
                     key_stage_oc[cont].appuser_2_id = second_place[GROUPS[i]]
                 CRUD.update(db, key_stage_oc[cont])
                 cont = cont + 1
+        list_appuser_id = list(first_place.values()) + list(second_place.values())
+        return list_appuser_id
 
     def registration_teams_quarter(db, cod_tournament: str):
         tournaments_id = str(int(cod_tournament[-3:]))

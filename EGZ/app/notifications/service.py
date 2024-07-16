@@ -37,3 +37,11 @@ class Notificaciones_:
         appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
         text = TextToSend.eliminated(tournament, appuser.name, fase=ETAPAS[key])
         Notificaciones_.send_whatsapp(appuser.phone, text)
+     
+    @staticmethod
+    def send_whatsapp_stage_passed(db: Session, tournament_cod: str, list_appuser_id: list[int], key:str) -> None:
+        tournament = db.query(Tournaments).filter(Tournaments.codigo == tournament_cod).first()
+        for appuser_id in list_appuser_id:
+            appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()        
+            text = TextToSend.stage_passed(tournament, appuser.name, fase=ETAPAS[key])
+            Notificaciones_.send_whatsapp(appuser.phone, text)

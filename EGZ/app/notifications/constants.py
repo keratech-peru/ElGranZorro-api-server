@@ -30,3 +30,10 @@ class TextToSend:
                     ✅ Puedes probar suerte en otros torneos y ganar 💰💰💰 en {URL_FRONT}/tournaments
                 '''
         return text
+    
+    def stage_passed(tournament:Tournaments, name: str, fase: str):
+        text = f''' Hola {name} 😁.Felicidades!!🎉, estas un paso mas cerca del premio 💸💰💵\n
+                    ,superaste la fase de *{fase}* del torneo *{tournament.name}*.\n\n
+                    ✅ Puedes revisar los resultados  en {URL_FRONT}/tournament/{tournament.id}\n  
+                '''
+        return text
