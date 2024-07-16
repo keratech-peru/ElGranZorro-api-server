@@ -116,7 +116,7 @@ class AppUsers_(CRUD):
                 enrollment_users.state = "ELIMINADO - GP"
                 CRUD.update(db,enrollment_users)
                 db.commit()
-                Notificaciones_.send_whatsapp_eliminated(db, enrollment_users.tournament_id, enrollment_users.appuser_id, key = "GP")
+                Notificaciones_.send_whatsapp_eliminated(db, enrollment_users.tournaments_id, enrollment_users.appuser_id, key = "GP")
 
     def eliminated_key_stage(db: Session, key: str, list_appuser_id: List[int], tournament_id: int):
         enrollments_en_proceso = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id,EnrollmentUsers.state == "EN PROCESO").all()
