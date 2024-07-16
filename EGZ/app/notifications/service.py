@@ -25,3 +25,4 @@ class Notificaciones_:
     def send_whatsapp(phone: str, message: str) -> None:
         body = {"message":message,"phone":'51'+phone}
         response = requests.post(Whatsapp.URL_SEND, json = body)
+    #def send_whatsapp_eliminated_in_group_stage(phone: str) -> None:

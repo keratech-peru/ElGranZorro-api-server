@@ -1,20 +1,17 @@
-from fastapi import Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from app.security import oauth2_scheme
+import random
+from typing import List
+from datetime import datetime
+from sqlalchemy.orm import Session
 from app.exception import validate_credentials, expired_token
-from app.database import CRUD, get_db
+from app.database import CRUD
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser, VerifiedNumbersUsers
-from app.tournaments.models import Tournaments, GroupStage, ConfrontationsKeyStage
 from app.users import schemas
 from app.users import exception
-from app.users.utils import get_hash
-from sqlalchemy.orm import Session
-from typing import List
-from app.config import SECRETE_KEY
-from jose import jwt, JWTError
-from datetime import datetime, timedelta
-import random
-from app.users.utils import generate_otp_numeric
+from app.users.utils import get_hash, generate_otp_numeric
+from app.tournaments.models import Tournaments, GroupStage
+from app.tournaments.constants import ETAPAS
+from app.notifications.service import Notificaciones_
+from app.notifications.constants import TextToSend
 
 class AppUsers_(CRUD):
     @staticmethod
@@ -120,6 +117,10 @@ class AppUsers_(CRUD):
                 enrollment_users.state = "ELIMINADO - GP"
                 CRUD.update(db,enrollment_users)
                 db.commit()
+                tournament = db.query(Tournaments).filter(Tournaments.id == enrollment_users.tournaments_id).first()
+                appuser = db.query(AppUsers).filter(AppUsers.id == enrollment_users.appuser_id).first()
+                text = TextToSend.eliminated(tournament, appuser.name, fase=ETAPAS["GP"])
+                Notificaciones_.send_whatsapp(appuser.phone, text)
 
     def eliminated_key_stage(db: Session, key: str, list_appuser_id: List[int], tournament_id: int):
         enrollments_en_proceso = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id,EnrollmentUsers.state == "EN PROCESO").all()

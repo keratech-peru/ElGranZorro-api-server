@@ -17,9 +17,16 @@ class TextToSend:
         return text
     
     def declining(tournament:Tournaments, name: str):
-        text = f''' Hola {name} 😓, nos apena la decision que tomaste
+        text = f''' Hola {name} 👻, nos apena la decision que tomaste
                     \nDeclinaste del torneo {tournament.name}
                     Puedes probar suerte en otros torneos y ganar 💵💵💵\n
                     {URL_FRONT}/tournaments
+                '''
+        return text
+    
+    def eliminated(tournament:Tournaments, name: str, fase: str):
+        text = f''' Hola {name} 😖, fuiste eliminado del torneo *{tournament.name}* en la fase de *{fase}*.\n\n
+                    ✅ Puedes revisar los resultados  en {URL_FRONT}/tournament/{tournament.id}\n  
+                    ✅ Puedes probar suerte en otros torneos y ganar 💰💰💰 en {URL_FRONT}/tournaments
                 '''
         return text
