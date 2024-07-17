@@ -36,9 +36,14 @@ class TextToSend:
                 '''
         return text
 
-    def user_not_play_games(tournament:Tournaments, name: str, fase: str, number_play_games: str):
-        text = f''' Hola *{name}* 😣. Observamos que no completaste tus jugadas en la fase de *{fase}* partido {number_play_games} del torneo *{tournament.name}*.
-                No te pierdas la oportunidad de ganar 💸💰💵.
-                \n✅ Realiza tus jugadas en {URL_FRONT}/tournament/{tournament.id}\n  
+    def user_not_play_games(tournament:Tournaments, name: str, stage: str):
+        text = f''' Hola *{name}* 😣. Observamos que no completaste tus jugadas en la fase de *{stage}* del torneo *{tournament.name}*. No te pierdas la oportunidad de ganar 💸💰💵.
+                \n✅ Realiza tus jugadas en {URL_FRONT}/tournament/{tournament.id}\n
+                '''
+        return text
+
+    def user_winner(tournament:Tournaments, name: str):
+        text = f''' Hola *{name}* 😜 Felicidades !!! 🎉💰. Eres el ganador del torneo *{tournament.name}*. Contacta al area financiera mediante el whatsapp (+51 910 034 199) para reclamar tu premio 💸💰💵.
+                \n✅ Recuerda que puedes participar de otros torneos en {URL_FRONT}/tournament\n
                 '''
         return text

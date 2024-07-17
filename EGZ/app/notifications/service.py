@@ -48,10 +48,17 @@ class Notificaciones_:
                 Notificaciones_.send_whatsapp(appuser.phone, text)
     
     @staticmethod
-    def send_whatsapp_user_not_play_games(db: Session, tournament_cod: str, list_appuser_id: list[int], key:str, number_play_games: str) -> None:
+    def send_whatsapp_user_not_play_games(db: Session, tournament_cod: str, list_appuser_id: list[int], stage:str) -> None:
         tournament = db.query(Tournaments).filter(Tournaments.codigo == tournament_cod).first()
         for appuser_id in list_appuser_id:
             if appuser_id[0]:
                 appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id[0]).first()        
-                text = TextToSend.user_not_play_games(tournament, appuser.name, ETAPAS[key], number_play_games)
+                text = TextToSend.user_not_play_games(tournament, appuser.name, stage)
                 Notificaciones_.send_whatsapp(appuser.phone, text)
+
+    @staticmethod
+    def send_whatsapp_user_winner(db: Session, tournament_cod: str, appuser_id: int) -> None:
+        tournament = db.query(Tournaments).filter(Tournaments.codigo == tournament_cod).first()
+        appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
+        text = TextToSend.user_winner(tournament, appuser.name)
+        Notificaciones_.send_whatsapp(appuser.phone, text)

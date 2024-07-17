@@ -325,7 +325,7 @@ class FootballGames_(CRUD):
         play_users = db.query(PlaysUsers.appuser_id).filter(PlaysUsers.football_games_id == footballgame.id).all()
         enrollments = db.query(EnrollmentUsers.appuser_id).filter(EnrollmentUsers.tournaments_id == int(tournament_cod[-3:])).all()
         list_appuser_not_play_games = list(set(enrollments) - set(play_users))
-        Notificaciones_.send_whatsapp_user_not_play_games(db, tournament_cod, list_appuser_not_play_games, "GP", footballgame.codigo[-1])       
+        Notificaciones_.send_whatsapp_user_not_play_games(db, tournament_cod, list_appuser_not_play_games, footballgame.tournament_stage)      
     
     def update_key_stage(footballgame: FootballGames, home_score: int,  away_score: int, db: Session):
         tournament_cod = footballgame.codigo[:-3]
@@ -354,7 +354,8 @@ class FootballGames_(CRUD):
             if "FI5" in footballgame.codigo:
                 list_appuser_id = Confrontations_.first_place(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "FI", list_appuser_id, tournament_id)
-                Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="FI")
+                #Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="FI")
+                Notificaciones_.send_whatsapp_user_winner(db, tournament_cod, list_appuser_id[0])
     
 class Confrontations_(CRUD):
     @staticmethod
