@@ -319,9 +319,13 @@ class FootballGames_(CRUD):
         if "GP1" in footballgame.codigo:
             Tournaments_.start(db, tournament_cod)
         if "GP9" in footballgame.codigo:
-            list_appuser_id = Confrontations_.registration_teams_eighths(db, tournament_cod)
             AppUsers_.eliminated_group_stage(db, tournament_cod)
-            Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="GP")         
+            list_appuser_id = Confrontations_.registration_teams_eighths(db, tournament_cod)
+            Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="GP")
+        play_users = db.query(PlaysUsers.appuser_id).filter(PlaysUsers.football_games_id == footballgame.id).all()
+        enrollments = db.query(EnrollmentUsers.appuser_id).filter(EnrollmentUsers.tournaments_id == int(tournament_cod[-3:])).all()
+        list_appuser_not_play_games = list(set(enrollments) - set(play_users))
+        Notificaciones_.send_whatsapp_user_not_play_games(db, tournament_cod, list_appuser_not_play_games, "GP", footballgame.codigo[-1])       
     
     def update_key_stage(footballgame: FootballGames, home_score: int,  away_score: int, db: Session):
         tournament_cod = footballgame.codigo[:-3]

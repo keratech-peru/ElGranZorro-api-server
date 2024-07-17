@@ -35,3 +35,10 @@ class TextToSend:
                 \n✅ Puedes revisar los resultados  en {URL_FRONT}/tournament/{tournament.id}\n  
                 '''
         return text
+
+    def user_not_play_games(tournament:Tournaments, name: str, fase: str, number_play_games: str):
+        text = f''' Hola *{name}* 😣. Observamos que no completaste tus jugadas en la fase de *{fase}* partido {number_play_games} del torneo *{tournament.name}*.
+                No te pierdas la oportunidad de ganar 💸💰💵.
+                \n✅ Realiza tus jugadas en {URL_FRONT}/tournament/{tournament.id}\n  
+                '''
+        return text
