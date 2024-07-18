@@ -7,8 +7,8 @@ from sqlalchemy.orm import relationship
 class AppUsers(Base):
     __tablename__= "users_appusers"
     id=Column(Integer, primary_key=True, autoincrement=True)
-    created_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
+    updated_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
     name = Column(String)
     lastname = Column(String)
     birthdate = Column(String)
@@ -39,8 +39,8 @@ class EnrollmentUsers(Base):
 class PlaysUsers(Base):
     __tablename__= "users_plays_users"
     id=Column(Integer, primary_key=True, autoincrement=True )
-    created_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
+    updated_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
     appuser_id = Column(Integer, ForeignKey("users_appusers.id"))
     football_games_id = Column(Integer)
     score_local = Column(Integer)

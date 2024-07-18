@@ -485,8 +485,8 @@ class Confrontations_(CRUD):
         key_stage_part = key_stage[:3] if group == 'A' else key_stage[3:]
         footballgames_cod_list = [key.football_games_cod for key in key_stage_part]
         footballgames_id_list = [db.query(FootballGames.id).filter(FootballGames.codigo == footballgames_cod).first()[0] for footballgames_cod in footballgames_cod_list]
-        play_users_update_at_1 = db.query(PlaysUsers.updated_at).filter(PlaysUsers.appuser_id == key_stage_part[0].appuser_1_id,PlaysUsers.id.in_(footballgames_id_list)).order_by(PlaysUsers.id).all()
-        play_users_update_at_2 = db.query(PlaysUsers.updated_at).filter(PlaysUsers.appuser_id == key_stage_part[0].appuser_2_id,PlaysUsers.id.in_(footballgames_id_list)).order_by(PlaysUsers.id).all()
+        play_users_update_at_1 = db.query(PlaysUsers.updated_at).filter(PlaysUsers.appuser_id == key_stage_part[0].appuser_1_id,PlaysUsers.football_games_id.in_(footballgames_id_list)).order_by(PlaysUsers.id).all()
+        play_users_update_at_2 = db.query(PlaysUsers.updated_at).filter(PlaysUsers.appuser_id == key_stage_part[0].appuser_2_id,PlaysUsers.football_games_id.in_(footballgames_id_list)).order_by(PlaysUsers.id).all()
         cont = 0
         for i in range(3):
             if (play_users_update_at_1[i][0] > play_users_update_at_2[i][0]):

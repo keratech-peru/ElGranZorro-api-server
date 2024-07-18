@@ -7,8 +7,8 @@ from sqlalchemy.orm import relationship
 class Tournaments(Base):
     __tablename__= "tournaments_tournaments"
     id=Column(Integer, primary_key=True, autoincrement=True )
-    created_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
+    created_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
+    updated_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
     name = Column(String)
     codigo = Column(String, unique=True)
     logo = Column(String)
