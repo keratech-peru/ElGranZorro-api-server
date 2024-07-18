@@ -124,7 +124,7 @@ class AppUsers_(CRUD):
             if enrollment.appuser_id not in  list_appuser_id:
                 enrollment.state = f"ELIMINADO - {key}"
                 CRUD.update(db, enrollment)
-                Notificaciones_.send_whatsapp_eliminated(db, enrollment.tournament_id, enrollment.appuser_id, key = key)
+                Notificaciones_.send_whatsapp_eliminated(db, enrollment.tournaments_id, enrollment.appuser_id, key = key)
 
     def password_update_validation(db: Session, recovery_in: schemas.PasswordUpdateValidation, user: AppUsers):
         val_1 = user.email.lower() == recovery_in.email.lower()
