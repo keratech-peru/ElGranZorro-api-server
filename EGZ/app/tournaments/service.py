@@ -499,7 +499,7 @@ class Confrontations_(CRUD):
             appuser_id_lose = key_stage_part[0].appuser_1_id
         Notificaciones_.send_whatsapp_user_point_equal(db,footballgames_id_list[0], key_stage_part[0].appuser_1_id, key_stage_part[0].appuser_2_id, play_users_update_at_1, play_users_update_at_2, ETAPAS[footballgames_cod_list[0][-3:-1]])
         Notificaciones_.send_whatsapp_user_point_equal(db,footballgames_id_list[0], key_stage_part[0].appuser_2_id, key_stage_part[0].appuser_1_id, play_users_update_at_2, play_users_update_at_1, ETAPAS[footballgames_cod_list[0][-3:-1]])
-        Notificaciones_.send_whatsapp_eliminated(db, int(footballgames_cod_list[0][3:6]), appuser_id_lose, ETAPAS[footballgames_cod_list[0][-3:-1]])
+        Notificaciones_.send_whatsapp_eliminated(db, int(footballgames_cod_list[0][3:6]), appuser_id_lose, footballgames_cod_list[0][-3:-1])
         return appuser_id
 
     def winner_confrontation_key_stage(db: Session, key_stage: List[ConfrontationsKeyStage], points_grupo_a, points_grupo_b):
