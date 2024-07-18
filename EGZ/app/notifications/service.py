@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from app.config import Email, Whatsapp
 from app.notifications.constants import TextToSend
 from app.database import CRUD
-from app.tournaments.models import Tournaments
+from app.tournaments.models import Tournaments, FootballGames
 from app.tournaments.constants import ETAPAS
 from app.users.models import AppUsers
 from email.message import EmailMessage
@@ -62,3 +62,12 @@ class Notificaciones_:
         appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
         text = TextToSend.user_winner(tournament, appuser.name)
         Notificaciones_.send_whatsapp(appuser.phone, text)
+
+    @staticmethod
+    def send_whatsapp_user_point_equal(db: Session, football_games_id: int, appuser_id1: int, appuser_id2: int, list_date_1, list_date_2, stage: str) -> None:
+        tournament_id = db.query(FootballGames.tournament_id).filter(FootballGames.id == football_games_id).first()[0]
+        tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
+        appuser1 = db.query(AppUsers).filter(AppUsers.id == appuser_id1).first()
+        appuser2 = db.query(AppUsers).filter(AppUsers.id == appuser_id2).first()
+        text = TextToSend.user_equal_poitns(tournament, appuser1.name, appuser2.name, list_date_1, list_date_2, stage)
+        Notificaciones_.send_whatsapp(appuser1.phone, text)

@@ -47,3 +47,13 @@ class TextToSend:
                 \n✅ Recuerda que puedes participar de otros torneos en {URL_FRONT}/tournament\n
                 '''
         return text
+    
+    def user_equal_poitns(tournament:Tournaments, name1: str, name2:str,list_date_1, list_date_2, stage: str):
+        text_data = ""
+        for i in range(len(list_date_1)):
+            text_data = text_data + f"\n✅ (*{name1}*){list_date_1[i][0].strftime('%d/%m/%Y %H:%M')} - {list_date_2[i][0].strftime('%d/%m/%Y %H:%M')}(*{name2}*)"
+        text = f''' Hola *{name1}* 👀. Empataste con el usuario *{name2}* en la fase de *{stage}* del torneo *{tournament.name}*. El desempate se decide por quien fue el primero en completar sus resultado por emfrentamiento.
+                
+                \n✅ Para mas detalle revisa el torneo : {URL_FRONT}/tournament/{tournament.id}\n
+                '''
+        return text+text_data
