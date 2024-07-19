@@ -12,11 +12,9 @@ class AppUsers(Base):
     name = Column(String)
     lastname = Column(String)
     birthdate = Column(String)
-    phone = Column(String)
+    phone = Column(String, unique=True)
     email = Column(String, unique=True)
-    password = Column(String)
-    what_team_are_you_fan = Column(String)
-    from_what_age_are_you_fan = Column(String)
+    dni = Column(String)
     imagen = Column(String)
     username = Column(String)
     team_name = Column(String)
@@ -25,7 +23,8 @@ class AppUsers(Base):
     enrollment_user = relationship("EnrollmentUsers", back_populates="appuser")
     plays_users = relationship("PlaysUsers", back_populates="appuser")
     event_log_users = relationship("EventLogUser", back_populates="appuser")
-    verified_numbers_users = relationship("VerifiedNumbersUsers", back_populates="appuser")
+    otp_users = relationship("OtpUsers", back_populates="appuser")
+    event_otp_users = relationship("EventOtpUsers", back_populates="appuser")
 
 class EnrollmentUsers(Base):
     __tablename__= "users_enrollment_users"
@@ -58,12 +57,20 @@ class EventLogUser(Base):
 
     appuser = relationship("AppUsers", back_populates="event_log_users")
 
-class VerifiedNumbersUsers(Base):
-    __tablename__= "users_verified_numbers_users"
+class OtpUsers(Base):
+    __tablename__= "users_otp_users"
     id=Column(Integer, primary_key=True, autoincrement=True )
-    appuser_id = Column(Integer, ForeignKey("users_appusers.id"))
+    appuser_id = Column(Integer, ForeignKey("users_appusers.id"), unique = True)
     otp = Column(String)
     is_verification = Column(Boolean)
     is_user_respond = Column(Boolean)
 
-    appuser = relationship("AppUsers", back_populates="verified_numbers_users")
+    appuser = relationship("AppUsers", back_populates="otp_users")
+
+class EventOtpUsers(Base):
+    __tablename__ = "users_event_otp_users"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    appuser_id = Column(Integer, ForeignKey("users_appusers.id"))
+    due_date = Column(DateTime, default=datetime.utcnow())
+
+    appuser = relationship("AppUsers", back_populates="event_otp_users")

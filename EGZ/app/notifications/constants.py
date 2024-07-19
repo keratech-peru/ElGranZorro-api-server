@@ -3,8 +3,8 @@ from app.tournaments.models import Tournaments
 OTP_DIGIT_LIMIT = 4
 URL_FRONT = "https://egz-frontend.vercel.app/"
 class TextToSend:
-    def welcome():
-        text = f"Bienvenido a *El Gran Zorro*🐺, gracias por completar tu registro.\nRecuerda visitar nuestra pagina {URL_FRONT}"
+    def login():
+        text = f"Bienvenido a *El Gran Zorro*🐺, tu session esta activa.\nRecuerda visitar nuestra pagina {URL_FRONT}"
         return text 
     
     def otp(otp:str):
@@ -54,3 +54,7 @@ class TextToSend:
                 \n✅ Para mas detalle revisa el torneo : {URL_FRONT}/tournament/{tournament.id}
                 '''
         return text
+    
+class Otp:
+    COUNT = 5
+    MINUTES = 10

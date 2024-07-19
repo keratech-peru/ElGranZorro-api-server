@@ -4,12 +4,10 @@ from typing import Optional
 class AppUsers(BaseModel):
     name: str
     lastname: str
-    birthdate: str
+    birthdate: Optional[str] = None
     phone: str
     email: str
-    password: str
-    what_team_are_you_fan: str
-    from_what_age_are_you_fan: str
+    dni: str
     imagen: Optional[str] = None
     username: Optional[str] = None
     team_name: Optional[str] = None
@@ -52,13 +50,8 @@ class EventLogUser(BaseModel):
     appuser_id: int
     servicio: str
 
-class VerifiedNumbersUsers(BaseModel):
+class OtpUsers(BaseModel):
     appuser_id: int
-    otp: str
-    is_verification: bool = False
-    is_user_respond: bool = False
-
-class Otp(BaseModel):
-    appuser_id: int
-    otp: str = None
-    phone: str = None
+    otp: Optional[str] = None
+    is_verification: Optional[bool] = False
+    is_user_respond: Optional[bool] = False

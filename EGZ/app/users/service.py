@@ -1,21 +1,19 @@
 import random
 from typing import List
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD
-from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser, VerifiedNumbersUsers
-from app.users import schemas
-from app.users import exception
+from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser, OtpUsers, EventOtpUsers
+from app.users import exception, schemas 
 from app.users.utils import get_hash, generate_otp_numeric
 from app.tournaments.models import Tournaments, GroupStage
 from app.notifications.service import Notificaciones_
-from app.notifications.constants import TextToSend
+from app.notifications.constants import TextToSend, Otp
 
 class AppUsers_(CRUD):
     @staticmethod
     def create(db: Session, user_in: schemas.AppUsers) -> AppUsers:
-        user_in.password = get_hash(user_in.password)
         new_user = AppUsers(**user_in.dict())
         CRUD.insert(db, new_user)
         return new_user
@@ -23,8 +21,8 @@ class AppUsers_(CRUD):
     def list_search_email(db: Session, email: str) -> List[AppUsers]:
         return db.query(AppUsers).filter(AppUsers.email.like(f"%{email}%")).all()
     
-    def get(db: Session, email: str):
-        return db.query(AppUsers).filter(AppUsers.email == email).first()
+    def get(db: Session, email: str, phone: str):
+        return db.query(AppUsers).filter(AppUsers.email == email, AppUsers.phone == phone).first()
 
     def update(db: Session, user_old: AppUsers, user_new: schemas.UpdateAppUser):
         user_new_ = user_new.__dict__
@@ -55,11 +53,9 @@ class AppUsers_(CRUD):
         CRUD.insert(db, user_old)
         return user_old.id
 
-    def authenticate(db: Session, email, password):
-        user = AppUsers_.get(db, email)
+    def authenticate(db: Session, email, phone):
+        user = AppUsers_.get(db, email, phone)
         if not user:
-            raise validate_credentials
-        if not get_hash(password) == user.password:
             raise validate_credentials
         return user
 
@@ -137,24 +133,57 @@ class AppUsers_(CRUD):
         new_event_log = EventLogUser(due_date = datetime.utcnow(), appuser_id = user.id, servicio = "password_update_validation", status = 200)
         CRUD.insert(db, new_event_log)
 
-class VerifiedNumbersUsers_(CRUD):
+class OtpUsers_(CRUD):
     @staticmethod
-    def create(db: Session, appuser_id: int) -> VerifiedNumbersUsers:
-        new_validate_user = VerifiedNumbersUsers(appuser_id = appuser_id, otp = generate_otp_numeric())
-        CRUD.insert(db, new_validate_user)
-        return new_validate_user
+    def create(db: Session, appuser_id: int) -> OtpUsers:
+        otp = generate_otp_numeric()
+        otp_user = OtpUsers(appuser_id = appuser_id, otp = get_hash(otp))
+        CRUD.insert(db, otp_user)
+        return otp_user, otp
     
-    def resend(db: Session, appuser_id: int) -> VerifiedNumbersUsers:
+    def resend(db: Session, appuser_id: int) -> OtpUsers:
         appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
-        verified_number_users = db.query(VerifiedNumbersUsers).filter(VerifiedNumbersUsers.appuser_id == appuser_id).first()
+        otp_users = db.query(OtpUsers).filter(OtpUsers.appuser_id == appuser_id).first()
         new_otp = generate_otp_numeric()
-        verified_number_users.otp = new_otp
-        CRUD.update(db, verified_number_users)
+        otp_users.otp = get_hash(new_otp)
+        CRUD.update(db, otp_users)
         return new_otp, appuser.phone
     
     def validate(db: Session, appuser_id: int, otp: str) -> bool:
-        verified_number_users = db.query(VerifiedNumbersUsers).filter(VerifiedNumbersUsers.appuser_id == appuser_id).first()
-        otp_ = verified_number_users.otp
-        verified_number_users.is_verification = otp == otp_
-        CRUD.update(db, verified_number_users)
-        return otp == otp_
+        otp_users = db.query(OtpUsers).filter(OtpUsers.appuser_id == appuser_id).first()
+        otp_ = otp_users.otp
+        bool_otp = get_hash(otp) == otp_
+        otp_users.is_verification = bool_otp
+        CRUD.update(db, otp_users)
+        return bool_otp
+
+class EventOtpUsers_(CRUD):
+    @staticmethod
+    def create(db: Session, appuser_id: int) -> EventOtpUsers:
+        event_otp_user = EventOtpUsers(appuser_id = appuser_id)
+        CRUD.insert(db, event_otp_user)
+
+    @staticmethod
+    def get_by_appuser_id(db: Session, appuser_id: int) -> EventOtpUsers:
+        event_otp_user_list = db.query(EventOtpUsers).filter(EventOtpUsers.appuser_id == appuser_id).all()
+        return event_otp_user_list
+
+    @staticmethod
+    def validate_count(db: Session, appuser_id: int) -> int:
+        current_time = datetime.utcnow()
+        ten_weeks_ago = current_time - timedelta(minutes=Otp.MINUTES)
+        return db.query(EventOtpUsers).filter(EventOtpUsers.appuser_id == appuser_id, EventOtpUsers.due_date > ten_weeks_ago).count()
+  
+    @staticmethod
+    def user_should_be_blocked(db: Session, user: AppUsers):
+        validate_count = EventOtpUsers_.validate_count(db, user.id)
+        if validate_count < Otp.COUNT:
+            new_otp, __ = OtpUsers_.resend(db, user.id)
+            EventOtpUsers_.create(db, user.id)
+            Notificaciones_.send_whatsapp_otp(user.phone, new_otp, count_max=False)
+        elif validate_count == Otp.COUNT:
+            new_otp, __ = OtpUsers_.resend(db, user.id)
+            EventOtpUsers_.create(db, user.id)
+            Notificaciones_.send_whatsapp_otp(user.phone, new_otp, count_max=True)
+        else:
+            raise exception.user_temporarily_blocked

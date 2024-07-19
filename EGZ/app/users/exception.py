@@ -8,6 +8,27 @@ email_already_used = HTTPException(
     },
 )
 
+phone_already_used = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.PHONE_ALREADY_USED
+    },
+)
+
+user_temporarily_blocked = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.TEMPORARILY_BLOCKED
+    },
+)
+
+incorrect_otp = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.INCORRECT_OTP
+    },
+)
+
 user_already_registered_tournament = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail={

@@ -30,7 +30,12 @@ class Notificaciones_:
     def send_whatsapp(phone: str, message: str) -> None:
         body = {"message":message,"phone":'51'+phone}
         response = requests.post(Whatsapp.URL_SEND, json = body)
-    
+
+    @staticmethod
+    def send_whatsapp_otp(phone: str, otp: int, count_max: bool) -> None:
+        text = TextToSend.otp(otp) + ". Si realizas un intento mas , tu cuenta se bloqueara por 20 min" if count_max else ""
+        Notificaciones_.send_whatsapp(phone, text)
+
     @staticmethod
     def send_whatsapp_eliminated(db: Session, tournament_id: int, appuser_id: int, key:str) -> None:
         tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
