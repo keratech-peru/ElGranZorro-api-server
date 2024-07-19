@@ -45,17 +45,6 @@ class AppUsers_(CRUD):
 
         return user_old.id
 
-    def update_password(db: Session, user_old: AppUsers, password_update_new:schemas.PasswordUpdate):
-        password_update_new_ = password_update_new.__dict__
-        val_1 = user_old.email.lower() == password_update_new.email.lower()
-        val_2 = user_old.what_team_are_you_fan.lower() == password_update_new.what_team_are_you_fan.lower()
-        val_3 = user_old.from_what_age_are_you_fan.lower() == password_update_new.from_what_age_are_you_fan.lower()
-        if not (val_1 and val_2 and val_3):
-            raise exception.user_failed_validate_password_update
-        user_old.password = get_hash(password_update_new_["password"]) if password_update_new_["password"] else user_old.password
-        CRUD.insert(db, user_old)
-        return user_old.id
-
     def authenticate(db: Session, email, phone):
         user = AppUsers_.get(db, email, phone)
         if not user:
