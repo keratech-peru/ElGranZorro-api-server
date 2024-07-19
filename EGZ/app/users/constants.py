@@ -6,6 +6,7 @@ class ErrorCode:
     TEMPORARILY_BLOCKED = f"Usuario bloqueado por los proximos {Otp.MINUTES} minutos"
     INCORRECT_OTP = "Codigo invalido!, intentelo otra vez"
     EMAIL_CANNOT_UPDATE = "No se puede actualiza el correo, ya está registrado"
+    PHONE_CANNOT_UPDATE = "No se puede actualiza el celular, ya está registrado"
     EMAIL_UNREGISTERED = " Email no registrado."
     USER_ALREADY_REGISTERED = "El Usurio ya esta registrado en el torneo"
     USER_ALREADY_NOT_REGISTERED = "El Usurio no estan inscrito en el torneo"

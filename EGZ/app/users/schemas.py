@@ -19,6 +19,7 @@ class UpdateAppUser(BaseModel):
     birthdate: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    dni: Optional[str] = None
     imagen: Optional[str] = None
     username: Optional[str] = None
     team_name: Optional[str] = None

@@ -68,6 +68,8 @@ def user_patch(
         """
         if user_new.email and db.query(AppUsers).filter(AppUsers.email==user_new.email).first():
             raise exception.email_cannot_updated
+        if user_new.phone and db.query(AppUsers).filter(AppUsers.phone==user_new.phone).first():
+            raise exception.phone_cannot_updated
         user_id = AppUsers_.update(db ,user, user_new)
         return {"status": "done", "user_id": user_id}
 

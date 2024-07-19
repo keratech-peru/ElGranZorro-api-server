@@ -14,6 +14,7 @@ from app.notifications.constants import TextToSend, Otp
 class AppUsers_(CRUD):
     @staticmethod
     def create(db: Session, user_in: schemas.AppUsers) -> AppUsers:
+        user_in.team_name = user_in.name + " FC"
         new_user = AppUsers(**user_in.dict())
         CRUD.insert(db, new_user)
         return new_user
@@ -29,15 +30,17 @@ class AppUsers_(CRUD):
         user_old.name = user_new_["name"] if user_new_["name"] else user_old.name
         user_old.lastname = user_new_["lastname"] if user_new_["lastname"] else user_old.lastname
         user_old.birthdate = user_new_["birthdate"] if user_new_["birthdate"] else user_old.birthdate
-        user_old.phone = user_new_["phone"] if user_new_["phone"] else user_old.phone
         user_old.email = user_new_["email"] if user_new_["email"] else user_old.email
-        #user_old.password = get_hash(user_new_["password"]) if user_new_["password"] else user_old.password
-        #user.what_team_are_you_fan = user_.get("name",user.what_team_are_you_fan)
-        #user.from_what_age_are_you_fan = user_.get("name",user.from_what_age_are_you_fan)
+        user_old.dni = user_new_["dni"] if user_new_["dni"] else user_old.dni
         user_old.imagen = user_new_["imagen"] if user_new_["imagen"] else user_old.imagen
         user_old.username = user_new_["username"] if user_new_["username"] else user_old.username
         user_old.team_name = user_new_["team_name"] if user_new_["team_name"] else user_old.team_name
         user_old.team_logo = user_new_["team_logo"] if user_new_["team_logo"] else user_old.team_logo
+
+        if user_new_["phone"]:
+            user_old.phone = user_new_["phone"]
+            new_otp, __ = OtpUsers_.resend(db, user_old.id)
+            Notificaciones_.send_whatsapp_otp(user_new_["phone"] ,new_otp, count_max=False)
         CRUD.insert(db, user_old)
 
         return user_old.id

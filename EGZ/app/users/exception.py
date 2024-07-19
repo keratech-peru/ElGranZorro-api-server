@@ -71,6 +71,13 @@ email_cannot_updated = HTTPException(
     },
 )
 
+phone_cannot_updated = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.PHONE_CANNOT_UPDATE
+    },
+)
+
 email_unregistered = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail={
