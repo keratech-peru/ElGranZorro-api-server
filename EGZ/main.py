@@ -8,6 +8,7 @@ from app.users.routers import router as users
 from app.admin.routers import router as admin
 from app.tournaments.routers import router as tournaments
 from app.notifications.router import router as notifications
+from app.notifications.schedule import scheduler
 
 # Creacion de la BD
 Base.metadata.create_all(bind=engine)
@@ -27,6 +28,9 @@ app.include_router(users)
 app.include_router(admin)
 app.include_router(tournaments)
 app.include_router(notifications)
+
+# Inicia el scheduler
+#scheduler.start()
 
 @app.get("/")
 def root() -> Dict[str, object]:

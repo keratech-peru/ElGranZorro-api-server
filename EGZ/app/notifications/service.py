@@ -33,7 +33,7 @@ class Notificaciones_:
 
     @staticmethod
     def send_whatsapp_otp(phone: str, otp: int, count_max: bool) -> None:
-        text = TextToSend.otp(otp) + ". Si realizas un intento mas , tu cuenta se bloqueara por 20 min" if count_max else ""
+        text = TextToSend.otp(otp) + ". Si realizas un intento mas , tu cuenta se bloqueara por 20 min" if count_max else TextToSend.otp(otp)
         Notificaciones_.send_whatsapp(phone, text)
 
     @staticmethod
