@@ -4,7 +4,8 @@ from app.notifications.constants import TextToSend
 from app.database import CRUD
 from app.tournaments.models import Tournaments, FootballGames
 from app.tournaments.constants import ETAPAS
-from app.users.models import AppUsers
+from app.notifications.constants import Otp
+from app.users.models import AppUsers, PlaysUsers, ScheduleUsers
 from email.message import EmailMessage
 import smtplib
 import requests
@@ -33,7 +34,7 @@ class Notificaciones_:
 
     @staticmethod
     def send_whatsapp_otp(phone: str, otp: int, count_max: bool) -> None:
-        text = TextToSend.otp(otp) + ". Si realizas un intento mas , tu cuenta se bloqueara por 20 min" if count_max else TextToSend.otp(otp)
+        text = TextToSend.otp(otp) + f". Si realizas un intento mas , tu cuenta se bloqueara por {Otp.MINUTES} min" if count_max else TextToSend.otp(otp)
         Notificaciones_.send_whatsapp(phone, text)
 
     @staticmethod
@@ -76,3 +77,11 @@ class Notificaciones_:
         appuser2 = db.query(AppUsers).filter(AppUsers.id == appuser_id2).first()
         text = TextToSend.user_equal_poitns(tournament, appuser1.name, appuser2.name, list_date_1, list_date_2, stage)
         Notificaciones_.send_whatsapp(appuser1.phone, text)
+    
+    @staticmethod
+    def send_whatsapp_user_has_not_played(db: Session, footballgame: FootballGames, appuser_id: int) -> None:
+        play_user = db.query(PlaysUsers).filter(PlaysUsers.football_games_id == footballgame.id, PlaysUsers.appuser_id == appuser_id).first()
+        if not play_user:
+            appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
+            text = TextToSend.user_has_not_played(footballgame, appuser.name)
+            Notificaciones_.send_whatsapp(appuser.phone, text)

@@ -1,4 +1,4 @@
-from app.tournaments.models import Tournaments
+from app.tournaments.models import Tournaments, FootballGames
 
 OTP_DIGIT_LIMIT = 4
 URL_FRONT = "https://egz-frontend.vercel.app/"
@@ -55,6 +55,12 @@ class TextToSend:
                 '''
         return text
     
+    def user_has_not_played(footballgame:FootballGames, name: str):
+        text = f''' Hola *{name}* 👀. Te recordamos que falta menos de *1 hora* ⏰ para que inicie el partido de *{footballgame.home_team} - {footballgame.away_team}* correspondiente a la *{footballgame.tournament_stage}* del torneo *{footballgame.tournament.name}*.   
+                \n✅ Recuerda *realizar tu jugada* antes del comienzo del partido ⏳ en {URL_FRONT}/tournament/{footballgame.tournament_id}\n
+                '''
+        return text
+  
 class Otp:
     COUNT = 5
     MINUTES = 10
