@@ -41,5 +41,5 @@ handler = Mangum(app)
 @app.on_event('startup')
 def init_data():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(cron_job, 'cron', minute='10')
+    scheduler.add_job(cron_job, 'cron', minute='0')
     scheduler.start()
