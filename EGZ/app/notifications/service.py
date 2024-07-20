@@ -5,7 +5,7 @@ from app.database import CRUD
 from app.tournaments.models import Tournaments, FootballGames
 from app.tournaments.constants import ETAPAS
 from app.notifications.constants import Otp
-from app.users.models import AppUsers, PlaysUsers, ScheduleUsers
+from app.users.models import AppUsers, PlaysUsers
 from email.message import EmailMessage
 import smtplib
 import requests
