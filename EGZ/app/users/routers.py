@@ -81,7 +81,7 @@ def login(
         user = AppUsers_.authenticate(db , form_data.username, form_data.password)
         access_token_jwt = create_token({"email":user.email})
         EventOtpUsers_.user_should_be_blocked(db, user)
-        return { "access_token": access_token_jwt, "token_type": "bearder", "expires_in": TOKEN_SCONDS_EXP }
+        return { "access_token": access_token_jwt,"appuser_id":user.id,"token_type": "bearder", "expires_in": TOKEN_SCONDS_EXP }
 
 @router.post("/enrollment/{tournaments_id}", status_code=status.HTTP_201_CREATED)
 def user_enrollment(
