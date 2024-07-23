@@ -71,7 +71,7 @@ d{% extends "layout.html" %}
                         {{ tabla.tournament_stage }}</span>
                       </td>
                       <td>
-                        {% if tabla.is_last %}
+                        {% if tabla.is_past %}
                           <span class="badge bg-red">
                         {% else %}
                           <span class="badge bg-green">

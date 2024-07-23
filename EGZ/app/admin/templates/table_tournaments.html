@@ -61,7 +61,7 @@ d{% extends "layout.html" %}
                       <td>{{ tabla.codigo }}</td>  
                       <td>{{ tabla.name }}</td>
                       <td>
-                        {% if tabla.is_last %}
+                        {% if tabla.is_past %}
                           <span class="badge bg-red">
                         {% else %}
                           <span class="badge bg-green">

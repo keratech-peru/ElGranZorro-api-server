@@ -4,7 +4,7 @@ from app.users.models import PlaysUsers, EnrollmentUsers, AppUsers
 from app.tournaments.models import Tournaments, FootballGames, GroupStage, ConfrontationsGroupStage, ConfrontationsKeyStage
 from app.tournaments import schemas
 from app.tournaments.constants import GROUPS, ETAPAS
-from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser
+from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over
 from app.notifications.service import Notificaciones_
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -46,6 +46,7 @@ class Tournaments_(CRUD):
                 EnrollmentUsers.tournaments_id == tournament.id,
                 EnrollmentUsers.appuser_id == appuser_id
                 ).first() else False
+            tournament_["is_past"] = is_past(tournament.start_date)
             tournaments_.append(tournament_)
         return tournaments_
 
@@ -54,7 +55,7 @@ class Tournaments_(CRUD):
         tournaments = db.query(Tournaments).all()
         for tournament in tournaments:
             tournament_ = tournament.__dict__
-            tournament_["is_last"] = is_past(tournament.start_date)
+            tournament_["is_past"] = is_past(tournament.start_date)
             tournament_["number_enrollment"] = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament.id).count()
             if codigo in tournament_["codigo"]:
                 tournaments_.append(tournament_)
@@ -178,15 +179,17 @@ class FootballGames_(CRUD):
         footballgames_ = []
         footballgames = db.query(FootballGames).order_by(FootballGames.id.desc()).all()
         for footballgame in footballgames:
-            footballgame_ = footballgame.__dict__
-            footballgame_["tournament_codigo"] = db.query(Tournaments.codigo).filter(Tournaments.id == footballgame.tournament_id).first()[0]
-            footballgame_["is_last"] = is_past(footballgame.date,footballgame.hour)
-            footballgame_["home_team"] = str(footballgame.home_team)
-            footballgame_["away_team"] = str(footballgame.away_team)
-            footballgame_["home_score"] = str(footballgame.home_score)
-            footballgame_["away_score"] = str(footballgame.away_score)
-            if codigo in footballgame_["codigo"]:
-                footballgames_.append(footballgame_)
+            tournament = db.query(Tournaments).filter(Tournaments.id == footballgame.tournament_id).first()
+            if is_over(tournament.start_date):
+                footballgame_ = footballgame.__dict__
+                footballgame_["tournament_codigo"] = db.query(Tournaments.codigo).filter(Tournaments.id == footballgame.tournament_id).first()[0]
+                footballgame_["is_past"] = is_past(footballgame.date,footballgame.hour)
+                footballgame_["home_team"] = str(footballgame.home_team)
+                footballgame_["away_team"] = str(footballgame.away_team)
+                footballgame_["home_score"] = str(footballgame.home_score)
+                footballgame_["away_score"] = str(footballgame.away_score)
+                if codigo in footballgame_["codigo"]:
+                    footballgames_.append(footballgame_)
         return footballgames_
 
     def create_groups_stage(id: int , codigo:str, start_date:str, db: Session):
