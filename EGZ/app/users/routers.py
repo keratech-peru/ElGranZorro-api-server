@@ -73,14 +73,18 @@ def user_patch(
         user_id = AppUsers_.update(db ,user, user_new)
         return {"status": "done", "user_id": user_id}
 
-@router.post("/login", status_code=status.HTTP_201_CREATED)
+@router.post("/login/{option}", status_code=status.HTTP_201_CREATED)
 def login(
+    option: int,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
     ) -> Dict[str, object]:
+        if not (option in [1,2]):
+            raise exception.option_not_allowed 
         user = AppUsers_.authenticate(db , form_data.username, form_data.password)
         access_token_jwt = create_token({"email":user.email})
-        EventOtpUsers_.user_should_be_blocked(db, user)
+        if option == 1:
+            EventOtpUsers_.user_should_be_blocked(db, user)
         return { "access_token": access_token_jwt,"appuser_id":user.id,"token_type": "bearder", "expires_in": TOKEN_SCONDS_EXP }
 
 @router.post("/enrollment/{tournaments_id}", status_code=status.HTTP_201_CREATED)

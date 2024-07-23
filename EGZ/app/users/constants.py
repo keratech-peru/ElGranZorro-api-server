@@ -15,3 +15,4 @@ class ErrorCode:
     USER_NOT_REGISTERED_IN_THAT_FOOTBALLGAME = "Usuario no esta registrado para esa jugada"
     USER_MAX_ATTEMPS_VALIDATE_PASSWORD_UPDATE = "Error en la validacion, se supero el maximo de intentos. Vuelve a intentarlo en 30 min."
     USER_FAILED_VALIDATE_PASSWORD_UPDATE = "Error en la recuperacion de la contraseña, los valores ingresados no son los correctos."
+    OPTION_NOT_ALLOWED = "Opcion no permitida"

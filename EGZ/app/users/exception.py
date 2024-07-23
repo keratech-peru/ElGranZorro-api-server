@@ -98,3 +98,10 @@ user_failed_validate_password_update = HTTPException(
         "message": ErrorCode.USER_FAILED_VALIDATE_PASSWORD_UPDATE
     },
 )
+
+option_not_allowed = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.OPTION_NOT_ALLOWED
+    },
+)
