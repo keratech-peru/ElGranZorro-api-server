@@ -157,6 +157,7 @@ def user_plays_footballgames(
             \n- El servicio tiene excepcion si el footballgame_id no existe
             \n- El servicio tiene excepcion si el usuario quiere escribir su jugada a un footballgame de un torneo al cual no esta inscrito.
         """
+        #### agregar excepcion para que no se puede enviar jugadas de partidos que ya son pasados.
         for play_user_in in play_user_list:
             footballgame = db.query(models.FootballGames).filter(models.FootballGames.id == play_user_in.football_games_id).first() 
             if not footballgame:
