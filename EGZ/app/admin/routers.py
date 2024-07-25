@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_302_FOUND
 from typing import Optional, List
 from sqlalchemy.orm import Session
+from app.competitions.service import Competitions_
 from app.tournaments.schemas import Tourmaments as SchemasTournaments, FootballGames as SchemasFootballGames, UpdateFootballGames as SchemasUpdateFootballGames, UpdateTourmaments as SchemasUpdateTourmaments
 from app.tournaments.models import Tournaments as ModelsTournaments, FootballGames as ModelsFootballGames, GroupStage as ModelsGroupStage, ConfrontationsGroupStage as ModelsConfrontationsGroupStage
 from app.tournaments.service import Tournaments_, FootballGames_, Confrontations_
@@ -56,6 +57,7 @@ async def create_tournaments(request: Request,
     FootballGames_.create_semifinal_stage(id, codigo, start_date, db)
     FootballGames_.create_final_stage(id, codigo, start_date, db)
 
+    Competitions_.assignment(id, db)
     return templates.TemplateResponse("create_tournaments.html", {"request": request ,"resources":RESOURCES})
 
 @router.post("/footballgames", response_class=HTMLResponse)
