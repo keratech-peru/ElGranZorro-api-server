@@ -47,6 +47,7 @@ class Tournaments_(CRUD):
                 EnrollmentUsers.appuser_id == appuser_id
                 ).first() else False
             tournament_["is_past"] = is_past(tournament.start_date)
+            tournament_["is_over"] = is_over(tournament.start_date)
             tournaments_.append(tournament_)
         return tournaments_
 

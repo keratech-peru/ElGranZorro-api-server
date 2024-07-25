@@ -10,7 +10,7 @@ from app.users import exception
 from app.database import get_db, CRUD
 from app.security import create_token, valid_header, get_user_current
 from app.config import ApiKey, TOKEN_SCONDS_EXP
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.competitions.models import Competitions, Teams
 from app.competitions.service import Competitions_
 import requests
@@ -56,7 +56,8 @@ def teams(
             headers = { 'X-Auth-Token': '17e9ddf85c184860a6c2a004ed4d0e3d' }
             response = requests.get(uri, headers=headers).json()
             for match in response["matches"]:
-                print( match["homeTeam"]["name"], " - ", match["awayTeam"]["name"] , " --> " , match["utcDate"])
+                datetime_object = datetime.strptime(match["utcDate"], '%y/%d/%m %H:%M:%S').replace(tzinfo=timezone.utc) - timedelta(hours=5)
+                print( match["homeTeam"]["name"], " : ",match["homeTeam"]["id"], " - ", match["homeTeam"]["name"], " : ",match["awayTeam"]["id"] , " --> " , datetime_object)
 
 
 

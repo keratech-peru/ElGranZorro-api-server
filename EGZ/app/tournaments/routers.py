@@ -23,7 +23,7 @@ def tournaments_get(
     ) -> Dict[str, object]:
         """
         **Descripcion** : El servicio brinda la informacion de todos los torneos disponibles,
-        se envia un booleano para saber si el usuario esta inscrito al torneo o no.
+        se envia un booleano para saber si el usuario esta inscrito al torneo o no y se envia booleano si es pasado
         \n**Excepcion** : 
             \n- El servicio requiere autorizacion via token
             \n- El servicio tiene excepcion si el token es invalido o expiro
