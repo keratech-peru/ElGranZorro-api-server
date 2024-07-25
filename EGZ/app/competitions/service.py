@@ -110,8 +110,8 @@ class Competitions_(CRUD):
             footballgames_by_day = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id, FootballGames.date == day).all()
             matchs = db.query(Matchs).filter(Matchs.date == day).all()
             if len(matchs) > 0:
-                matchs_random = random.sample( matchs, len(footballgames_by_day))
                 len_loop = len(footballgames_by_day) if len(matchs) > len(footballgames_by_day) else len(matchs)
+                matchs_random = random.sample( matchs, len_loop)
                 for i in range(len_loop):
                     footballgames_by_day[i].hour = matchs_random[i].hour
                     footballgames_by_day[i].home_team = db.query(Teams.name).filter(Teams.id_team == matchs_random[i].id_team_home).first()[0]
