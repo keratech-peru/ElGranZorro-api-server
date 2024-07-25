@@ -181,7 +181,7 @@ class FootballGames_(CRUD):
         footballgames = db.query(FootballGames).order_by(FootballGames.id.desc()).all()
         for footballgame in footballgames:
             tournament = db.query(Tournaments).filter(Tournaments.id == footballgame.tournament_id).first()
-            if is_over(tournament.start_date):
+            if not is_over(tournament.start_date):
                 footballgame_ = footballgame.__dict__
                 footballgame_["tournament_codigo"] = db.query(Tournaments.codigo).filter(Tournaments.id == footballgame.tournament_id).first()[0]
                 footballgame_["is_past"] = is_past(footballgame.date,footballgame.hour)

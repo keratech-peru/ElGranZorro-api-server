@@ -4,8 +4,9 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD
-from app.competitions.models import Competitions
+from app.competitions.models import Matchs
 from app.competitions import schemas
+from app.tournaments.models import FootballGames
 
 
 
@@ -51,3 +52,14 @@ class Competitions_(CRUD):
         objects_list = [compe_1, compe_2, compe_3, compe_4, compe_5]
         CRUD.bulk_insert(db, objects_list)
     
+    @staticmethod
+    def assignment(db: Session, tournament_id: int):
+        footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).all()
+        days = set([footballgame.date for footballgame in footballgames])
+        for day in days:
+            footballgames_by_day = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id, FootballGames.date == day).all()
+            matchs = random.sample( db.query(Matchs).filter(Matchs.date == day).all(), len(footballgames_by_day))
+            for i in range(len(footballgames_by_day)):
+                print(matchs[i])
+                #footballgames_by_day[i]
+

@@ -29,3 +29,18 @@ class Teams(Base):
     emblem = Column(String)
 
     competitions = relationship("Competitions", back_populates="teams")
+
+class Matchs(Base):
+    __tablename__= "competitions_matchs"
+    id=Column(Integer, primary_key=True, autoincrement=True)
+    created_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
+    updated_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
+    id_match = Column(Integer, unique=True)
+    cod_competitions = Column(String)
+    date =  Column(String)
+    hour =  Column(String)
+    id_team_home = Column(Integer)
+    id_team_away = Column(Integer)
+    score_home = Column(Integer)
+    score_away = Column(Integer)
+    status = Column(String)
