@@ -44,3 +44,11 @@ class Matchs(Base):
     score_home = Column(Integer)
     score_away = Column(Integer)
     status = Column(String)
+
+class MatchsFootballGames(Base):
+    __tablename__= "competitions_matchs_footballgames"
+    id=Column(Integer, primary_key=True, autoincrement=True)
+    created_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
+    updated_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.now())
+    id_match = Column(Integer)
+    id_footballgames = Column(Integer)

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD
-from app.competitions.models import Matchs, Competitions, Teams
+from app.competitions.models import Matchs, Competitions, Teams, MatchsFootballGames
 from app.competitions import schemas
 from app.tournaments.models import FootballGames
 from app.notifications.service import NotificacionesAdmin_
@@ -118,5 +118,7 @@ class Competitions_(CRUD):
                     footballgames_by_day[i].away_team = db.query(Teams.name).filter(Teams.id_team == matchs_random[i].id_team_away).first()[0]
                     CRUD.update(db, footballgames_by_day[i])
                     cont = cont + 1
+                    match_footballgame = MatchsFootballGames( id_match=matchs_random[i].id , id_footballgames=footballgames_by_day[i].id )
+                    CRUD.insert(db, match_footballgame)
         NotificacionesAdmin_.send_whatsapp_incomplete_tournament(db, tournament_id, len(footballgames)-cont)
 
