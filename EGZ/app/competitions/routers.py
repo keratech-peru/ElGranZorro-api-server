@@ -58,7 +58,4 @@ def teams(
             for match in response["matches"]:
                 datetime_object = datetime.strptime(match["utcDate"], '%y/%d/%m %H:%M:%S').replace(tzinfo=timezone.utc) - timedelta(hours=5)
                 print( match["homeTeam"]["name"], " : ",match["homeTeam"]["id"], " - ", match["homeTeam"]["name"], " : ",match["awayTeam"]["id"] , " --> " , datetime_object)
-
-
-
         return {"status":"done"}
