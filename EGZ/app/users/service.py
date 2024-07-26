@@ -8,6 +8,7 @@ from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
 from app.users import exception, schemas 
 from app.users.utils import get_hash, generate_otp_numeric
 from app.tournaments.models import Tournaments, GroupStage
+from app.tournaments.constants import ETAPAS
 from app.notifications.service import Notificaciones_
 from app.notifications.constants import TextToSend, Otp
 
@@ -55,7 +56,7 @@ class AppUsers_(CRUD):
         new_user_enrollment = EnrollmentUsers(
             appuser_id=user.id,
             tournaments_id=tournaments.id,
-            state="EN ESPERA"
+            state=ETAPAS["EE"]
         )
         group = random.choice( db.query(GroupStage).filter(GroupStage.tournament_cod == tournaments.codigo ,GroupStage.appuser_id == None).all() )
         group.appuser_id = user.id
@@ -101,7 +102,7 @@ class AppUsers_(CRUD):
         for eliminated in eliminateds:
             if eliminated[0]:
                 enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.appuser_id == eliminated[0], EnrollmentUsers.tournaments_id == int(cod_tournament[-3:])).first()
-                enrollment_users.state = "ELIMINADO - GP"
+                enrollment_users.state = "ELIMINADO - GRUPOS"
                 CRUD.update(db,enrollment_users)
                 db.commit()
                 Notificaciones_.send_whatsapp_eliminated(db, enrollment_users.tournaments_id, enrollment_users.appuser_id, key = "GP")
@@ -109,10 +110,8 @@ class AppUsers_(CRUD):
     def eliminated_key_stage(db: Session, key: str, list_appuser_id: List[int], tournament_id: int):
         enrollments_en_proceso = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id,EnrollmentUsers.state == "EN PROCESO").all()
         for enrollment in enrollments_en_proceso:
-            print(enrollment.__dict__,list_appuser_id,"\n")
             if enrollment.appuser_id not in  list_appuser_id:
-                print("Cambio el estado a eliminado")
-                enrollment.state = f"ELIMINADO - {key}"
+                enrollment.state = f"ELIMINADO - {ETAPAS[key]}"
                 CRUD.update(db, enrollment)
                 db.commit()
                 Notificaciones_.send_whatsapp_eliminated(db, enrollment.tournaments_id, enrollment.appuser_id, key = key)

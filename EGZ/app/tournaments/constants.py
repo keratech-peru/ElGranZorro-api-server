@@ -8,10 +8,11 @@ class ErrorCode:
     FULL_TOURNAMENT = "Torneo Lleno"
 
 ETAPAS = {
+    "EE": "EN ESPERA",
     "GP":"GRUPOS",
     "OC":"OCTAVOS",
     "CU":"CUARTOS",
-    "SF":"SEMIFINAL",
+    "SF":"SEMI-FINAL",
     "FI":"FINAL"
 }
 
