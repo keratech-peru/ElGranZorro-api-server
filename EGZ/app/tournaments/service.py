@@ -159,7 +159,7 @@ class Tournaments_(CRUD):
     def start(db: Session, tournament_cod: str):
         enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == int(tournament_cod[-3:])).all()
         for enrollment_user in enrollment_users:
-            enrollment_user.state = "EN PROCESO"
+            enrollment_user.state = ETAPAS["EP"]
             CRUD.update(db, enrollment_user)
 
 class FootballGames_(CRUD):
