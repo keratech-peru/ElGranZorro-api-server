@@ -6,7 +6,7 @@ from app.tournaments import schemas
 from app.tournaments.constants import GROUPS, ETAPAS
 from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over
 from app.notifications.service import Notificaciones_
-from app.competitions.models import Teams, MatchsFootballGames
+from app.competitions.models import Teams, MatchsFootballGames, Matchs
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List 
@@ -103,11 +103,6 @@ class Tournaments_(CRUD):
                             "is_appuser_local": user_id == appuser_id_local
                         })
         footballgame_dict["plays"] = plays_
-        # match_footballgame = db.query(MatchsFootballGames).filter()
-        # teams = db.query(Teams).filter(Teams)
-        # print("id : ",footballgame_dict["id"])
-        # print("home_team : " , footballgame_dict["home_team"])
-        # print("away_team : " , footballgame_dict["away_team"],"\n")
         return footballgame_dict
 
     def get_data_group_key_plays(db: Session, footballgame: FootballGames, footballgame_dict, user_id: int):
@@ -146,6 +141,8 @@ class Tournaments_(CRUD):
         for footballgame in footballgames:
             footballgame_dict = footballgame.__dict__
             footballgame_dict["is_past"] = is_past(footballgame.date, footballgame.hour)
+            footballgame_dict["home_team_logo"] = FootballGames_.get_logo(footballgame.id, True, db)
+            footballgame_dict["away_team_logo"] = FootballGames_.get_logo(footballgame.id, False, db)
             if footballgame_dict["is_past"]:
                 tournament_stage.append(footballgame.tournament_stage)
             if "GRUPOS" in footballgame.tournament_stage:
@@ -364,9 +361,17 @@ class FootballGames_(CRUD):
             if "FI5" in footballgame.codigo:
                 list_appuser_id = Confrontations_.first_place(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "FI", list_appuser_id, tournament_id)
-                #Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="FI")
                 Notificaciones_.send_whatsapp_user_winner(db, tournament_cod, list_appuser_id[0])
-    
+
+    def get_logo(footballgame_id: int, local: bool, db: Session):
+        match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_footballgames == footballgame_id).first()
+        logo = None
+        if match_footballgame:
+            match_ = db.query(Matchs).filter(Matchs.id == match_footballgame.id_match).first()
+            id_team = match_.id_team_home if local else match_.id_team_away
+            logo = db.query(Teams.emblem).filter(Teams.id_team == id_team).first()[0]
+        return logo
+
 class Confrontations_(CRUD):
     @staticmethod
     def create_groups_stage(tournament_id: int ,db: Session, tournament_cod: str):
