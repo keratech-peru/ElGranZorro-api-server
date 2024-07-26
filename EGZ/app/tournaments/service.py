@@ -6,6 +6,7 @@ from app.tournaments import schemas
 from app.tournaments.constants import GROUPS, ETAPAS
 from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over
 from app.notifications.service import Notificaciones_
+from app.competitions.models import Teams, MatchsFootballGames
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List 
@@ -102,6 +103,11 @@ class Tournaments_(CRUD):
                             "is_appuser_local": user_id == appuser_id_local
                         })
         footballgame_dict["plays"] = plays_
+        # match_footballgame = db.query(MatchsFootballGames).filter()
+        # teams = db.query(Teams).filter(Teams)
+        # print("id : ",footballgame_dict["id"])
+        # print("home_team : " , footballgame_dict["home_team"])
+        # print("away_team : " , footballgame_dict["away_team"],"\n")
         return footballgame_dict
 
     def get_data_group_key_plays(db: Session, footballgame: FootballGames, footballgame_dict, user_id: int):

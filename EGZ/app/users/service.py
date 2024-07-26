@@ -109,7 +109,9 @@ class AppUsers_(CRUD):
     def eliminated_key_stage(db: Session, key: str, list_appuser_id: List[int], tournament_id: int):
         enrollments_en_proceso = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id,EnrollmentUsers.state == "EN PROCESO").all()
         for enrollment in enrollments_en_proceso:
+            print(enrollment.__dict__,list_appuser_id,"\n")
             if enrollment.appuser_id not in  list_appuser_id:
+                print("Cambio el estado a eliminado")
                 enrollment.state = f"ELIMINADO - {key}"
                 CRUD.update(db, enrollment)
                 db.commit()
