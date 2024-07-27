@@ -19,6 +19,8 @@ class Tournaments(Base):
     is_active = Column(Boolean, default=False)
     type_tournament = Column(String)
     stage = Column(String)
+    quota = Column(Integer)
+    reward = Column(Integer)
 
     football_game = relationship("FootballGames", back_populates="tournament")
 

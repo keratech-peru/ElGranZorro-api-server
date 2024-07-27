@@ -9,7 +9,8 @@ from app.admin.routers import router as admin
 from app.tournaments.routers import router as tournaments
 from app.notifications.router import router as notifications
 from app.competitions.routers import router as competitions
-from app.notifications.schedule import cron_job
+from app.notifications.schedule import cron_job_notifications
+from app.tournaments.schedule import cron_job_tournaments
 from apscheduler.schedulers.background import BackgroundScheduler
 
 # Creacion de la BD
@@ -43,5 +44,6 @@ handler = Mangum(app)
 @app.on_event('startup')
 def init_data():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(cron_job, 'cron', minute='0')
+    scheduler.add_job(cron_job_notifications, 'cron', minute='0')
+    scheduler.add_job(cron_job_tournaments, 'cron', hour=0, minute=0)
     scheduler.start()

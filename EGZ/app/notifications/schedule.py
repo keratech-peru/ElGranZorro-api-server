@@ -38,7 +38,7 @@ def my_job(db: Session):
                             Notificaciones_.send_whatsapp_user_has_not_played(db, footballgame, appuser_id[1])
 
 # Configura el cron job para que se ejecute cada minuto
-def cron_job():
+def cron_job_notifications():
     db = SessionLocal()
     try:
         my_job(db)

@@ -156,8 +156,11 @@ class Tournaments_(CRUD):
 
         return tournament_, group_stage_table, football_stage_group, football_stage_keys
 
-    def start(db: Session, tournament_cod: str):
-        enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == int(tournament_cod[-3:])).all()
+    def start(db: Session, tournament_id: int):
+        enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id).all()
+        tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
+        tournament.stage = ETAPAS["GP"]
+        CRUD.update(db, tournament)
         for enrollment_user in enrollment_users:
             enrollment_user.state = ETAPAS["EP"]
             CRUD.update(db, enrollment_user)
@@ -323,8 +326,9 @@ class FootballGames_(CRUD):
         appuser_id_point_plays = AppUsers_.play_users_points(db, footballgame.id, footballgame.type_footballgames, home_score, away_score)
         Confrontations_.allocation_points_group_stage(db, appuser_id_point_plays,footballgame.codigo)
         Confrontations_.orden_update_group_stage(db, tournament_cod)
-        if "GP1" in footballgame.codigo:
-            Tournaments_.start(db, tournament_cod)
+        # Se usara un appschedule.
+        # if "GP1" in footballgame.codigo:
+        #     Tournaments_.start(db, tournament_cod)
         if "GP9" in footballgame.codigo:
             AppUsers_.eliminated_group_stage(db, tournament_cod)
             list_appuser_id = Confrontations_.registration_teams_eighths(db, tournament_cod)

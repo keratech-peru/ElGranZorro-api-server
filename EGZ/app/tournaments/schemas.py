@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from app.tournaments.constants import ETAPAS
 
 class Tourmaments(BaseModel):
     name: str
@@ -9,6 +10,12 @@ class Tourmaments(BaseModel):
     max_number_of_players: str
     game_mode: str
     tournament_rules: str
+    is_active: bool = False
+    type_tournament: str = "TIPO D"
+    stage: str = ETAPAS["EE"]
+    quota: int = 20
+    reward: int = 200
+
 
 class GroupStage(BaseModel):
     tournament_cod: str
