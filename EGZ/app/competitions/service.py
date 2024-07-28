@@ -107,6 +107,8 @@ class Competitions_(CRUD):
         footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).all()
         days = set([footballgame.date for footballgame in footballgames])
         cont = 0 
+        footballgames_id =  [footballgame.id for footballgame in footballgames]
+        footballgames_id_match = []
         for day in days:
             footballgames_by_day = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id, FootballGames.date == day).all()
             matchs = db.query(Matchs).filter(Matchs.date == day).all()    
@@ -121,11 +123,15 @@ class Competitions_(CRUD):
                     cont = cont + 1
                     match_footballgame = MatchsFootballGames( id_match=matchs_random[i].id , id_footballgames=footballgames_by_day[i].id )
                     CRUD.insert(db, match_footballgame)
-            else:
-                for i in range(len(footballgames_by_day)):
-                    footballgames_by_day[i].hour = DataDummy.hour
-                    footballgames_by_day[i].home_team = DataDummy.name
-                    footballgames_by_day[i].away_team = DataDummy.name
-                    CRUD.update(db, footballgames_by_day[i])
+                    footballgames_id_match.append(footballgames_by_day[i].id)
+        
+        footballgames_id_data_dummy = set(footballgames_id) - set(footballgames_id_match)
+        for id in footballgames_id_data_dummy:
+            footballgame = db.query(FootballGames).filter(FootballGames.id == id).first()
+            footballgame.hour = DataDummy.hour
+            footballgame.home_team = DataDummy.name
+            footballgame.away_team = DataDummy.name
+
         NotificacionesAdmin_.send_whatsapp_incomplete_tournament(db, tournament_id, len(footballgames)-cont)
+
 
