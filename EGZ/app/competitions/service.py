@@ -131,6 +131,7 @@ class Competitions_(CRUD):
             footballgame.hour = DataDummy.hour
             footballgame.home_team = DataDummy.name
             footballgame.away_team = DataDummy.name
+            CRUD.update(db, footballgame)
 
         NotificacionesAdmin_.send_whatsapp_incomplete_tournament(db, tournament_id, len(footballgames)-cont)
 
