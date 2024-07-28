@@ -109,9 +109,9 @@ class Competitions_(CRUD):
         cont = 0 
         for day in days:
             footballgames_by_day = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id, FootballGames.date == day).all()
-            matchs = db.query(Matchs).filter(Matchs.date == day).all()
-            len_loop = len(footballgames_by_day) if len(matchs) > len(footballgames_by_day) else len(matchs)
+            matchs = db.query(Matchs).filter(Matchs.date == day).all()    
             if len(matchs) > 0:
+                len_loop = len(footballgames_by_day) if len(matchs) > len(footballgames_by_day) else len(matchs)
                 matchs_random = random.sample( matchs, len_loop)
                 for i in range(len_loop):
                     footballgames_by_day[i].hour = matchs_random[i].hour
@@ -122,7 +122,7 @@ class Competitions_(CRUD):
                     match_footballgame = MatchsFootballGames( id_match=matchs_random[i].id , id_footballgames=footballgames_by_day[i].id )
                     CRUD.insert(db, match_footballgame)
             else:
-                for i in range(len_loop):
+                for i in range(len(footballgames_by_day)):
                     footballgames_by_day[i].hour = DataDummy.hour
                     footballgames_by_day[i].home_team = DataDummy.name
                     footballgames_by_day[i].away_team = DataDummy.name
