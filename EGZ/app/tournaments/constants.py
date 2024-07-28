@@ -9,7 +9,6 @@ class ErrorCode:
 
 STATUS_TOURNAMENT = {
     "EE": "EN ESPERA",
-    "EP": "EN PROCESO",
     "GP":"GRUPOS",
     "OC":"OCTAVOS",
     "CU":"CUARTOS",

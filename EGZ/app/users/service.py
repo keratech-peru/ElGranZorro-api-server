@@ -105,16 +105,14 @@ class AppUsers_(CRUD):
                 enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.appuser_id == eliminated[0], EnrollmentUsers.tournaments_id == int(cod_tournament[-3:])).first()
                 enrollment.state = USER_STATUS_IN_TOURNAMENT["EGP"]
                 CRUD.update(db,enrollment)
-                db.commit()
                 Notificaciones_.send_whatsapp_eliminated(db, enrollment.tournaments_id, enrollment.appuser_id, key = "GP")
 
     def eliminated_key_stage(db: Session, key: str, list_appuser_id: List[int], tournament_id: int):
-        enrollments_en_proceso = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id,EnrollmentUsers.state == STATUS_TOURNAMENT["EP"]).all()
+        enrollments_en_proceso = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id,EnrollmentUsers.state == USER_STATUS_IN_TOURNAMENT["EP"]).all()
         for enrollment in enrollments_en_proceso:
             if enrollment.appuser_id not in  list_appuser_id:
                 enrollment.state = USER_STATUS_IN_TOURNAMENT["E"+key]
                 CRUD.update(db, enrollment)
-                db.commit()
                 Notificaciones_.send_whatsapp_eliminated(db, enrollment.tournaments_id, enrollment.appuser_id, key = key)
 
     def password_update_validation(db: Session, recovery_in: schemas.PasswordUpdateValidation, user: AppUsers):

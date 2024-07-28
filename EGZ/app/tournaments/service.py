@@ -163,7 +163,7 @@ class Tournaments_(CRUD):
         tournament.stage = STATUS_TOURNAMENT["GP"]
         CRUD.update(db, tournament)
         for enrollment in enrollments:
-            enrollment.state = STATUS_TOURNAMENT["EP"]
+            enrollment.state = USER_STATUS_IN_TOURNAMENT["EP"]
             CRUD.update(db, enrollment)
 
 class FootballGames_(CRUD):
