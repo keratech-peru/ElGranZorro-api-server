@@ -10,7 +10,7 @@ from app.notifications.service import Notificaciones_
 from app.competitions.models import Teams, MatchsFootballGames, Matchs
 from app.competitions.constants import DataDummy
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from typing import List 
 from datetime import datetime, timezone, timedelta
 class Tournaments_(CRUD):
@@ -42,7 +42,9 @@ class Tournaments_(CRUD):
 
     def list_all_is_enrollend_user(db: Session, appuser_id: int) -> List[Tournaments]:
         tournaments_ = []
-        tournaments = db.query(Tournaments).order_by(Tournaments.id).all()
+        tournaments = db.query(Tournaments).order_by(
+            func.to_date(Tournaments.start_date, 'DD/MM/YY').desc()
+        ).all()        
         for tournament in tournaments:
             tournament_ = tournament.__dict__
             tournament_["is_enrolled_user"] = True if  db.query(EnrollmentUsers).filter(
