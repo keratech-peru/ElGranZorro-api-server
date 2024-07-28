@@ -7,14 +7,15 @@ class ErrorCode:
     FOOTBALLGAME_NOT_EXIST = "No existe footballgame"
     FULL_TOURNAMENT = "Torneo Lleno"
 
-ETAPAS = {
+STATUS_TOURNAMENT = {
     "EE": "EN ESPERA",
     "EP": "EN PROCESO",
     "GP":"GRUPOS",
     "OC":"OCTAVOS",
     "CU":"CUARTOS",
     "SF":"SEMI-FINAL",
-    "FI":"FINAL"
+    "FI":"FINAL",
+    "TE":"TERMINADO"
 }
 
 GROUPS = ["A","B","C","D","E","F","G","H"]

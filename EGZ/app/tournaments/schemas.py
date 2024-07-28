@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from app.tournaments.constants import ETAPAS
+from app.tournaments.constants import STATUS_TOURNAMENT
 
 class Tourmaments(BaseModel):
     name: str
@@ -12,7 +12,7 @@ class Tourmaments(BaseModel):
     tournament_rules: str
     is_active: bool = False
     type_tournament: str = "TIPO D"
-    stage: str = ETAPAS["EE"]
+    stage: str = STATUS_TOURNAMENT["EE"]
     quota: int = 20
     reward: int = 200
 

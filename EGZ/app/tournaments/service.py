@@ -1,9 +1,10 @@
 from app.database import CRUD
 from app.users.service import AppUsers_
 from app.users.models import PlaysUsers, EnrollmentUsers, AppUsers
+from app.users.constants import USER_STATUS_IN_TOURNAMENT
 from app.tournaments.models import Tournaments, FootballGames, GroupStage, ConfrontationsGroupStage, ConfrontationsKeyStage
 from app.tournaments import schemas
-from app.tournaments.constants import GROUPS, ETAPAS
+from app.tournaments.constants import GROUPS, STATUS_TOURNAMENT
 from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over
 from app.notifications.service import Notificaciones_
 from app.competitions.models import Teams, MatchsFootballGames, Matchs
@@ -152,18 +153,18 @@ class Tournaments_(CRUD):
                 footballgame_dict = Tournaments_.get_data_group_key_plays(db, footballgame, footballgame_dict, user_id)
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
         tournament_ = tournament.__dict__
-        tournament_["tournament_stage"] = tournament_stage[-1] if len(tournament_stage) > 0 else ETAPAS["EE"]
+        tournament_["tournament_stage"] = tournament_stage[-1] if len(tournament_stage) > 0 else STATUS_TOURNAMENT["EE"]
 
         return tournament_, group_stage_table, football_stage_group, football_stage_keys
 
     def start(db: Session, tournament_id: int):
-        enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id).all()
+        enrollments = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id).all()
         tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
-        tournament.stage = ETAPAS["GP"]
+        tournament.stage = STATUS_TOURNAMENT["GP"]
         CRUD.update(db, tournament)
-        for enrollment_user in enrollment_users:
-            enrollment_user.state = ETAPAS["EP"]
-            CRUD.update(db, enrollment_user)
+        for enrollment in enrollments:
+            enrollment.state = STATUS_TOURNAMENT["EP"]
+            CRUD.update(db, enrollment)
 
 class FootballGames_(CRUD):
     @staticmethod
@@ -516,8 +517,8 @@ class Confrontations_(CRUD):
         else:
             appuser_id = key_stage_part[0].appuser_2_id
             appuser_id_lose = key_stage_part[0].appuser_1_id
-        Notificaciones_.send_whatsapp_user_point_equal(db,footballgames_id_list[0], key_stage_part[0].appuser_1_id, key_stage_part[0].appuser_2_id, play_users_update_at_1, play_users_update_at_2, ETAPAS[footballgames_cod_list[0][-3:-1]])
-        Notificaciones_.send_whatsapp_user_point_equal(db,footballgames_id_list[0], key_stage_part[0].appuser_2_id, key_stage_part[0].appuser_1_id, play_users_update_at_2, play_users_update_at_1, ETAPAS[footballgames_cod_list[0][-3:-1]])
+        Notificaciones_.send_whatsapp_user_point_equal(db,footballgames_id_list[0], key_stage_part[0].appuser_1_id, key_stage_part[0].appuser_2_id, play_users_update_at_1, play_users_update_at_2, STATUS_TOURNAMENT[footballgames_cod_list[0][-3:-1]])
+        Notificaciones_.send_whatsapp_user_point_equal(db,footballgames_id_list[0], key_stage_part[0].appuser_2_id, key_stage_part[0].appuser_1_id, play_users_update_at_2, play_users_update_at_1, STATUS_TOURNAMENT[footballgames_cod_list[0][-3:-1]])
         Notificaciones_.send_whatsapp_eliminated(db, int(footballgames_cod_list[0][3:6]), appuser_id_lose, footballgames_cod_list[0][-3:-1])
         return appuser_id
 
@@ -744,6 +745,6 @@ class Confrontations_(CRUD):
                 print("Nos fuimos a la mrd ...")
 
         enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournaments_id,EnrollmentUsers.appuser_id == appuser_id).first()
-        enrollment.state = "GANADOR"
+        enrollment.state = USER_STATUS_IN_TOURNAMENT["GA"]
         CRUD.update(db, enrollment)
         return [appuser_id]

@@ -1,4 +1,5 @@
 from app.notifications.constants import Otp
+from app.tournaments.constants import STATUS_TOURNAMENT
 
 class ErrorCode:
     EMAIL_ALREADY_USED = "No se puede crear el usuario, por que el correo ya se ha utilizado."
@@ -16,3 +17,14 @@ class ErrorCode:
     USER_MAX_ATTEMPS_VALIDATE_PASSWORD_UPDATE = "Error en la validacion, se supero el maximo de intentos. Vuelve a intentarlo en 30 min."
     USER_FAILED_VALIDATE_PASSWORD_UPDATE = "Error en la recuperacion de la contraseña, los valores ingresados no son los correctos."
     OPTION_NOT_ALLOWED = "Opcion no permitida"
+
+USER_STATUS_IN_TOURNAMENT = {
+    "EE": STATUS_TOURNAMENT["EE"],
+    "EP": STATUS_TOURNAMENT["EP"],
+    "EGP": "ELIMINADO - " + STATUS_TOURNAMENT["GP"],
+    "EOC": "ELIMINADO - " + STATUS_TOURNAMENT["OC"],
+    "ECU": "ELIMINADO - " + STATUS_TOURNAMENT["CU"],
+    "ESF": "ELIMINADO - " + STATUS_TOURNAMENT["SF"],
+    "EFI": "ELIMINADO - " + STATUS_TOURNAMENT["FI"],
+    "GA": "GANADOR"
+}

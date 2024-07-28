@@ -3,7 +3,7 @@ from app.config import Email, Whatsapp
 from app.notifications.constants import TextToSend
 from app.database import CRUD
 from app.tournaments.models import Tournaments, FootballGames
-from app.tournaments.constants import ETAPAS
+from app.tournaments.constants import STATUS_TOURNAMENT
 from app.notifications.constants import Otp
 from app.users.models import AppUsers, PlaysUsers
 from email.message import EmailMessage
@@ -41,7 +41,7 @@ class Notificaciones_:
     def send_whatsapp_eliminated(db: Session, tournament_id: int, appuser_id: int, key:str) -> None:
         tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
         appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
-        text = TextToSend.eliminated(tournament, appuser.name, fase=ETAPAS[key])
+        text = TextToSend.eliminated(tournament, appuser.name, fase=STATUS_TOURNAMENT[key])
         Notificaciones_.send_whatsapp(appuser.phone, text)
      
     @staticmethod
@@ -50,7 +50,7 @@ class Notificaciones_:
         for appuser_id in list_appuser_id:
             if appuser_id:
                 appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()        
-                text = TextToSend.stage_passed(tournament, appuser.name, fase=ETAPAS[key])
+                text = TextToSend.stage_passed(tournament, appuser.name, fase=STATUS_TOURNAMENT[key])
                 Notificaciones_.send_whatsapp(appuser.phone, text)
     
     @staticmethod
