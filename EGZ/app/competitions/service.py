@@ -6,6 +6,7 @@ from app.exception import validate_credentials, expired_token
 from app.database import CRUD
 from app.competitions.models import Matchs, Competitions, Teams, MatchsFootballGames
 from app.competitions import schemas
+from app.competitions.constants import DataDummy
 from app.tournaments.models import FootballGames
 from app.notifications.service import NotificacionesAdmin_
 
@@ -109,8 +110,8 @@ class Competitions_(CRUD):
         for day in days:
             footballgames_by_day = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id, FootballGames.date == day).all()
             matchs = db.query(Matchs).filter(Matchs.date == day).all()
+            len_loop = len(footballgames_by_day) if len(matchs) > len(footballgames_by_day) else len(matchs)
             if len(matchs) > 0:
-                len_loop = len(footballgames_by_day) if len(matchs) > len(footballgames_by_day) else len(matchs)
                 matchs_random = random.sample( matchs, len_loop)
                 for i in range(len_loop):
                     footballgames_by_day[i].hour = matchs_random[i].hour
@@ -120,5 +121,11 @@ class Competitions_(CRUD):
                     cont = cont + 1
                     match_footballgame = MatchsFootballGames( id_match=matchs_random[i].id , id_footballgames=footballgames_by_day[i].id )
                     CRUD.insert(db, match_footballgame)
+            else:
+                for i in range(len_loop):
+                    footballgames_by_day[i].hour = DataDummy.hour
+                    footballgames_by_day[i].home_team = DataDummy.name
+                    footballgames_by_day[i].away_team = DataDummy.name
+                    CRUD.update(db, footballgames_by_day[i])
         NotificacionesAdmin_.send_whatsapp_incomplete_tournament(db, tournament_id, len(footballgames)-cont)
 

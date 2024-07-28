@@ -90,5 +90,5 @@ class NotificacionesAdmin_:
     @staticmethod
     def send_whatsapp_incomplete_tournament(db: Session, tournament_id: int, numb_footballgame: int) -> None:
         tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
-        text = f"Administrador el torneo {tournament.name} creado recientemente tiene {numb_footballgame} footballgames incompletos"
+        text = f"*Administrador* el torneo *{tournament.name}* creado recientemente tiene *{numb_footballgame}* footballgames incompletos, se le pondra data dummy."
         Notificaciones_.send_whatsapp("936224658", text)

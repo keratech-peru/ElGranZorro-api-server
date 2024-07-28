@@ -8,6 +8,7 @@ from app.tournaments.constants import GROUPS, STATUS_TOURNAMENT
 from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over
 from app.notifications.service import Notificaciones_
 from app.competitions.models import Teams, MatchsFootballGames, Matchs
+from app.competitions.constants import DataDummy
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List 
@@ -375,6 +376,8 @@ class FootballGames_(CRUD):
             match_ = db.query(Matchs).filter(Matchs.id == match_footballgame.id_match).first()
             id_team = match_.id_team_home if local else match_.id_team_away
             logo = db.query(Teams.emblem).filter(Teams.id_team == id_team).first()[0]
+        else:
+            logo = DataDummy.emblem
         return logo
 
 class Confrontations_(CRUD):
