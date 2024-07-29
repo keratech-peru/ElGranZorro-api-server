@@ -101,10 +101,13 @@ def user_enrollment(
             \n- El servicio tiene excepcion cuando se ingresa un tournaments_id inexistente
             \n- El servicio tiene excepcion si el usuario quiere inscribirse en un torneo al cual ya esta inscrito.
             \n- El servicio tiene excepcion si el usuario quiere inscribirse a un torneo que ya tiene las plazas llenas.
+            \n- El servicio tiene excepcion si el usuario quiere inscribirse a un torneo que ya empezo.
         """
         tournament = db.query(models.Tournaments).filter(models.Tournaments.id == tournaments_id).first() 
         if not tournament:
             raise exception_tournaments.tournament_not_exist
+        if utils.is_past(start_date=tournament.start_date):
+            raise exception_tournaments.already_started_tournament
         enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournaments_id, EnrollmentUsers.appuser_id == user.id).first()
         list_enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournaments_id).all()
         enrollment_tournament_max = int(tournament.max_number_of_players)

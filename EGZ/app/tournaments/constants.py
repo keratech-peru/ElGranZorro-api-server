@@ -6,6 +6,7 @@ class ErrorCode:
     TOURNAMENT_NOT_EXIST = "No existe el torneo"
     FOOTBALLGAME_NOT_EXIST = "No existe footballgame"
     FULL_TOURNAMENT = "Torneo Lleno"
+    ALREADY_STARTED_TOURNAMENT = "El Torneo ya empezo."
 
 STATUS_TOURNAMENT = {
     "EE": "EN ESPERA",
