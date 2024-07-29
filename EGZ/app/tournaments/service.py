@@ -52,7 +52,10 @@ class Tournaments_(CRUD):
                 EnrollmentUsers.appuser_id == appuser_id
                 ).first() else False
             tournament_["competition_emblems"] = Tournaments_.get_competition_emblems(db, tournament.id)
-            tournaments_.append(tournament_)
+            if tournament_["is_enrolled_user"]:
+                tournaments_.append(tournament_)
+            elif not is_past(tournament.start_date):
+                tournaments_.append(tournament_)
         return tournaments_
 
     def list_search_codigo(db: Session, codigo: str) -> List[Tournaments]:
