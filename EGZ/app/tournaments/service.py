@@ -7,8 +7,8 @@ from app.tournaments import schemas
 from app.tournaments.constants import GROUPS, STATUS_TOURNAMENT
 from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over
 from app.notifications.service import Notificaciones_
-from app.competitions.models import Teams, MatchsFootballGames, Matchs
-from app.competitions.constants import DataDummy
+from app.competitions.models import Teams, MatchsFootballGames, Matchs, Competitions
+from app.competitions.constants import DataDummyTeam, DataDummyCompetition
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List 
@@ -51,8 +51,7 @@ class Tournaments_(CRUD):
                 EnrollmentUsers.tournaments_id == tournament.id,
                 EnrollmentUsers.appuser_id == appuser_id
                 ).first() else False
-            tournament_["is_past"] = is_past(tournament.start_date)
-            tournament_["is_over"] = is_over(tournament.start_date)
+            tournament_["competition_emblems"] = Tournaments_.get_competition_emblems(db, tournament.id)
             tournaments_.append(tournament_)
         return tournaments_
 
@@ -168,6 +167,16 @@ class Tournaments_(CRUD):
         for enrollment in enrollments:
             enrollment.state = USER_STATUS_IN_TOURNAMENT["EP"]
             CRUD.update(db, enrollment)
+    
+    def get_competition_emblems(db: Session, tournament_id: int):
+        footballgame_ids_list = list( map(lambda x: x[0], db.query(FootballGames.id).filter(FootballGames.tournament_id == tournament_id).all()) )
+        matchs_footballgames_ids_list = list( map(lambda x: x[0], db.query(MatchsFootballGames.id_match).filter(MatchsFootballGames.id_footballgames.in_(footballgame_ids_list)).all()) )
+        matchs_team_away_ids_list = list( map(lambda x: x[0], db.query(Matchs.id_team_away).filter(Matchs.id.in_(matchs_footballgames_ids_list)).all()) )
+        competitions_ids_list = list( map(lambda x: x[0], db.query(Teams.competitions_id).filter(Teams.id_team.in_(matchs_team_away_ids_list)).all()) )
+        competitions = [{"name":competition[0], "emblem":competition[1]} for competition in db.query(Competitions.name, Competitions.emblem).filter(Competitions.id.in_(competitions_ids_list)).all()]
+        if len(footballgame_ids_list) > len(matchs_footballgames_ids_list):
+            competitions = competitions + [{"name":DataDummyCompetition.name, "emblem":DataDummyCompetition.emblem}]
+        return competitions
 
 class FootballGames_(CRUD):
     @staticmethod
@@ -379,7 +388,7 @@ class FootballGames_(CRUD):
             id_team = match_.id_team_home if local else match_.id_team_away
             logo = db.query(Teams.emblem).filter(Teams.id_team == id_team).first()[0]
         else:
-            logo = DataDummy.emblem
+            logo = DataDummyTeam.emblem
         return logo
 
 class Confrontations_(CRUD):

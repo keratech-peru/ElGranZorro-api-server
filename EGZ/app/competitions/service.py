@@ -6,7 +6,7 @@ from app.exception import validate_credentials, expired_token
 from app.database import CRUD
 from app.competitions.models import Matchs, Competitions, Teams, MatchsFootballGames
 from app.competitions import schemas
-from app.competitions.constants import DataDummy
+from app.competitions.constants import DataDummyTeam
 from app.tournaments.models import FootballGames
 from app.notifications.service import NotificacionesAdmin_
 
@@ -128,9 +128,9 @@ class Competitions_(CRUD):
         footballgames_id_data_dummy = set(footballgames_id) - set(footballgames_id_match)
         for id in footballgames_id_data_dummy:
             footballgame = db.query(FootballGames).filter(FootballGames.id == id).first()
-            footballgame.hour = DataDummy.hour
-            footballgame.home_team = DataDummy.name
-            footballgame.away_team = DataDummy.name
+            footballgame.hour = DataDummyTeam.hour
+            footballgame.home_team = DataDummyTeam.name
+            footballgame.away_team = DataDummyTeam.name
             CRUD.update(db, footballgame)
 
         NotificacionesAdmin_.send_whatsapp_incomplete_tournament(db, tournament_id, len(footballgames)-cont)
