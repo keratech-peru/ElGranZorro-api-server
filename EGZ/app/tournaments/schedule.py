@@ -14,7 +14,6 @@ def my_job(db: Session):
     date_now, __ = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
     tournaments = db.query(Tournaments).filter(Tournaments.start_date == date_now).all()
     for tournament in tournaments:
-        print(tournament.__dict__,"\n")
         Tournaments_.start(db, tournament.id)
 
 # Configura el cron job para que se ejecute cada minuto
