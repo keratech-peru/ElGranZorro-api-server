@@ -125,12 +125,14 @@ class Competitions_(CRUD):
                     CRUD.insert(db, match_footballgame)
                     footballgames_id_match.append(footballgames_by_day[i].id)
         
+        teams = db.query(Teams.name).all()
+        matchs = db.query(Matchs.hour).all()
         footballgames_id_data_dummy = set(footballgames_id) - set(footballgames_id_match)
         for id in footballgames_id_data_dummy:
             footballgame = db.query(FootballGames).filter(FootballGames.id == id).first()
-            footballgame.hour = DataDummyTeam.hour
-            footballgame.home_team = DataDummyTeam.name
-            footballgame.away_team = DataDummyTeam.name
+            footballgame.hour = random.choice(matchs)[0]
+            footballgame.home_team = random.choice(teams)[0]
+            footballgame.away_team = random.choice(teams)[0]
             CRUD.update(db, footballgame)
 
         NotificacionesAdmin_.send_whatsapp_incomplete_tournament(db, tournament_id, len(footballgames)-cont)

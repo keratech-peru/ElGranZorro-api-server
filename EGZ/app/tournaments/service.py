@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List 
 from datetime import datetime, timezone, timedelta
+import random
 class Tournaments_(CRUD):
     @staticmethod
     def create(tourmament_in: schemas.Tourmaments, db: Session) -> Tournaments:
@@ -172,13 +173,14 @@ class Tournaments_(CRUD):
             CRUD.update(db, enrollment)
     
     def get_competition_emblems(db: Session, tournament_id: int):
+        emblem = db.query(Competitions.emblem).all()
         footballgame_ids_list = list( map(lambda x: x[0], db.query(FootballGames.id).filter(FootballGames.tournament_id == tournament_id).all()) )
         matchs_footballgames_ids_list = list( map(lambda x: x[0], db.query(MatchsFootballGames.id_match).filter(MatchsFootballGames.id_footballgames.in_(footballgame_ids_list)).all()) )
         matchs_team_away_ids_list = list( map(lambda x: x[0], db.query(Matchs.id_team_away).filter(Matchs.id.in_(matchs_footballgames_ids_list)).all()) )
         competitions_ids_list = list( map(lambda x: x[0], db.query(Teams.competitions_id).filter(Teams.id_team.in_(matchs_team_away_ids_list)).all()) )
         competitions = [{"name":competition[0], "emblem":competition[1]} for competition in db.query(Competitions.name, Competitions.emblem).filter(Competitions.id.in_(competitions_ids_list)).all()]
         if len(footballgame_ids_list) > len(matchs_footballgames_ids_list):
-            competitions = competitions + [{"name":DataDummyCompetition.name, "emblem":DataDummyCompetition.emblem}]
+            competitions = competitions + [{"name":DataDummyCompetition.name, "emblem":random.choice(emblem)[0]}]
         return competitions
     
     def update_stage(db: Session, tournament_cod: str, key:str):
@@ -391,6 +393,7 @@ class FootballGames_(CRUD):
                 Tournaments_.update_stage(db, tournament_cod, key="TE")
 
     def get_logo(footballgame_id: int, local: bool, db: Session):
+        teams = db.query(Teams.emblem).all()
         match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_footballgames == footballgame_id).first()
         logo = None
         if match_footballgame:
@@ -398,7 +401,7 @@ class FootballGames_(CRUD):
             id_team = match_.id_team_home if local else match_.id_team_away
             logo = db.query(Teams.emblem).filter(Teams.id_team == id_team).first()[0]
         else:
-            logo = DataDummyTeam.emblem
+            logo = random.choice(teams)[0]
         return logo
 
 class Confrontations_(CRUD):
