@@ -25,6 +25,7 @@ class AppUsers(Base):
     event_log_users = relationship("EventLogUser", back_populates="appuser")
     otp_users = relationship("OtpUsers", back_populates="appuser")
     event_otp_users = relationship("EventOtpUsers", back_populates="appuser")
+    commission_agent_users = relationship("CommissionAgent", back_populates="appuser")
 
 class EnrollmentUsers(Base):
     __tablename__= "users_enrollment_users"
@@ -74,3 +75,14 @@ class EventOtpUsers(Base):
     due_date = Column(DateTime, default=lambda: datetime.utcnow())
 
     appuser = relationship("AppUsers", back_populates="event_otp_users")
+
+class CommissionAgent(Base):
+    __tablename__ = "users_commission_agent"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    appuser_id = Column(Integer, ForeignKey("users_appusers.id"), unique=True)
+    start_date = Column(String)
+    end_date = Column(String)
+    codigo = Column(String, unique=True)
+    percent = Column(Integer)
+
+    appuser = relationship("AppUsers", back_populates="commission_agent_users")

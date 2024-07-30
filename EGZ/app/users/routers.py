@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, status, Request
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Dict, List
 from sqlalchemy.orm import Session
-from app.users.service import AppUsers_, OtpUsers_, EventOtpUsers_
+from app.users.service import AppUsers_, OtpUsers_, EventOtpUsers_, CommissionAgent_
 from app.users import schemas
-from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
+from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser, CommissionAgent
 from app.tournaments import models, utils, exception as exception_tournaments
 from app.users import exception
 from app.database import get_db
@@ -235,3 +235,38 @@ def validation_otp(
         else:
             raise exception.incorrect_otp
         return {"status": "done"}
+
+@router.post("/commission-agent", status_code=status.HTTP_201_CREATED)
+def commission_agent_create(
+    db: Session = Depends(get_db),
+    user: AppUsers = Depends(get_user_current)
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio de creacion de comisionista.
+        \n**Excepcion** : 
+            \n- El servicio requiere api-key.
+        """
+        commission_agent = db.query(CommissionAgent).filter(CommissionAgent.appuser_id == user.id).first()
+        if commission_agent:
+            raise exception.user_already_commission_agent
+        new_commission_agent = CommissionAgent_.create(db, user)
+        return {"status": "done", "commission_agent_id": new_commission_agent.id}
+
+@router.get("/coupon/{codigo}", status_code=status.HTTP_200_OK)
+def discount_get(
+    codigo: str,
+    db: Session = Depends(get_db),
+    __: AppUsers = Depends(get_user_current)
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio muestra la informacion del usuario logiado.
+        \n**Excepcion** : 
+            \n- El servicio requiere autorizacion via token
+            \n- El servicio tiene excepcion si el token es invalido o expiro
+        """
+        commission_agent = db.query(CommissionAgent).filter(CommissionAgent.codigo == codigo).first()
+        if not commission_agent:
+            raise exception.invalid_coupon
+        if not CommissionAgent_.valid_coupon(commission_agent):
+            raise exception.coupon_expired
+        return {"status":"done", "coupon":commission_agent.percent}

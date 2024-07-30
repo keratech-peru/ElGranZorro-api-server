@@ -56,3 +56,10 @@ class OtpUsers(BaseModel):
     otp: Optional[str] = None
     is_verification: Optional[bool] = False
     is_user_respond: Optional[bool] = False
+
+class CommissionAgent(BaseModel):
+    appuser_id: Optional[int] = None
+    start_date: str
+    end_date: str
+    codigo: Optional[str] = None
+    percent: int

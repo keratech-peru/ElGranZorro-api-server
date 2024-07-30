@@ -105,3 +105,24 @@ option_not_allowed = HTTPException(
         "message": ErrorCode.OPTION_NOT_ALLOWED
     },
 )
+
+user_already_commission_agent= HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.OPTION_NOT_ALLOWED
+    },
+)
+
+invalid_coupon= HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.INVALID_COUPON
+    },
+)
+
+coupon_expired= HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.EXPIRED_COUPON
+    },
+)
