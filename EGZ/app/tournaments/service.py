@@ -79,8 +79,10 @@ class Tournaments_(CRUD):
         group_stage_ids_list = [group.id for group in groups_stage]
         for group_stage in groups_stage:
             group_stage_ = group_stage.__dict__
-            group_stage_["team"] = db.query(AppUsers.team_name, AppUsers.team_logo).filter(AppUsers.id == group_stage_['appuser_id']).first()
+            appuser = db.query(AppUsers).filter(AppUsers.id == group_stage_['appuser_id']).first()
+            group_stage_["team"] = {"team_name":appuser.team_name, "team_logo":appuser.team_logo} if appuser else None
             group_stage_["points"] = group_stage_point[group_stage.id]
+            group_stage_["is_user_team"] = appuser.id == user_id if appuser else None
             group_stage_table.append(group_stage_)
         return group_stage_table, group_stage_ids_list
 
