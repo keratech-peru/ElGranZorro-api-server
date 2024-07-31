@@ -21,3 +21,6 @@ class Email:
 
 class Whatsapp:
     URL_SEND = config("URL_SEND_WHATSAPP")
+
+API_FOOTBALL_DATA = config("API_FOOTBALL_DATA")
+KEY_FOOTBALL_DATA = config("KEY_FOOTBALL_DATA")

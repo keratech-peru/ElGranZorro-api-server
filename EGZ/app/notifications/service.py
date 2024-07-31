@@ -92,3 +92,8 @@ class NotificacionesAdmin_:
         tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
         text = f"*Administrador* el torneo *{tournament.name}* creado recientemente tiene *{numb_footballgame}* footballgames incompletos, se le pondra data dummy."
         Notificaciones_.send_whatsapp("936224658", text)
+
+    @staticmethod
+    def send_whatsapp_adding_match(numb_match: int, start_date:str, end_date:str) -> None:
+        text = f"*Administrador* se han agregado {numb_match} match nuevos correspondietes a las fechas *{start_date}* al *{end_date}*"
+        Notificaciones_.send_whatsapp("936224658", text)

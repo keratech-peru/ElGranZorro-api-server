@@ -1,16 +1,15 @@
 import random
+import requests
+import pytz
 from typing import List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
-from app.exception import validate_credentials, expired_token
 from app.database import CRUD
 from app.competitions.models import Matchs, Competitions, Teams, MatchsFootballGames
-from app.competitions import schemas
-from app.competitions.constants import DataDummyTeam
 from app.tournaments.models import FootballGames
 from app.notifications.service import NotificacionesAdmin_
-
-
+from app.config import API_FOOTBALL_DATA, KEY_FOOTBALL_DATA
+from app.competitions.utils import format_date
 
 class Competitions_(CRUD):
     @staticmethod
@@ -99,7 +98,28 @@ class Competitions_(CRUD):
             type="LEAGUE",
             emblem="https://crests.football-data.org/PL.png"
         )
-        objects_list = [compe_3, compe_4, compe_5, compe_6, compe_7, compe_8, compe_9, compe_11, compe_12]
+        compe_13 = Competitions(
+            id_competition=2101,
+            name="Primera División",
+            code="PPD",
+            type="LEAGUE",
+            emblem="https://upload.wikimedia.org/wikipedia/commons/6/62/Liga_de_F%C3%BAtbol_Profesional_-_Liga_1_%28Per%C3%BA%29.jpg"
+        )
+        compe_14 = Competitions(
+            id_competition=2048,
+            name="Primera División",
+            code="CPD",
+            type="LEAGUE",
+            emblem="https://crests.football-data.org/cpd.png"
+        )
+        compe_15 = Competitions(
+            id_competition=2024,
+            name="Liga Profesional",
+            code="ASL",
+            type="LEAGUE",
+            emblem="https://crests.football-data.org/LPDF.svg"
+        )
+        objects_list = [compe_3, compe_4, compe_5, compe_6, compe_7, compe_8, compe_9, compe_11, compe_12, compe_13, compe_14, compe_15]
         CRUD.bulk_insert(db, objects_list)
     
     @staticmethod
@@ -137,4 +157,53 @@ class Competitions_(CRUD):
 
         NotificacionesAdmin_.send_whatsapp_incomplete_tournament(db, tournament_id, len(footballgames)-cont)
 
+    @staticmethod
+    def add_teams(competitions: List[Competitions], db: Session):
+        objects_list = []
+        for competition in competitions:
+            uri = API_FOOTBALL_DATA + f'competitions/{competition[2]}/teams'
+            headers = { 'X-Auth-Token':  KEY_FOOTBALL_DATA}
+            response = requests.get(uri, headers=headers).json()
+            for team in response["teams"]:
+                team_ = Teams(
+                    competitions_id=competition[0],
+                    id_team=team["id"],
+                    name=team["name"],
+                    short_name=team["shortName"],
+                    emblem=team["crest"]
+                )
+                objects_list.append(team_)
+        CRUD.bulk_insert(db, objects_list)
 
+    @staticmethod
+    def add_match(competitions: List[Competitions], db: Session):
+        objects_list = []
+        datetime_now = datetime.now(pytz.timezone("America/Lima"))
+        datetime_last_moth = datetime_now + timedelta(days=30)
+        day_now = str(datetime_now).split(" ")[0]
+        day_last_moth = str(datetime_last_moth).split(" ")[0]
+        for competition in competitions:
+            uri = API_FOOTBALL_DATA + f'competitions/{competition[2]}/matches/?dateFrom={day_now}&dateTo={day_last_moth}'
+            headers = { 'X-Auth-Token': KEY_FOOTBALL_DATA }
+            response = requests.get(uri, headers=headers).json()
+            for match in response["matches"]:
+                list_datetime = str(datetime.strptime(match["utcDate"], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc) - timedelta(hours=5)).split(" ")
+                matchh = db.query(Matchs).filter(Matchs.id_match == match["id"]).first()
+                if matchh:
+                    pass
+                else:
+                    match_ = Matchs(
+                        id_match=match["id"],
+                        cod_competitions=match["competition"]["code"],
+                        date=format_date(list_datetime[0]),
+                        hour=list_datetime[1][:8],
+                        id_team_home=match["homeTeam"]["id"],
+                        id_team_away=match["awayTeam"]["id"],
+                        score_home=None,
+                        score_away=None,
+                        status=match["status"]
+                    )
+                    objects_list.append(match_)
+        CRUD.bulk_insert(db, objects_list)
+
+        NotificacionesAdmin_.send_whatsapp_adding_match(numb_match = len(objects_list), start_date = day_now, end_date = day_last_moth)
