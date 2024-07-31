@@ -97,3 +97,8 @@ class NotificacionesAdmin_:
     def send_whatsapp_adding_match(numb_match: int, start_date:str, end_date:str) -> None:
         text = f"*Administrador* se han agregado {numb_match} match nuevos correspondietes a las fechas *{start_date}* al *{end_date}*"
         Notificaciones_.send_whatsapp("936224658", text)
+
+    @staticmethod
+    def send_whatsapp_adding_match_2(codigo: str, home_team:str, away_team:str) -> None:
+        text = f"Se actualizo el registro con data dummy *{codigo}* *{home_team}* *{away_team}*"
+        Notificaciones_.send_whatsapp("936224658", text)
