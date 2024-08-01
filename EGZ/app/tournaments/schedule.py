@@ -28,16 +28,19 @@ def update_footballgames(db: Session):
         dif = datetime.strptime(hour_now, time_format) - datetime.strptime(footballgame.hour, time_format)
         if dif.total_seconds() > 6000 and (footballgame.home_score is None) and (footballgame.away_score is None):
             match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_footballgames ==footballgame.id).first()
+            result_home = None
+            result_away = None
             if match_footballgame:
                 match = db.query(Matchs).filter(Matchs.id == match_footballgame.id_match).first()
                 uri = API_FOOTBALL_DATA + f'matches/{match.id_match}'
                 headers = { 'X-Auth-Token':  KEY_FOOTBALL_DATA}
                 response = requests.get(uri, headers=headers).json()
-                result_home = response["score"]["fullTime"]["home"]
-                result_away = response["score"]["fullTime"]["away"]
+                if response["status"] == "FINISHED":
+                    result_home = response["score"]["fullTime"]["home"]
+                    result_away = response["score"]["fullTime"]["away"]
                 status = response["status"]
-                match.score_home = response["score"]["fullTime"]["home"]
-                match.score_away = response["score"]["fullTime"]["away"]
+                match.score_home = result_home
+                match.score_away = result_away
                 match.status = response["status"]
                 db.commit()
                 db.refresh(match)
@@ -54,10 +57,15 @@ def update_footballgames(db: Session):
                 "hour":footballgame.hour,
                 "status":status
             })
-            footballgame.home_score = result_home
-            footballgame.away_score = result_away
-            db.commit()
-            db.refresh(footballgame)
+            #footballgame.home_score = result_home
+            #footballgame.away_score = result_away
+            #db.commit()
+            #db.refresh(footballgame)
+            if not (result_home is None) and not (result_away is None):
+                if "GP" in footballgame.codigo:
+                    FootballGames_.update_group_stage(footballgame, result_home, result_away, db)
+                else:
+                    FootballGames_.update_key_stage(footballgame, result_home, result_away, db)
     NotificacionesAdmin_.send_whatsapp_update_match(update_result)
 
 # Configura el cron job para que se ejecute cada minuto
