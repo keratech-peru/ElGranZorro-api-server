@@ -1,3 +1,4 @@
+from typing import List
 from sqlalchemy.orm import Session
 from app.config import Email, Whatsapp
 from app.notifications.constants import TextToSend
@@ -99,6 +100,15 @@ class NotificacionesAdmin_:
         Notificaciones_.send_whatsapp("936224658", text)
 
     @staticmethod
-    def send_whatsapp_adding_match_2(codigo: str, home_team:str, away_team:str) -> None:
-        text = f"Se actualizo el registro con data dummy *{codigo}* *{home_team}* *{away_team}*"
+    def send_whatsapp_update_match(update_results: List[dict]) -> None:
+        text = "Se actualizo el registro de los match:\n"
+        for result in update_results:
+            codigo = result["codigo"]
+            home_team = result["home_team"]
+            away_team = result["away_team"]
+            home_score = result["home_score"]
+            away_score = result["away_score"]
+            hour = result["hour"]
+            status = result["status"]
+            text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {home_score} - {away_score} -> {hour} -> {status}\n"
         Notificaciones_.send_whatsapp("936224658", text)
