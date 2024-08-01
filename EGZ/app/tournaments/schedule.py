@@ -26,7 +26,7 @@ def update_footballgames(db: Session):
     update_result = []
     for footballgame in footballgames:
         dif = datetime.strptime(hour_now, time_format) - datetime.strptime(footballgame.hour, time_format)
-        if dif.days == 0 and (footballgame.home_score is None) and (footballgame.away_score is None):
+        if dif.days < 0 and (footballgame.home_score is None) and (footballgame.away_score is None):
             match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_footballgames ==footballgame.id).first()
             if match_footballgame:
                 match = db.query(Matchs).filter(Matchs.id == match_footballgame.id_match).first()
