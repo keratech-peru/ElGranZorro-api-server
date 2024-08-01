@@ -26,7 +26,7 @@ def update_footballgames(db: Session):
     update_result = []
     for footballgame in footballgames:
         dif = datetime.strptime(hour_now, time_format) - datetime.strptime(footballgame.hour, time_format)
-        if dif.days < 0 and (footballgame.home_score is None) and (footballgame.away_score is None):
+        if dif.total_seconds() > 6000 and (footballgame.home_score is None) and (footballgame.away_score is None):
             match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_footballgames ==footballgame.id).first()
             if match_footballgame:
                 match = db.query(Matchs).filter(Matchs.id == match_footballgame.id_match).first()
@@ -36,6 +36,11 @@ def update_footballgames(db: Session):
                 result_home = response["score"]["fullTime"]["home"]
                 result_away = response["score"]["fullTime"]["away"]
                 status = response["status"]
+                match.score_home = response["score"]["fullTime"]["home"]
+                match.score_away = response["score"]["fullTime"]["away"]
+                match.status = response["status"]
+                db.commit()
+                db.refresh(match)
             else:
                 result_home = random.randint(0, 3)
                 result_away = random.randint(0, 3)
@@ -49,6 +54,8 @@ def update_footballgames(db: Session):
                 "hour":footballgame.hour,
                 "status":status
             })
+            footballgame.home_score = result_home
+            footballgame.away_score = result_away
             db.commit()
             db.refresh(footballgame)
     NotificacionesAdmin_.send_whatsapp_update_match(update_result)
