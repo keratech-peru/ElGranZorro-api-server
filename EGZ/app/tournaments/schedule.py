@@ -57,16 +57,17 @@ def update_footballgames(db: Session):
                 "hour":footballgame.hour,
                 "status":status
             })
-            #footballgame.home_score = result_home
-            #footballgame.away_score = result_away
-            #db.commit()
-            #db.refresh(footballgame)
-            if not (result_home is None) and not (result_away is None):
+            if (result_home != None) and (result_away != None):
+                footballgame.home_score = result_home
+                footballgame.away_score = result_away
+                db.commit()
+                db.refresh(footballgame)
                 if "GP" in footballgame.codigo:
                     FootballGames_.update_group_stage(footballgame, result_home, result_away, db)
                 else:
                     FootballGames_.update_key_stage(footballgame, result_home, result_away, db)
-    NotificacionesAdmin_.send_whatsapp_update_match(update_result)
+    if len(update_result) > 0:
+        NotificacionesAdmin_.send_whatsapp_update_match(update_result)
 
 # Configura el cron job para que se ejecute cada minuto
 def cron_job_start_tournament():
