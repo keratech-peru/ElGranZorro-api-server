@@ -407,7 +407,7 @@ class FootballGames_(CRUD):
         return logo
 
     def next_stage(stage:str, tournament_cod:str, footballgame_codigo: str, db:Session) -> bool:
-        footballgames = db.query(FootballGames).filter( FootballGames.tournament_id == int(tournament_cod),
+        footballgames = db.query(FootballGames).filter( FootballGames.tournament_id == int(tournament_cod[3:]),
                                                         FootballGames.codigo.like("%{stage}%"),
                                                         FootballGames.away_score.is_(None),
                                                         FootballGames.away_team.is_(None)).count()
