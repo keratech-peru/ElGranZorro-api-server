@@ -30,6 +30,7 @@ def update_footballgames(db: Session):
             match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_footballgames ==footballgame.id).first()
             result_home = None
             result_away = None
+            status = "RANDOM"
             if match_footballgame:
                 match = db.query(Matchs).filter(Matchs.id == match_footballgame.id_match).first()
                 uri = API_FOOTBALL_DATA + f'matches/{match.id_match}'
@@ -41,13 +42,12 @@ def update_footballgames(db: Session):
                 status = response["status"]
                 match.score_home = result_home
                 match.score_away = result_away
-                match.status = response["status"]
+                match.status = status
                 db.commit()
                 db.refresh(match)
             else:
                 result_home = random.randint(0, 3)
                 result_away = random.randint(0, 3)
-                status = "RANDOM"
             update_result.append({
                 "codigo":footballgame.codigo,
                 "home_team":footballgame.home_team,

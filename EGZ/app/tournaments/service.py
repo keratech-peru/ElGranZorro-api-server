@@ -351,7 +351,7 @@ class FootballGames_(CRUD):
         appuser_id_point_plays = AppUsers_.play_users_points(db, footballgame.id, footballgame.type_footballgames, home_score, away_score)
         Confrontations_.allocation_points_group_stage(db, appuser_id_point_plays,footballgame.codigo)
         Confrontations_.orden_update_group_stage(db, tournament_cod)
-        if "GP9" in footballgame.codigo:
+        if FootballGames_.next_stage("GP", tournament_cod, footballgame.codigo, db):
             AppUsers_.eliminated_group_stage(db, tournament_cod)
             list_appuser_id = Confrontations_.registration_teams_eighths(db, tournament_cod)
             Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="GP")
@@ -367,28 +367,28 @@ class FootballGames_(CRUD):
         appuser_id_point_plays = AppUsers_.play_users_points(db, footballgame.id, footballgame.type_footballgames, home_score, away_score)
         if "OC" in footballgame.codigo:
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
-            if "OC3" in footballgame.codigo:
+            if FootballGames_.next_stage("OC", tournament_cod, footballgame.codigo, db):
                 list_appuser_id = Confrontations_.registration_teams_quarter(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "OC", list_appuser_id, tournament_id)
                 Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="OC")
                 Tournaments_.update_stage(db, tournament_cod, key="CU")
         elif "CU" in footballgame.codigo:
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
-            if "CU3" in footballgame.codigo:
+            if FootballGames_.next_stage("CU", tournament_cod, footballgame.codigo, db):
                 list_appuser_id = Confrontations_.registration_teams_semifinal(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "CU", list_appuser_id, tournament_id)
                 Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="CU")
                 Tournaments_.update_stage(db, tournament_cod, key="SF")
         elif "SF" in footballgame.codigo:
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
-            if "SF3" in footballgame.codigo: 
+            if FootballGames_.next_stage("SF", tournament_cod, footballgame.codigo, db):
                 list_appuser_id = Confrontations_.registration_teams_final(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "SF", list_appuser_id, tournament_id)
                 Notificaciones_.send_whatsapp_stage_passed(db, tournament_cod, list_appuser_id, key="SF")
                 Tournaments_.update_stage(db, tournament_cod, key="FI")
         else:
             Confrontations_.allocation_points_key_stage(db, appuser_id_point_plays,footballgame.codigo)
-            if "FI5" in footballgame.codigo:
+            if FootballGames_.next_stage("FI", tournament_cod, footballgame.codigo, db):
                 list_appuser_id = Confrontations_.first_place(db, tournament_cod)
                 AppUsers_.eliminated_key_stage(db, "FI", list_appuser_id, tournament_id)
                 Notificaciones_.send_whatsapp_user_winner(db, tournament_cod, list_appuser_id[0])
@@ -405,6 +405,23 @@ class FootballGames_(CRUD):
         else:
             logo = random.choice(teams)[0]
         return logo
+
+    def next_stage(stage:str, tournament_cod:str, footballgame_codigo: str, db:Session) -> bool:
+        footballgames = db.query(FootballGames).filter( FootballGames.tournament_id == int(tournament_cod),
+                                                        FootballGames.codigo.like("%{stage}%"),
+                                                        FootballGames.away_score.is_(None),
+                                                        FootballGames.away_team.is_(None)).count()
+        stages_cod = {
+            "GP":["GP7","GP8","GP9"],
+            "OC":["OC1","OC2","OC3"],
+            "CU":["CU1","CU2","CU3"],
+            "SF":["SF1","SF2","SF3"],
+            "FI":["FI1","FI2","FI3","FI4","FI5"]
+        }
+        result = False
+        for cod in stages_cod[stage]:
+            result = result or (cod in footballgame_codigo)
+        return result and (footballgames == 0)
 
 class Confrontations_(CRUD):
     @staticmethod
