@@ -15,3 +15,12 @@ def generate_otp_numeric() -> str:
         otp += digits[math.floor(random.random() * 10)]
         cont += 1
     return otp
+
+def popup_message(stage:str) -> str:
+    if "ELIMINADO" in stage:
+        msg = f"Fuiste eliminado en la etapa de {stage[12:]}, puedes revisar las proximas jugadas"
+    elif "GANADOR" in stage:
+        msg = "Felicidades ganaste el torneo."
+    else:
+        msg = ""
+    return msg

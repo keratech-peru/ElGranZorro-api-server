@@ -3,6 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from typing import Dict
 from sqlalchemy.orm import Session
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers
+from app.users.utils import popup_message
 from app.users import exception as exception_users
 from app.tournaments.models import Tournaments, FootballGames
 from app.tournaments.service import Tournaments_
@@ -69,7 +70,7 @@ def tournament_id(
         if not enrollment:
             raise exception_users.user_not_enrolled_in_tournament
         tournament_, group_stage_table, football_stage_group, football_stage_keys = Tournaments_.get_footballgames(db, tournament, user.id)
-        return {"status": "done", "user":{"id":user.id, "stage":enrollment.state},"tournament":tournament_ ,"group_stage_table":group_stage_table, "football_stage_group":football_stage_group, "football_stage_keys":football_stage_keys }
+        return {"status": "done", "user":{"id":user.id, "stage":enrollment.state, "msg":popup_message(enrollment.state)},"tournament":tournament_ ,"group_stage_table":group_stage_table, "football_stage_group":football_stage_group, "football_stage_keys":football_stage_keys }
 
 @router.delete("/{tournaments_id}", status_code=status.HTTP_200_OK)
 def tournament_delete(

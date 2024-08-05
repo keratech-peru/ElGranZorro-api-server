@@ -50,12 +50,3 @@ input::-webkit-input-placeholder {
    font-size: 12px;
    text-align: center;
 }
-
-.bg-transparent {
-   background-color: transparent;
- }
- 
- /* Si quieres cambiar el color */
- .text-custom-success {
-   color: #a04caf; /* Un verde diferente */
- }
