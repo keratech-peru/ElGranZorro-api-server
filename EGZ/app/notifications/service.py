@@ -91,17 +91,17 @@ class NotificacionesAdmin_:
     @staticmethod
     def send_whatsapp_incomplete_tournament(db: Session, tournament_id: int, numb_footballgame: int) -> None:
         tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
-        text = f"*Administrador* el torneo *{tournament.name}* creado recientemente tiene *{numb_footballgame}* footballgames incompletos, se le pondra data dummy."
+        text = f"*ADMINISTRADOR* el torneo *{tournament.name}* creado recientemente tiene *{numb_footballgame}* footballgames incompletos, se le pondra data dummy."
         Notificaciones_.send_whatsapp("936224658", text)
 
     @staticmethod
     def send_whatsapp_adding_match(numb_match: int, start_date:str, end_date:str) -> None:
-        text = f"*Administrador* se han agregado {numb_match} match nuevos correspondietes a las fechas *{start_date}* al *{end_date}*"
+        text = f"*ADMINISTRADOR* se han agregado {numb_match} match nuevos correspondietes a las fechas *{start_date}* al *{end_date}*"
         Notificaciones_.send_whatsapp("936224658", text)
 
     @staticmethod
     def send_whatsapp_update_match(update_results: List[dict]) -> None:
-        text = "Se actualizo el registro de los match:\n"
+        text = "*ADMINISTRADOR* se actualizo el registro de los match:\n"
         for result in update_results:
             codigo = result["codigo"]
             home_team = result["home_team"]
@@ -111,4 +111,15 @@ class NotificacionesAdmin_:
             hour = result["hour"]
             status = result["status"]
             text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {home_score} - {away_score} -> {hour} -> {status}\n"
+        Notificaciones_.send_whatsapp("936224658", text)
+
+    @staticmethod
+    def send_whatsapp_incomplete_footballgames(footballgames: List[FootballGames]) -> None:
+        text = "*ADMINISTRADOR* falta completar los siguientes registros del dia:\n"
+        for footballgame in footballgames:
+            codigo = footballgame.codigo
+            home_team = footballgame.home_team
+            away_team = footballgame.away_team
+            hour = footballgame.hour
+            text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {hour}\n"
         Notificaciones_.send_whatsapp("936224658", text)

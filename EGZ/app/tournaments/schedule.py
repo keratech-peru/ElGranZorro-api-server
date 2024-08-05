@@ -24,50 +24,53 @@ def update_footballgames(db: Session):
     footballgames = db.query(FootballGames).filter(FootballGames.date == date_now).all()
     time_format = "%H:%M:%S"
     update_result = []
+    result_home = None
+    result_away = None
     for footballgame in footballgames:
         dif = datetime.strptime(hour_now, time_format) - datetime.strptime(footballgame.hour, time_format)
         if dif.total_seconds() > 6000 and (footballgame.home_score is None) and (footballgame.away_score is None):
             match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_footballgames ==footballgame.id).first()
-            result_home = None
-            result_away = None
-            status = "RANDOM"
             if match_footballgame:
                 match = db.query(Matchs).filter(Matchs.id == match_footballgame.id_match).first()
                 uri = API_FOOTBALL_DATA + f'matches/{match.id_match}'
                 headers = { 'X-Auth-Token':  KEY_FOOTBALL_DATA}
                 response = requests.get(uri, headers=headers).json()
-                if response["status"] == "FINISHED":
+                status = response["status"]
+                if status == "FINISHED":
                     result_home = response["score"]["fullTime"]["home"]
                     result_away = response["score"]["fullTime"]["away"]
-                status = response["status"]
-                match.score_home = result_home
-                match.score_away = result_away
-                match.status = status
-                db.commit()
-                db.refresh(match)
-            else:
-                result_home = random.randint(0, 3)
-                result_away = random.randint(0, 3)
-            update_result.append({
-                "codigo":footballgame.codigo,
-                "home_team":footballgame.home_team,
-                "away_team":footballgame.away_team,
-                "home_score":result_home,
-                "away_score":result_away,
-                "hour":footballgame.hour,
-                "status":status
-            })
-            if (result_home != None) and (result_away != None):
-                footballgame.home_score = result_home
-                footballgame.away_score = result_away
-                db.commit()
-                db.refresh(footballgame)
-                if "GP" in footballgame.codigo:
-                    FootballGames_.update_group_stage(footballgame, result_home, result_away, db)
-                else:
-                    FootballGames_.update_key_stage(footballgame, result_home, result_away, db)
+                    match.score_home = result_home
+                    match.score_away = result_away
+                    match.status = status
+                    db.commit()
+                    db.refresh(match)
+                    footballgame.home_score = result_home
+                    footballgame.away_score = result_away
+                    db.commit()
+                    db.refresh(footballgame)
+                    update_result.append({
+                        "codigo":footballgame.codigo,
+                        "home_team":footballgame.home_team,
+                        "away_team":footballgame.away_team,
+                        "home_score":result_home,
+                        "away_score":result_away,
+                        "hour":footballgame.hour,
+                        "status":status
+                    })
+                    if (result_home != None) and (result_away != None):
+                        if "GP" in footballgame.codigo:
+                            FootballGames_.update_group_stage(footballgame, result_home, result_away, db)
+                        else:
+                            FootballGames_.update_key_stage(footballgame, result_home, result_away, db)
     if len(update_result) > 0:
         NotificacionesAdmin_.send_whatsapp_update_match(update_result)
+
+def incomplete_footballgames(db: Session):
+    date_now, __ = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
+    footballgames = db.query(FootballGames).filter( FootballGames.date == date_now,
+                                                    FootballGames.away_score.is_(None),
+                                                    FootballGames.away_team.is_(None)).all()
+    NotificacionesAdmin_.send_whatsapp_incomplete_footballgames(footballgames)
 
 # Configura el cron job para que se ejecute cada minuto
 def cron_job_start_tournament():
@@ -81,5 +84,12 @@ def cron_job_update_footballgames():
     db = SessionLocal()
     try:
         update_footballgames(db)
+    finally:
+        db.close()
+
+def cron_job_incomplete_footballgames():
+    db = SessionLocal()
+    try:
+        incomplete_footballgames(db)
     finally:
         db.close()
