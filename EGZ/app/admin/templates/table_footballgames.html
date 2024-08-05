@@ -82,9 +82,9 @@ d{% extends "layout.html" %}
                       <td>{{ tabla.hour }}</td>
                       <td>
                         {% if tabla.origin == "MANUAL" %}
-                          <span class="bg-purple">
+                          <span class="badge bg-transparent text-custom-success">
                         {% else %}
-                          <span class="bg-transparent text-success">
+                          <span class="badge bg-transparent text-success">
                         {% endif %}
                         {{ tabla.origin }}</span>
                       </td>
