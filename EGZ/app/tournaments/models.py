@@ -65,5 +65,6 @@ class FootballGames(Base):
     away_team = Column(String)
     home_score = Column(String)
     away_score = Column(String)
+    origin = Column(String)
 
     tournament = relationship("Tournaments", back_populates="football_game")

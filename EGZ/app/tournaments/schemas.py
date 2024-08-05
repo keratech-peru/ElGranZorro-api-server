@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from app.tournaments.constants import STATUS_TOURNAMENT
+from app.tournaments.constants import STATUS_TOURNAMENT, Origin
 
 class Tourmaments(BaseModel):
     name: str
@@ -50,6 +50,7 @@ class FootballGames(BaseModel):
     away_team: Optional[str]
     home_score: Optional[int]
     away_score: Optional[int]
+    origin: str = Origin.HANDBOOK
 
 class UpdateFootballGames(BaseModel):
     hour: Optional[str]

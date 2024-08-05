@@ -19,3 +19,7 @@ STATUS_TOURNAMENT = {
 }
 
 GROUPS = ["A","B","C","D","E","F","G","H"]
+
+class Origin:
+    API = "API-FOOTBALL-DATA"
+    HANDBOOK = "MANUAL"

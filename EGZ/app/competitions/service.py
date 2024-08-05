@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import CRUD
 from app.competitions.models import Matchs, Competitions, Teams, MatchsFootballGames
 from app.tournaments.models import FootballGames
+from app.tournaments.constants import Origin
 from app.notifications.service import NotificacionesAdmin_
 from app.config import API_FOOTBALL_DATA, KEY_FOOTBALL_DATA
 from app.competitions.utils import format_date
@@ -139,22 +140,22 @@ class Competitions_(CRUD):
                     footballgames_by_day[i].hour = matchs_random[i].hour
                     footballgames_by_day[i].home_team = db.query(Teams.name).filter(Teams.id_team == matchs_random[i].id_team_home).first()[0]
                     footballgames_by_day[i].away_team = db.query(Teams.name).filter(Teams.id_team == matchs_random[i].id_team_away).first()[0]
+                    footballgames_by_day[i].origin = Origin.API
                     CRUD.update(db, footballgames_by_day[i])
                     cont = cont + 1
                     match_footballgame = MatchsFootballGames( id_match=matchs_random[i].id , id_footballgames=footballgames_by_day[i].id )
                     CRUD.insert(db, match_footballgame)
                     footballgames_id_match.append(footballgames_by_day[i].id)
         
-        teams = db.query(Teams.name).all()
-        matchs = db.query(Matchs.hour).all()
-        footballgames_id_data_dummy = set(footballgames_id) - set(footballgames_id_match)
-        for id in footballgames_id_data_dummy:
-            footballgame = db.query(FootballGames).filter(FootballGames.id == id).first()
-            footballgame.hour = random.choice(matchs)[0]
-            footballgame.home_team = random.choice(teams)[0]
-            footballgame.away_team = random.choice(teams)[0]
-            CRUD.update(db, footballgame)
-
+        # teams = db.query(Teams.name).all()
+        # matchs = db.query(Matchs.hour).all()
+        # footballgames_id_data_dummy = set(footballgames_id) - set(footballgames_id_match)
+        # for id in footballgames_id_data_dummy:
+        #     footballgame = db.query(FootballGames).filter(FootballGames.id == id).first()
+        #     footballgame.hour = random.choice(matchs)[0]
+        #     footballgame.home_team = random.choice(teams)[0]
+        #     footballgame.away_team = random.choice(teams)[0]
+        #     CRUD.update(db, footballgame)
         NotificacionesAdmin_.send_whatsapp_incomplete_tournament(db, tournament_id, len(footballgames)-cont)
 
     @staticmethod

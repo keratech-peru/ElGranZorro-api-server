@@ -45,6 +45,7 @@ d{% extends "layout.html" %}
                     <th>tournament_stage</th>
                     <th>date</th>
                     <th>hour</th>
+                    <th>origin</th>
                     <th>type_footballgames</th>
                     <th>home_team</th>
                     <th>away_team</th>
@@ -79,6 +80,14 @@ d{% extends "layout.html" %}
                         {{ tabla.date }}</span>
                       </td>
                       <td>{{ tabla.hour }}</td>
+                      <td>
+                        {% if tabla.origin == "MANUAL" %}
+                          <span class="bg-purple">
+                        {% else %}
+                          <span class="bg-transparent text-success">
+                        {% endif %}
+                        {{ tabla.origin }}</span>
+                      </td>
                       <td>
                         {% if tabla.type_footballgames == "RESULT" %}
                           <span class="badge bg-warning">
