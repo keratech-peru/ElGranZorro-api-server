@@ -9,9 +9,8 @@ from app.admin.routers import router as admin
 from app.tournaments.routers import router as tournaments
 from app.notifications.router import router as notifications
 from app.competitions.routers import router as competitions
-from app.competitions.schedule import cron_job_adding_match
-from app.notifications.schedule import cron_job_notifications
-from app.tournaments.schedule import cron_job_start_tournament, cron_job_update_footballgames, cron_job_incomplete_footballgames
+from app.competitions.schedule import CronJob as CronJobCompetitions
+from app.notifications.schedule import CronJob as CronJobNotifications
 from apscheduler.schedulers.background import BackgroundScheduler
 import pytz
 
@@ -46,9 +45,9 @@ handler = Mangum(app)
 @app.on_event('startup')
 def init_data():
     scheduler = BackgroundScheduler(timezone=pytz.timezone("America/Lima"))
-    scheduler.add_job(cron_job_notifications, 'cron', minute=2)
-    scheduler.add_job(cron_job_start_tournament, 'cron', hour=0, minute=5)
-    scheduler.add_job(cron_job_update_footballgames, 'cron', minute=0)
-    scheduler.add_job(cron_job_adding_match, 'cron', day_of_week='thu', hour=11, minute=0)
-    scheduler.add_job(cron_job_incomplete_footballgames, 'cron', hour=23, minute=50)
+    scheduler.add_job(CronJobNotifications.not_complete_footballgames, 'cron', minute=2)
+    scheduler.add_job(CronJobNotifications.update_footballgames, 'cron', minute=0)
+    scheduler.add_job(CronJobCompetitions.start_tournament, 'cron', hour=0, minute=5)
+    scheduler.add_job(CronJobNotifications.incomplete_footballgames, 'cron', hour=23, minute=50)
+    scheduler.add_job(CronJobCompetitions.adding_match, 'cron', day_of_week='thu', hour=11, minute=0)
     scheduler.start()
