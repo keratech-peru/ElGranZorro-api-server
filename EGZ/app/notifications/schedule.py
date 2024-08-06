@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db, SessionLocal
 from app.tournaments.models import FootballGames, ConfrontationsGroupStage, ConfrontationsKeyStage,GroupStage
 from app.tournaments.service import FootballGames_
+from app.tournaments.constants import Origin
 from app.users.models import PlaysUsers
 from app.competitions.models import Matchs, MatchsFootballGames
 from app.notifications.service import Notificaciones_, NotificacionesAdmin_
@@ -47,7 +48,7 @@ class JobNotificationsAdmin:
         Notifica al administrador que footballgames se actualizaron desde la API.
         '''
         date_now, hour_now = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
-        footballgames = db.query(FootballGames).filter(FootballGames.date == date_now).all()
+        footballgames = db.query(FootballGames).filter(FootballGames.date == date_now, FootballGames.origin == Origin.API).all()
         time_format = "%H:%M:%S"
         update_result = []
         result_home = None
@@ -98,7 +99,7 @@ class JobNotificationsAdmin:
         date_now, __ = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
         footballgames = db.query(FootballGames).filter( FootballGames.date == date_now,
                                                         FootballGames.away_score.is_(None),
-                                                        FootballGames.away_team.is_(None)).all()
+                                                        FootballGames.home_score.is_(None)).all()
         NotificacionesAdmin_.send_whatsapp_incomplete_footballgames(footballgames)
 
 # Configura el cron job para que se ejecute cada minuto
