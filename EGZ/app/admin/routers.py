@@ -112,7 +112,7 @@ async def update_footballgames(request: Request,
             FootballGames_.update_group_stage(footballgame, home_score, away_score, db)
         else:
             FootballGames_.update_key_stage(footballgame, home_score, away_score, db)
-    list_all = FootballGames_.list_search_codigo(db, "")
+    list_all = FootballGames_.list_search_codigo(db, "", "")
     contex =  utils.get_context_view_pagination(request, "footballgames", 1, list_all)
     return templates.TemplateResponse("table_footballgames.html",contex)
 
@@ -146,6 +146,7 @@ def view_table(
         table_name: str,
         page_number :int,
         codigo: str = '',
+        date: str = '',
         email: str = '',
         access_token: Optional[str] = Cookie(None),
         db: Session = Depends(get_db)):
@@ -154,7 +155,7 @@ def view_table(
     if table_name in 'tournaments':
         list_all = Tournaments_.list_search_codigo(db, codigo)
     elif table_name in 'footballgames':
-        list_all = FootballGames_.list_search_codigo(db, codigo)
+        list_all = FootballGames_.list_search_codigo(db, codigo, date)
     elif table_name in 'appusers':
         list_all = AppUsers_.list_search_email(db, email)
     else:

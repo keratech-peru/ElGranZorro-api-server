@@ -207,7 +207,7 @@ class FootballGames_(CRUD):
             footballgame.away_score = update_footballgame_in.away_score
             CRUD.update(db, footballgame)       
 
-    def list_search_codigo(db: Session, codigo: str) -> List[FootballGames]:
+    def list_search_codigo(db: Session, codigo: str, date: str) -> List[FootballGames]:
         footballgames_ = []
         footballgames = db.query(FootballGames).order_by(FootballGames.id.desc()).all()
         for footballgame in footballgames:
@@ -220,7 +220,7 @@ class FootballGames_(CRUD):
                 footballgame_["away_team"] = str(footballgame.away_team)
                 footballgame_["home_score"] = str(footballgame.home_score)
                 footballgame_["away_score"] = str(footballgame.away_score)
-                if codigo in footballgame_["codigo"]:
+                if codigo in footballgame_["codigo"] and date in footballgame.date:
                     footballgames_.append(footballgame_)
         return footballgames_
 
