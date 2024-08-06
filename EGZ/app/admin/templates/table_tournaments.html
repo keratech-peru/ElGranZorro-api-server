@@ -43,10 +43,9 @@ d{% extends "layout.html" %}
                     <th>codigo</th>
                     <th>Name</th>
                     <th>start_date</th>
+                    <th>stage</th>
                     <th>max_number_of_players</th>
                     <th>number_enrollment</th>
-                    <th>game_mode</th>
-                    <th>logo</th>
                     <th>tournament_rules</th>
                     <th></th>
             </tr>
@@ -60,18 +59,21 @@ d{% extends "layout.html" %}
                       <td>{{ tabla.id }}</td>
                       <td>{{ tabla.codigo }}</td>  
                       <td>{{ tabla.name }}</td>
+                      <td>{{ tabla.start_date }}</td>
                       <td>
-                        {% if tabla.is_past %}
-                          <span class="badge bg-red">
-                        {% else %}
+                        {% if tabla.stage == "EN ESPERA" %}
                           <span class="badge bg-green">
+                        {% else %}
+                          {% if tabla.stage == "TERMINADO" %}
+                            <span class="badge bg-red">
+                          {% else %}
+                            <span class="badge bg-dark">
+                          {% endif %}
                         {% endif %}
-                        {{ tabla.start_date }}</span>
+                        {{ tabla.stage }}</span>
                       </td>
                       <td>{{ tabla.max_number_of_players }}</td>
                       <td>{{ tabla.number_enrollment }}</td>
-                      <td>{{ tabla.game_mode }}</td>
-                      <td>{{ tabla.logo }}</td>
                       <td>{{ tabla.tournament_rules }}</td>
                       <td class="text-end">
                         <span class="dropdown">
