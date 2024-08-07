@@ -64,7 +64,7 @@ class Tournaments_(CRUD):
         tournaments = db.query(Tournaments).all()
         for tournament in tournaments:
             tournament_ = tournament.__dict__
-            tournament_["is_past"] = False#is_past(tournament.start_date)
+            tournament_["is_past"] = is_past(tournament.start_date)
             tournament_["number_enrollment"] = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament.id).count()
             if codigo in tournament_["codigo"]:
                 tournaments_.append(tournament_)
