@@ -66,9 +66,10 @@ class Notificaciones_:
     @staticmethod
     def send_whatsapp_user_winner(db: Session, tournament_cod: str, appuser_id: int) -> None:
         tournament = db.query(Tournaments).filter(Tournaments.codigo == tournament_cod).first()
-        appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
-        text = TextToSend.user_winner(tournament, appuser.name)
-        Notificaciones_.send_whatsapp(appuser.phone, text)
+        if appuser_id:
+            appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
+            text = TextToSend.user_winner(tournament, appuser.name)
+            Notificaciones_.send_whatsapp(appuser.phone, text)
 
     @staticmethod
     def send_whatsapp_user_point_equal(db: Session, football_games_id: int, appuser_id1: int, appuser_id2: int, list_date_1, list_date_2, stage: str) -> None:

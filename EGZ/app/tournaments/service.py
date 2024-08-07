@@ -732,7 +732,7 @@ class Confrontations_(CRUD):
                 CRUD.update(db, sf)
         return list_appuser_id
 
-    def registration_teams_final(db, cod_tournament: str):
+    def registration_teams_final(db: Session, cod_tournament: str):
         tournaments_id = str(int(cod_tournament[-3:]))
         semifinal = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("SF")).order_by(ConfrontationsKeyStage.id).all()
         final = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == tournaments_id, ConfrontationsKeyStage.football_games_cod.contains("FI")).order_by(ConfrontationsKeyStage.id).all()
@@ -751,7 +751,7 @@ class Confrontations_(CRUD):
             CRUD.update(db, fi)
         return list_appuser_id
 
-    def first_place(db, cod_tournament: str):
+    def first_place(db: Session, cod_tournament: str):
         tournaments_id = int(cod_tournament[-3:])
         confrontations_final = db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id == str(tournaments_id), ConfrontationsKeyStage.football_games_cod.contains("FI")).order_by(ConfrontationsKeyStage.id).all()
         fooballgames_final = db.query(FootballGames).filter(FootballGames.tournament_id == tournaments_id, FootballGames.tournament_stage=='FINAL').order_by(FootballGames.id).all()
@@ -762,12 +762,18 @@ class Confrontations_(CRUD):
         for confrontation in confrontations_final:
             points_local = points_local + (confrontation.points_1 if confrontation.points_1 is not None else 0)
             poitns_visit = poitns_visit + (confrontation.points_2 if confrontation.points_2 is not None else 0)
-        
         # Asignacion de appuser_id para el ganador
         if points_local > poitns_visit:
             appuser_id = confrontations_final[0].appuser_1_id
         elif points_local < poitns_visit:
             appuser_id = confrontations_final[0].appuser_2_id
+        elif points_local == 0 and poitns_visit == 0:
+            if confrontations_final[0].appuser_1_id is None and confrontations_final[0].appuser_2_id is not None:
+                appuser_id = confrontations_final[0].appuser_2_id
+            elif confrontations_final[0].appuser_1_id is not None and confrontations_final[0].appuser_2_id is None:
+                appuser_id = confrontations_final[0].appuser_1_id
+            else:
+                appuser_id = None
         else:
             footballgames_id_list = [footballgames.id for footballgames in fooballgames_final]
             play_users_update_at_1 = db.query(PlaysUsers.updated_at).filter(PlaysUsers.appuser_id == confrontations_final[0].appuser_1_id, PlaysUsers.id.in_(footballgames_id_list)).order_by(PlaysUsers.id).all()
@@ -790,8 +796,8 @@ class Confrontations_(CRUD):
                 appuser_id = confrontations_final[0].appuser_2_id
             else:
                 print("Nos fuimos a la mrd ...")
-
-        enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournaments_id,EnrollmentUsers.appuser_id == appuser_id).first()
-        enrollment.state = USER_STATUS_IN_TOURNAMENT["GA"]
-        CRUD.update(db, enrollment)
+        if appuser_id:
+            enrollment = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournaments_id,EnrollmentUsers.appuser_id == appuser_id).first()
+            enrollment.state = USER_STATUS_IN_TOURNAMENT["GA"]
+            CRUD.update(db, enrollment)
         return [appuser_id]
