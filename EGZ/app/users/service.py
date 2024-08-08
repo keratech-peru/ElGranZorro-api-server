@@ -88,6 +88,15 @@ class AppUsers_(CRUD):
             )
             CRUD.insert(db, new_user_play_footballgame)
 
+    def plays_footballgames_random_assignment(db: Session, user_id: int, footballgame_id: int) -> None:
+        new_user_play_footballgame = PlaysUsers(
+            appuser_id=user_id,
+            football_games_id=footballgame_id,
+            score_local=random.randint(0, 3),
+            score_visit=random.randint(0, 3)
+        )
+        CRUD.insert(db, new_user_play_footballgame)        
+
     def play_users_points(db: Session, footballgame_id: int, footballgame_type: str, home_score: str, away_score: str):
         plays_users = db.query(PlaysUsers).filter(PlaysUsers.football_games_id == footballgame_id).all()
         appuser_id_point_plays = {}

@@ -161,8 +161,6 @@ class Tournaments_(CRUD):
                 footballgame_dict = Tournaments_.get_data_group_key_plays(db, footballgame, footballgame_dict, user_id)
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
         tournament_ = tournament.__dict__
-        # eliminar esta linea...
-        tournament_["tournament_stage"] = tournament_stage[-1] if len(tournament_stage) > 0 else STATUS_TOURNAMENT["EE"]
 
         return tournament_, group_stage_table, football_stage_group, football_stage_keys
 
