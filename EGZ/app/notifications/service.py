@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from app.config import Email, Whatsapp
 from app.notifications.constants import TextToSend
 from app.database import CRUD
-from app.users.service import AppUsers_
 from app.tournaments.models import Tournaments, FootballGames
 from app.tournaments.constants import STATUS_TOURNAMENT
 from app.notifications.constants import Otp
@@ -11,6 +10,7 @@ from app.users.models import AppUsers, PlaysUsers
 from email.message import EmailMessage
 import smtplib
 import requests
+import random
 
 class Notificaciones_:
     @staticmethod
@@ -87,7 +87,13 @@ class Notificaciones_:
         if not play_user:
             appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
             # Eliminar cuando se pase a produccion.
-            AppUsers_.plays_footballgames_random_assignment(db, appuser_id, footballgame.id)
+            new_user_play_footballgame = PlaysUsers(
+                appuser_id=appuser_id,
+                football_games_id=footballgame.id,
+                score_local=random.randint(0, 3),
+                score_visit=random.randint(0, 3)
+            )
+            CRUD.insert(db, new_user_play_footballgame)
             text = TextToSend.user_has_not_played(footballgame, appuser.name)
             Notificaciones_.send_whatsapp(appuser.phone, text)
 

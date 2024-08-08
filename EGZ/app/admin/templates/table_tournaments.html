@@ -45,6 +45,7 @@ d{% extends "layout.html" %}
                     <th>start_date</th>
                     <th>stage</th>
                     <th>number_enrollment</th>
+                    <th>is_active</th>
                     <th>max_number_of_players</th>
                     <th>tournament_rules</th>
                     <th></th>
@@ -73,6 +74,14 @@ d{% extends "layout.html" %}
                         {{ tabla.stage }}</span>
                       </td>
                       <td>{{ tabla.number_enrollment }}</td>
+                      <td>
+                        {% if tabla.is_active %}
+                          <span class="badge bg-red">
+                        {% else %}
+                          <span class="badge bg-green">
+                        {% endif %}
+                        {{ tabla.is_active }}</span>
+                      </td>
                       <td>{{ tabla.max_number_of_players }}</td>
                       <td>{{ tabla.tournament_rules }}</td>
                       <td class="text-end">

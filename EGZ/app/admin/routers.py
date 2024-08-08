@@ -121,11 +121,13 @@ async def update_tournaments(request: Request,
             tournament_id: str,
             name: str = Form(...),
             logo: str = Form(...),
+            activo: bool = Form(None),
             tournament_rules: str = Form(...),
             db: Session = Depends(get_db)):
     update_tournament_in = SchemasUpdateTourmaments(
         name=name,
         logo=logo,
+        is_active=activo,
         tournament_rules=tournament_rules
     )
     Tournaments_.update(int(tournament_id), update_tournament_in, db)

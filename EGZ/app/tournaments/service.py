@@ -26,6 +26,7 @@ class Tournaments_(CRUD):
         if tourmament:
             tourmament.name = update_tournament_in.name
             tourmament.logo = update_tournament_in.logo
+            tourmament.is_active = update_tournament_in.is_active
             tourmament.tournament_rules = update_tournament_in.tournament_rules
             CRUD.update(db, tourmament)
 

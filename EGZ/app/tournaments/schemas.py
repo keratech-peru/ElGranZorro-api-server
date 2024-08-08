@@ -62,4 +62,5 @@ class UpdateFootballGames(BaseModel):
 class UpdateTourmaments(BaseModel):
     name: Optional[str]
     logo: Optional[str]
+    is_active: Optional[bool]
     tournament_rules: Optional[str]
