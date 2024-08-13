@@ -31,7 +31,3 @@ USER_STATUS_IN_TOURNAMENT = {
     "EFI": "ELIMINADO - " + STATUS_TOURNAMENT["FI"],
     "GA": "GANADOR"
 }
-
-class Coupon:
-    DURATION = 7
-    PERCENT = 20

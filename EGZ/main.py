@@ -9,6 +9,7 @@ from app.admin.routers import router as admin
 from app.tournaments.routers import router as tournaments
 from app.notifications.router import router as notifications
 from app.competitions.routers import router as competitions
+from app.payments.router import router as payments
 from app.competitions.schedule import CronJob as CronJobCompetitions
 from app.notifications.schedule import CronJob as CronJobNotifications
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -33,6 +34,7 @@ app.include_router(admin)
 app.include_router(tournaments)
 app.include_router(notifications)
 app.include_router(competitions)
+app.include_router(payments)
 
 # Inicia el scheduler
 

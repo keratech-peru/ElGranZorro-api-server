@@ -5,10 +5,10 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.exception import validate_credentials, expired_token
 from app.database import CRUD
-from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser, OtpUsers, EventOtpUsers, CommissionAgent
+from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser, OtpUsers, EventOtpUsers
 from app.users import exception, schemas 
 from app.users.utils import get_hash, generate_otp_numeric
-from app.users.constants import USER_STATUS_IN_TOURNAMENT, Coupon
+from app.users.constants import USER_STATUS_IN_TOURNAMENT
 from app.tournaments.models import Tournaments, GroupStage
 from app.tournaments.constants import STATUS_TOURNAMENT
 from app.notifications.service import Notificaciones_
@@ -190,25 +190,3 @@ class EventOtpUsers_(CRUD):
             Notificaciones_.send_whatsapp_otp(user.phone, new_otp, count_max=True)
         else:
             raise exception.user_temporarily_blocked
-
-class CommissionAgent_(CRUD):
-    @staticmethod
-    def create(db: Session, appuser: AppUsers) -> CommissionAgent:
-        start_date = datetime.now(pytz.timezone("America/Lima"))
-        end_date = start_date + timedelta(days=Coupon.DURATION)
-        new_commission_agent = CommissionAgent(
-            appuser_id=appuser.id,
-            start_date=start_date.strftime('%d/%m/%Y'),
-            end_date=end_date.strftime('%d/%m/%Y'),
-            codigo=appuser.dni[:4],
-            percent=Coupon.PERCENT
-        )
-        CRUD.insert(db, new_commission_agent)
-        return new_commission_agent
-    
-    @staticmethod
-    def valid_coupon(commission_agent: CommissionAgent) -> bool:
-        now_date = datetime.now(pytz.timezone("America/Lima"))
-        end_date = datetime.strptime(f'{commission_agent.end_date}', '%d/%m/%Y').replace(tzinfo=timezone.utc)
-        dif = end_date - now_date
-        return int(dif.days) >= 0
