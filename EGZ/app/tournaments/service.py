@@ -161,6 +161,7 @@ class Tournaments_(CRUD):
             else:
                 footballgame_dict = Tournaments_.get_data_group_key_plays(db, footballgame, footballgame_dict, user_id)
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
+        football_stage_keys["WINNERS"] = Tournaments_.all_winners(db, tournament.id, tournament.stage)
         tournament_ = tournament.__dict__
 
         return tournament_, group_stage_table, football_stage_group, football_stage_keys
@@ -189,6 +190,73 @@ class Tournaments_(CRUD):
         tournament = db.query(Tournaments).filter(Tournaments.codigo == tournament_cod).first()
         tournament.stage = STATUS_TOURNAMENT[key]
         CRUD.update(db, tournament)
+    
+    def all_winners(db: Session, tournament_id: int, stage: str):
+        winner = {}
+        if not (stage in [ STATUS_TOURNAMENT["EE"] , STATUS_TOURNAMENT["GP"] ]):
+            enrollment_users = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id, EnrollmentUsers.state != "ELIMINADO - GRUPOS").all()
+            if stage == STATUS_TOURNAMENT["OC"]:
+                winner[STATUS_TOURNAMENT["OC"]] = []
+                for user in enrollment_users:
+                    if user.state == "EN PROCESO":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+            elif stage == STATUS_TOURNAMENT["CU"]:
+                winner[STATUS_TOURNAMENT["OC"]] = []
+                winner[STATUS_TOURNAMENT["CU"]] = []
+                for user in enrollment_users:
+                    if user.state == "EN PROCESO":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["CU"]].append(user.appuser_id)
+            elif stage == STATUS_TOURNAMENT["SF"]:
+                winner[STATUS_TOURNAMENT["OC"]] = []
+                winner[STATUS_TOURNAMENT["CU"]] = []
+                winner[STATUS_TOURNAMENT["SF"]] = []
+                for user in enrollment_users:
+                    if user.state == "EN PROCESO":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["CU"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["SF"]].append(user.appuser_id)
+                    elif user.state == "ELIMINADO - CUARTOS":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+            elif stage == STATUS_TOURNAMENT["FI"]:
+                winner[STATUS_TOURNAMENT["OC"]] = []
+                winner[STATUS_TOURNAMENT["CU"]] = []
+                winner[STATUS_TOURNAMENT["SF"]] = []
+                winner[STATUS_TOURNAMENT["FI"]] = []
+                for user in enrollment_users:
+                    if user.state == "EN PROCESO":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["CU"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["SF"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["FI"]].append(user.appuser_id)
+                    elif user.state == "ELIMINADO - SEMI-FINAL":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["CU"]].append(user.appuser_id)
+                    elif user.state == "ELIMINADO - CUARTOS":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+            elif stage == STATUS_TOURNAMENT["TE"]:
+                winner[STATUS_TOURNAMENT["OC"]] = []
+                winner[STATUS_TOURNAMENT["CU"]] = []
+                winner[STATUS_TOURNAMENT["SF"]] = []
+                winner[STATUS_TOURNAMENT["FI"]] = []
+                winner[STATUS_TOURNAMENT["TE"]] = []
+                for user in enrollment_users:
+                    if user.state == "GANADOR":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["CU"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["SF"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["FI"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["TE"]].append(user.appuser_id)
+                    elif user.state == "ELIMINADO - FINAL":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["CU"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["SF"]].append(user.appuser_id)
+                    elif user.state == "ELIMINADO - SEMI-FINAL":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+                        winner[STATUS_TOURNAMENT["CU"]].append(user.appuser_id)
+                    elif user.state == "ELIMINADO - CUARTOS":
+                        winner[STATUS_TOURNAMENT["OC"]].append(user.appuser_id)
+        return winner
 
 class FootballGames_(CRUD):
     @staticmethod
