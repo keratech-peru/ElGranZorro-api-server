@@ -182,3 +182,12 @@ def view_update_record_in_table(request: Request, pk: str, access_token: Optiona
     tournament = db.query(ModelsTournaments).filter(ModelsTournaments.id == pk).first()
     contex = {"request": request,"resources":RESOURCES, "pk": pk ,"tournament":tournament}
     return templates.TemplateResponse(f"update_tournaments.html", contex)
+
+@router.get("/tournaments/delete/{pk}", response_class=HTMLResponse)
+def tournament_delete(request: Request, pk: str, access_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    valid_access_token(access_token)
+    tournament = db.query(ModelsTournaments).filter(ModelsTournaments.id == pk).first()
+    Tournaments_.delete(tournament, db)
+    list_all = Tournaments_.list_search_codigo(db, "")
+    contex =  utils.get_context_view_pagination(request, "tournaments", 1, list_all)
+    return templates.TemplateResponse("table_tournaments.html",contex)
