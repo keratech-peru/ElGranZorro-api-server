@@ -245,13 +245,16 @@ class Tournaments_(CRUD):
         return winner
 
     def enrollment_all(db: Session, tournament_id: int):
-        tournaments = db.query(Tournaments.max_number_of_players).filter(Tournaments.id == tournament_id).first()
+        tournaments = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
         enrollments_appuser_id = db.query(EnrollmentUsers.appuser_id).filter(EnrollmentUsers.tournaments_id == tournament_id).all()
-        if tournaments.max_number_of_players > len(enrollments_appuser_id):
-            enrollment_dif = tournaments.max_number_of_players - len(enrollments_appuser_id)
+        if int(tournaments.max_number_of_players) > len(enrollments_appuser_id):
+            enrollment_dif = int(tournaments.max_number_of_players) - len(enrollments_appuser_id)
             appusers = db.query(AppUsers).filter(AppUsers.id.notin_(enrollments_appuser_id)).all()
             for i in range(enrollment_dif):
-                AppUsers_.enrollment(db, appusers[i], tournaments)
+                try:
+                    AppUsers_.enrollment(db, appusers[i], tournaments)
+                except:
+                    break
 
 class FootballGames_(CRUD):
     @staticmethod
