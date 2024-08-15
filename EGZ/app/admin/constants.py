@@ -10,4 +10,4 @@ RESOURCES = [{"label":"footballgames"}, {"label":"tournaments"}, {"label":"appus
 class ErrorAdmin:
     LOGIN = "Credenciales invalidas"
 
-PAGINATION = {"tournaments" : 10, "footballgames": 23, "appusers": 10}
+PAGINATION = {"tournaments" : 10, "footballgames": 23, "appusers": 32}

@@ -66,7 +66,7 @@ class Tournaments_(CRUD):
 
     def list_search_codigo(db: Session, codigo: str) -> List[Tournaments]:
         tournaments_ = []
-        tournaments = db.query(Tournaments).all()
+        tournaments = db.query(Tournaments).order_by(Tournaments.id.desc()).all()
         for tournament in tournaments:
             tournament_ = tournament.__dict__
             tournament_["is_past"] = is_past(tournament.start_date)

@@ -40,14 +40,13 @@ d{% extends "layout.html" %}
                       <input class="form-check-input m-0 align-middle" type="checkbox" id="checkbox-select-all"/>
                     </th>
                     <th>id</th>
-                    <th>created_at</th>
-                    <th>name</th>
-                    <th>lastname</th>
-                    <th>birthdate</th>
                     <th>phone</th>
                     <th>email</th>
-                    <th>dni</th>
                     <th>team_name</th>
+                    <th>name</th>
+                    <th>lastname</th>
+                    <th>dni</th>
+                    <th>birthdate</th>
                     <th></th>
             </tr>
           </thead>
@@ -58,14 +57,13 @@ d{% extends "layout.html" %}
                         <input data-id="{{ tabla.id|int }}" class="form-check-input m-0 align-middle checkbox-select-item" type="checkbox"/>
                       </td>
                       <td>{{ tabla.id }}</td>
-                      <td>{{ tabla.created_at }}</td>
-                      <td>{{ tabla.name }}</td>  
-                      <td>{{ tabla.lastname }}</td>
-                      <td>{{ tabla.birthdate }}</td>
                       <td>{{ tabla.phone }}</td>
                       <td>{{ tabla.email }}</td>
-                      <td>{{ tabla.dni }}</td>
                       <td>{{ tabla.team_name }}</td>
+                      <td>{{ tabla.name }}</td>  
+                      <td>{{ tabla.lastname }}</td>
+                      <td>{{ tabla.dni }}</td>
+                      <td>{{ tabla.birthdate }}</td>
                       <td class="text-end">
                         <span class="dropdown">
                           <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport" data-bs-toggle="dropdown">
