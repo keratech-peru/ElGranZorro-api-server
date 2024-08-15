@@ -5,7 +5,7 @@ from app.users.constants import USER_STATUS_IN_TOURNAMENT
 from app.tournaments.models import Tournaments, FootballGames, GroupStage, ConfrontationsGroupStage, ConfrontationsKeyStage
 from app.tournaments import schemas
 from app.tournaments.constants import GROUPS, STATUS_TOURNAMENT
-from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over
+from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over, code_generator_tournaments
 from app.notifications.service import Notificaciones_
 from app.competitions.models import Teams, MatchsFootballGames, Matchs, Competitions
 from app.competitions.constants import DataDummyTeam, DataDummyCompetition
@@ -19,7 +19,11 @@ class Tournaments_(CRUD):
     def create(tourmament_in: schemas.Tourmaments, db: Session) -> Tournaments:
         new_tourmament = Tournaments(**tourmament_in.dict())
         CRUD.insert(db, new_tourmament)
-        return new_tourmament
+        if new_tourmament.id != int(tourmament_in.codigo[-2:]):
+            codigo, __ = code_generator_tournaments(db)
+            new_tourmament.codigo = codigo
+            CRUD.update(db, new_tourmament)
+        return new_tourmament.id, new_tourmament.codigo
     
     def update(tourmament_id:int , update_tournament_in: schemas.UpdateTourmaments, db: Session):
         tourmament = db.query(Tournaments).filter(Tournaments.id == tourmament_id).first()

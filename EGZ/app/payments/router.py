@@ -5,7 +5,7 @@ from app.users.models import AppUsers
 from app.tournaments.models import Tournaments
 from app.payments import exception
 from app.payments import schemas
-from app.payments.models import CommissionAgent
+from app.payments.models import CommissionAgent, EventCoupon
 from app.payments.service import CommissionAgent_, Payments_, EventCoupon_
 from app.database import get_db
 from app.security import get_user_current
@@ -64,6 +64,9 @@ def payments(
         tournament = db.query(Tournaments).filter(Tournaments.id == payments_in.tournaments_id).first()
         if not tournament:
             raise exception.tournament_does_not_exist
+        #if payments_in.commission_agent_id is None:
+
+        #events_coupon = db.query(EventCoupon).filter(EventCoupon.appuser_id == user.id, EventCoupon.commission_agent_id == )
         new_payment = Payments_.create(db, user.id, payments_in)
         EventCoupon_.create(db, user.id, payments_in.tournaments_id, payments_in.commission_agent_id)
         return {"status": "done", "payment_id": new_payment.id}

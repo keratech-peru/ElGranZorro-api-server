@@ -9,14 +9,13 @@ import pytz
 
 def code_generator_tournaments(db: Session = Depends(get_db)):
     filtro = db.query(Tournaments.id).order_by(Tournaments.id.desc()).first()[0] if db.query(Tournaments).all() else 0
-    id_next = filtro + 1
-    if id_next < 10:
-        id = "00" + str(id_next)
-    elif id_next >= 10 and id_next < 100:
-        id = "0"+str(id_next)
+    if filtro < 10:
+        id = "00" + str(filtro)
+    elif filtro >= 10 and filtro < 100:
+        id = "0"+str(filtro)
     else:
-        id = str(id_next)
-    return "T" + Players.MAXIMO + id, id_next
+        id = str(filtro)
+    return "T" + Players.MAXIMO + id, filtro
 
 def is_past(start_date: str, hour: str=None):
     datetime_now = datetime.now(pytz.timezone("America/Lima"))

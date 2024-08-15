@@ -4,7 +4,7 @@ from app.tournaments.constants import STATUS_TOURNAMENT, Origin
 
 class Tourmaments(BaseModel):
     name: str
-    codigo: str
+    codigo: str = "T32000"
     logo: str
     start_date: str
     max_number_of_players: str

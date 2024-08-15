@@ -38,19 +38,17 @@ async def create_tournaments(request: Request,
             logo: str = Form(...),
             start_date: str = Form(...),
             tournament_rules: str = Form(...),
-            db: Session = Depends(get_db)):
-    codigo, id = code_generator_tournaments(db)       
+            db: Session = Depends(get_db)):       
     obj = SchemasTournaments(               
         name=name,
-        codigo=codigo,
         logo=logo,
         start_date=start_date,
         max_number_of_players=Players.MAXIMO,
         game_mode=Players.GAME_MODE,
         tournament_rules=tournament_rules                                                                                      
-    )    
-    CRUD.insert(db, ModelsTournaments(**obj.dict()))
-
+    )
+    id, codigo = Tournaments_.create(obj, db)
+    
     FootballGames_.create_groups_stage(id, codigo, start_date, db)
     FootballGames_.create_eighths_stage(id, codigo, start_date, db)
     FootballGames_.create_quarter_stage(id, codigo, start_date, db)
