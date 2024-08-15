@@ -191,3 +191,11 @@ def tournament_delete(request: Request, pk: str, access_token: Optional[str] = C
     list_all = Tournaments_.list_search_codigo(db, "")
     contex =  utils.get_context_view_pagination(request, "tournaments", 1, list_all)
     return templates.TemplateResponse("table_tournaments.html",contex)
+
+@router.get("/tournaments/enrollment/{pk}", response_class=HTMLResponse)
+def tournament_enrollment(request: Request, pk: str, access_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    valid_access_token(access_token)
+    Tournaments_.enrollment_all(db, pk)
+    list_all = Tournaments_.list_search_codigo(db, "")
+    contex =  utils.get_context_view_pagination(request, "tournaments", 1, list_all)
+    return templates.TemplateResponse("table_tournaments.html",contex)
