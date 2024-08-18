@@ -12,6 +12,7 @@ from app.tournaments.utils import code_generator_tournaments
 from app.tournaments.constants import Players
 from app.users.models import PlaysUsers as ModelsPlaysUsers
 from app.users.service import AppUsers_
+from app.notifications.service import NotificacionesAdmin_
 from app.database import get_db, CRUD
 from app.security import valid_access_token, create_token
 from app.admin import exception, utils
@@ -55,7 +56,11 @@ async def create_tournaments(request: Request,
     FootballGames_.create_semifinal_stage(id, codigo, start_date, db)
     FootballGames_.create_final_stage(id, codigo, start_date, db)
 
-    Competitions_.assignment(id, db)
+    numb_fooballgames_api = Competitions_.assignment_api(id, db)
+    # Eliminar cuando se pase a produccion.
+    numb_fooballgames_random = Competitions_.assignment_random(id, db)
+
+    NotificacionesAdmin_.send_whatsapp_create_tournament(name, numb_fooballgames_api, numb_fooballgames_random)
     return templates.TemplateResponse("create_tournaments.html", {"request": request ,"resources":RESOURCES})
 
 @router.post("/footballgames", response_class=HTMLResponse)

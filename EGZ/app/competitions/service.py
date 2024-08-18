@@ -124,12 +124,10 @@ class Competitions_(CRUD):
         CRUD.bulk_insert(db, objects_list)
     
     @staticmethod
-    def assignment(tournament_id: int, db: Session):
+    def assignment_api(tournament_id: int, db: Session):
         footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).all()
         days = set([footballgame.date for footballgame in footballgames])
         cont = 0 
-        footballgames_id =  [footballgame.id for footballgame in footballgames]
-        footballgames_id_match = []
         for day in days:
             footballgames_by_day = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id, FootballGames.date == day).all()
             matchs = db.query(Matchs).filter(Matchs.date == day).all()    
@@ -145,18 +143,19 @@ class Competitions_(CRUD):
                     cont = cont + 1
                     match_footballgame = MatchsFootballGames( id_match=matchs_random[i].id , id_footballgames=footballgames_by_day[i].id )
                     CRUD.insert(db, match_footballgame)
-                    footballgames_id_match.append(footballgames_by_day[i].id)
-        
-        # teams = db.query(Teams.name).all()
-        # matchs = db.query(Matchs.hour).all()
-        # footballgames_id_data_dummy = set(footballgames_id) - set(footballgames_id_match)
-        # for id in footballgames_id_data_dummy:
-        #     footballgame = db.query(FootballGames).filter(FootballGames.id == id).first()
-        #     footballgame.hour = random.choice(matchs)[0]
-        #     footballgame.home_team = random.choice(teams)[0]
-        #     footballgame.away_team = random.choice(teams)[0]
-        #     CRUD.update(db, footballgame)
-        NotificacionesAdmin_.send_whatsapp_incomplete_tournament(db, tournament_id, len(footballgames)-cont)
+        return cont
+
+    @staticmethod
+    def assignment_random(tournament_id: int, db: Session):
+        footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id, FootballGames.origin == Origin.HANDBOOK).all()
+        teams = db.query(Teams.name).all()
+        matchs = db.query(Matchs.hour).all()
+        for footballgame in footballgames:
+            footballgame.hour = random.choice(matchs)[0]
+            footballgame.home_team = random.choice(teams)[0]
+            footballgame.away_team = random.choice(teams)[0]
+            CRUD.update(db, footballgame)
+        return len(footballgames)
 
     @staticmethod
     def add_teams(competitions: List[Competitions], db: Session):
