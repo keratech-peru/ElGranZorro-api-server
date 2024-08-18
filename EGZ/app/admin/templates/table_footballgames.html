@@ -80,14 +80,21 @@ d{% extends "layout.html" %}
                         {{ tabla.tournament_stage }}</span>
                       </td>
                       <td>
-                        {% if tabla.is_past %}
+                        {% if tabla.is_past_date %}
                           <span class="badge bg-red">
                         {% else %}
                           <span class="badge bg-green">
                         {% endif %}
                         {{ tabla.date }}</span>
                       </td>
-                      <td>{{ tabla.hour }}</td>
+                      <td>
+                        {% if tabla.is_past_hour %}
+                          <span class="badge bg-red">
+                        {% else %}
+                          <span class="badge bg-green">
+                        {% endif %}
+                        {{ tabla.hour }}</span>
+                      </td>
                       <td>
                         {% if tabla.origin == "MANUAL" %}
                           <span class="badge bg-purple">

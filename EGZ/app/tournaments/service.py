@@ -283,7 +283,8 @@ class FootballGames_(CRUD):
             if not is_over(tournament.start_date):
                 footballgame_ = footballgame.__dict__
                 footballgame_["tournament_codigo"] = db.query(Tournaments.codigo).filter(Tournaments.id == footballgame.tournament_id).first()[0]
-                footballgame_["is_past"] = is_past(footballgame.date,footballgame.hour)
+                footballgame_["is_past_date"] = is_past(footballgame.date)
+                footballgame_["is_past_hour"] = is_past(footballgame.date,footballgame.hour)
                 footballgame_["home_team"] = str(footballgame.home_team)
                 footballgame_["away_team"] = str(footballgame.away_team)
                 footballgame_["home_score"] = str(footballgame.home_score)
