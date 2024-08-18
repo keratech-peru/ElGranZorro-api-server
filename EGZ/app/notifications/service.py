@@ -110,18 +110,19 @@ class NotificacionesAdmin_:
         Notificaciones_.send_whatsapp("936224658", text)
 
     @staticmethod
-    def send_whatsapp_update_match(update_results: List[dict]) -> None:
-        text = "*ADMINISTRADOR* se actualizo el registro de los match:\n"
-        for result in update_results:
-            codigo = result["codigo"]
-            home_team = result["home_team"]
-            away_team = result["away_team"]
-            home_score = result["home_score"]
-            away_score = result["away_score"]
-            hour = result["hour"]
-            status = result["status"]
-            text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {home_score} - {away_score} -> {hour} -> {status}\n"
-        Notificaciones_.send_whatsapp("936224658", text)
+    def send_whatsapp_update_footballgames(update_results: List[dict]) -> None:
+        if len(update_results) > 0:
+            text = "*ADMINISTRADOR* se actualizo el registro de los footballgames:\n"
+            for result in update_results:
+                codigo = result["codigo"]
+                home_team = result["home_team"]
+                away_team = result["away_team"]
+                home_score = result["home_score"]
+                away_score = result["away_score"]
+                hour = result["hour"]
+                origin = result["origin"]
+                text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {home_score} - {away_score} -> {hour} -> {origin}\n"
+            Notificaciones_.send_whatsapp("936224658", text)
 
     @staticmethod
     def send_whatsapp_incomplete_footballgames(footballgames: List[FootballGames]) -> None:

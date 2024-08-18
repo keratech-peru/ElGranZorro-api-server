@@ -104,12 +104,11 @@ async def update_footballgames(request: Request,
         away_score=away_score
     )
     FootballGames_.update(int(footballgame_id), update_footballgame_in, db)
-    if home_score != None and away_score != None:
-        footballgame = db.query(ModelsFootballGames).filter(ModelsFootballGames.id == footballgame_id).first()
-        if "GP" in footballgame.codigo:
-            FootballGames_.update_group_stage(footballgame, home_score, away_score, db)
-        else:
-            FootballGames_.update_key_stage(footballgame, home_score, away_score, db)
+    footballgame = db.query(ModelsFootballGames).filter(ModelsFootballGames.id == footballgame_id).first()
+    
+    # Activa los flujos de cambios de estados en el torneo.
+    FootballGames_.update_stage(footballgame, home_score, away_score, db)
+    
     list_all = FootballGames_.list_search_codigo(db, "", "")
     contex =  utils.get_context_view_pagination(request, "footballgames", 1, list_all)
     return templates.TemplateResponse("table_footballgames.html",contex)

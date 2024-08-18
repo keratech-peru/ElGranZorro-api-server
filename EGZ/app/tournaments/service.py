@@ -11,8 +11,10 @@ from app.competitions.models import Teams, MatchsFootballGames, Matchs, Competit
 from app.competitions.constants import DataDummyTeam, DataDummyCompetition
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
-from typing import List 
-from datetime import datetime, timezone, timedelta
+from typing import List, Dict
+from app.config import API_FOOTBALL_DATA, KEY_FOOTBALL_DATA
+from datetime import datetime, timedelta
+import requests
 import random
 class Tournaments_(CRUD):
     @staticmethod
@@ -460,6 +462,13 @@ class FootballGames_(CRUD):
                 Notificaciones_.send_whatsapp_user_winner(db, tournament_cod, list_appuser_id[0])
                 Tournaments_.update_stage(db, tournament_cod, key="TE")
 
+    def update_stage(footballgame: FootballGames, home_score: int,  away_score: int, db: Session):
+        if (home_score != None) and (away_score != None):
+            if "GP" in footballgame.codigo:
+                FootballGames_.update_group_stage(footballgame, home_score, away_score, db)
+            else:
+                FootballGames_.update_key_stage(footballgame, home_score, away_score, db)
+
     def get_logo(footballgame_id: int, local: bool, db: Session):
         teams = db.query(Teams.emblem).all()
         match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_footballgames == footballgame_id).first()
@@ -488,6 +497,54 @@ class FootballGames_(CRUD):
         for cod in stages_cod[stage]:
             result = result or (cod in footballgame_codigo)
         return result and (footballgames == 0)
+
+    def update_footballgames_from_api(footballgame: FootballGames, match_footballgame: MatchsFootballGames, update_result: List[Dict], db:Session):
+        match = db.query(Matchs).filter(Matchs.id == match_footballgame.id_match).first()
+        uri = API_FOOTBALL_DATA + f'matches/{match.id_match}'
+        headers = { 'X-Auth-Token':  KEY_FOOTBALL_DATA}
+        response = requests.get(uri, headers=headers).json()
+        status = response["status"]
+        if status == "FINISHED":
+            result_home = response["score"]["fullTime"]["home"]
+            result_away = response["score"]["fullTime"]["away"]
+            match.score_home = result_home
+            match.score_away = result_away
+            match.status = status
+            db.commit()
+            db.refresh(match)
+            footballgame.home_score = result_home
+            footballgame.away_score = result_away
+            db.commit()
+            db.refresh(footballgame)
+            update_result.append({
+                "codigo":footballgame.codigo,
+                "home_team":footballgame.home_team,
+                "away_team":footballgame.away_team,
+                "home_score":result_home,
+                "away_score":result_away,
+                "hour":footballgame.hour,
+                "origin":footballgame.origin
+            })
+        return update_result, result_home, result_away
+
+    def update_footballgames_from_random(footballgame: FootballGames, update_result: List[Dict], db:Session):
+        result_home = random.randint(0, 3)
+        result_away = random.randint(0, 3)
+        footballgame.home_score = result_home
+        footballgame.away_score = result_away
+        db.commit()
+        db.refresh(footballgame)
+        update_result.append({
+            "codigo":footballgame.codigo,
+            "home_team":footballgame.home_team,
+            "away_team":footballgame.away_team,
+            "home_score":result_home,
+            "away_score":result_away,
+            "hour":footballgame.hour,
+            "origin":footballgame.origin
+        })
+        return update_result, result_home, result_away
+
 
 class Confrontations_(CRUD):
     @staticmethod
