@@ -395,7 +395,7 @@ class FootballGames_(CRUD):
     def create_final_stage(id: int , codigo:str, start_date:str, db: Session):
         list_footballgames = []
         cont = 0
-        for i in range(1,6):
+        for i in range(1,4):
             cont = cont + 1
             date = datetime.strptime(start_date, '%d/%m/%y') + timedelta(days = 6)
             obj_temp = schemas.FootballGames(
@@ -622,7 +622,7 @@ class Confrontations_(CRUD):
 
     def create_final_stage(tournament_id: int, db: Session, cod_tournament: str):
         list_confrontations = []
-        codigos = [ cod_tournament+'FI'+'1', cod_tournament+'FI'+'2', cod_tournament+'FI'+'3', cod_tournament+'FI'+'4', cod_tournament+'FI'+'5' ]
+        codigos = [ cod_tournament+'FI'+'1', cod_tournament+'FI'+'2', cod_tournament+'FI'+'3']
         for cod in codigos:
             obj_temp = schemas.ConfrontationsKeyStage(
                 football_games_cod=cod,
