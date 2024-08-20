@@ -548,7 +548,6 @@ class FootballGames_(CRUD):
         })
         return update_result, result_home, result_away
 
-
 class Confrontations_(CRUD):
     @staticmethod
     def create_groups_stage(tournament_id: int ,db: Session, tournament_cod: str):

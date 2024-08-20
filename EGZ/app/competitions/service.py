@@ -10,7 +10,7 @@ from app.tournaments.models import FootballGames
 from app.tournaments.constants import Origin
 from app.notifications.service import NotificacionesAdmin_
 from app.config import API_FOOTBALL_DATA, KEY_FOOTBALL_DATA
-from app.competitions.utils import format_date
+from app.competitions.utils import format_date, preferred_random_values
 
 class Competitions_(CRUD):
     @staticmethod
@@ -133,7 +133,7 @@ class Competitions_(CRUD):
             matchs = db.query(Matchs).filter(Matchs.date == day).all()    
             if len(matchs) > 0:
                 len_loop = len(footballgames_by_day) if len(matchs) > len(footballgames_by_day) else len(matchs)
-                matchs_random = random.sample( matchs, len_loop)
+                matchs_random = preferred_random_values( matchs, len_loop)
                 for i in range(len_loop):
                     footballgames_by_day[i].hour = matchs_random[i].hour
                     footballgames_by_day[i].home_team = db.query(Teams.name).filter(Teams.id_team == matchs_random[i].id_team_home).first()[0]
@@ -179,7 +179,7 @@ class Competitions_(CRUD):
     def add_match(competitions: List[Competitions], db: Session):
         objects_list = []
         datetime_now = datetime.now(pytz.timezone("America/Lima"))
-        datetime_last_moth = datetime_now + timedelta(days=30)
+        datetime_last_moth = datetime_now + timedelta(days=10)
         day_now = str(datetime_now).split(" ")[0]
         day_last_moth = str(datetime_last_moth).split(" ")[0]
         for competition in competitions:

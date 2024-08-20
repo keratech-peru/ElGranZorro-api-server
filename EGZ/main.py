@@ -51,5 +51,5 @@ def init_data():
     scheduler.add_job(CronJobNotifications.update_footballgames, 'cron', minute=0)
     scheduler.add_job(CronJobCompetitions.start_tournament, 'cron', hour=0, minute=5)
     scheduler.add_job(CronJobNotifications.incomplete_footballgames, 'cron', hour=23, minute=50)
-    scheduler.add_job(CronJobCompetitions.adding_match, 'cron', day_of_week='thu', hour=11, minute=0)
+    scheduler.add_job(CronJobCompetitions.adding_match, 'cron', hour=23, minute=15)
     scheduler.start()
