@@ -4,7 +4,7 @@ from app.users.models import PlaysUsers, EnrollmentUsers, AppUsers
 from app.users.constants import USER_STATUS_IN_TOURNAMENT
 from app.tournaments.models import Tournaments, FootballGames, GroupStage, ConfrontationsGroupStage, ConfrontationsKeyStage
 from app.tournaments import schemas
-from app.tournaments.constants import GROUPS, STATUS_TOURNAMENT
+from app.tournaments.constants import GROUPS, STATUS_TOURNAMENT, Origin
 from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over, code_generator_tournaments
 from app.notifications.service import Notificaciones_
 from app.competitions.models import Teams, MatchsFootballGames, Matchs, Competitions
@@ -285,11 +285,12 @@ class FootballGames_(CRUD):
                 footballgame_["tournament_codigo"] = db.query(Tournaments.codigo).filter(Tournaments.id == footballgame.tournament_id).first()[0]
                 footballgame_["is_past_date"] = is_past(footballgame.date)
                 footballgame_["is_past_hour"] = is_past(footballgame.date,footballgame.hour)
-                footballgame_["home_team"] = str(footballgame.home_team)
-                footballgame_["away_team"] = str(footballgame.away_team)
+                footballgame_["home_team"] = footballgame.home_team
+                footballgame_["away_team"] = footballgame.away_team
                 footballgame_["home_score"] = str(footballgame.home_score)
                 footballgame_["away_score"] = str(footballgame.away_score)
                 footballgame_["tournament_name"] = tournament.name
+                footballgame_["logo_liga"] = Confrontations_.get_logo(db, footballgame.id, footballgame.origin)
                 if codigo in footballgame_["codigo"] and date in footballgame.date:
                     footballgames_.append(footballgame_)
         return footballgames_
@@ -925,3 +926,11 @@ class Confrontations_(CRUD):
             enrollment.state = USER_STATUS_IN_TOURNAMENT["GA"]
             CRUD.update(db, enrollment)
         return [appuser_id]
+
+    def get_logo(db: Session, footballgame_id: int, origin: str):
+        emblem = "https://lh3.googleusercontent.com/a/AAcHTtc9mqht2yMtCCJgnJGwzdBMCjdthmb7TwiEEGEoBQ=s96-c"
+        if origin == Origin.API:
+            match_id = db.query(MatchsFootballGames.id_match).filter(MatchsFootballGames.id_footballgames == footballgame_id).first()[0]
+            competition_cod = db.query(Matchs.cod_competitions).filter(Matchs.id == match_id).first()[0]
+            emblem = db.query(Competitions.emblem).filter(Competitions.code == competition_cod).first()[0]
+        return emblem

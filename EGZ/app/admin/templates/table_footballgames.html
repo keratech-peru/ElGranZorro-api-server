@@ -55,6 +55,7 @@ d{% extends "layout.html" %}
                     <th>hour</th>
                     <th>origin</th>
                     <th>type_footballgames</th>
+                    <th>Liga</th>
                     <th>home_team</th>
                     <th>away_team</th>
                     <th>home_score</th>
@@ -110,6 +111,9 @@ d{% extends "layout.html" %}
                           <span class="badge bg-info">
                         {% endif %}
                         {{ tabla.type_footballgames }}</span>
+                      </td>
+                      <td>
+                        <img src="{{ tabla.logo_liga }}" alt="" width="40" height="None">                        
                       </td>  
                       <td>
                         {% if tabla.home_team == "None" %}
@@ -152,10 +156,6 @@ d{% extends "layout.html" %}
                             <a class="dropdown-item" href="/admin/footballgames/update/{{tabla.id}}">
                               <i class="ti ti-edit me-2"></i>
                               Update
-                            </a>
-                            <a class="dropdown-item" href="#" onclick="onAction('/admin/product/delete/198','DELETE')">
-                              <i class="ti ti-edit me-2"></i>
-                              Delete
                             </a>
                           </div>
                         </span>
