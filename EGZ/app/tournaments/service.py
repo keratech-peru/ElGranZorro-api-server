@@ -289,6 +289,7 @@ class FootballGames_(CRUD):
                 footballgame_["away_team"] = str(footballgame.away_team)
                 footballgame_["home_score"] = str(footballgame.home_score)
                 footballgame_["away_score"] = str(footballgame.away_score)
+                footballgame_["tournament_name"] = tournament.name
                 if codigo in footballgame_["codigo"] and date in footballgame.date:
                     footballgames_.append(footballgame_)
         return footballgames_

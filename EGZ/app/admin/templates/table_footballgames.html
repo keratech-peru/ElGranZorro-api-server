@@ -49,7 +49,7 @@ d{% extends "layout.html" %}
                     </th>
                     <th>id</th>
                     <th>codigo</th>
-                    <th>tournament_codigo</th>
+                    <th>tournament_name</th>
                     <th>tournament_stage</th>
                     <th>date</th>
                     <th>hour</th>
@@ -70,7 +70,7 @@ d{% extends "layout.html" %}
                       </td>
                       <td>{{ tabla.id }}</td>
                       <td>{{ tabla.codigo }}</td>
-                      <td>{{ tabla.tournament_codigo }}</td>
+                      <td style="font-weight: bold;">{{ tabla.tournament_name }}</td>
                       <td>
                         {% if "Fecha" in tabla.tournament_stage %}
                           <span class="badge bg-yellow">
