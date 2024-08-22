@@ -18,7 +18,6 @@ def preferred_random_values(matchs: List[Matchs] , len_loop: int):
         if len_loop <= len(list_match_peru):
             matchs_random = random.sample( list_match_peru, len_loop)
         else:
-            print("len_loop - len(list_match_peru) : ", len_loop - len(list_match_peru))
             matchs_random = random.sample( list_match_peru, len(list_match_peru)) + random.sample( list_match_otros, len_loop - len(list_match_peru))
     else:
         matchs_random = random.sample( list_match_otros, len_loop)

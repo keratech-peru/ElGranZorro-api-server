@@ -58,7 +58,7 @@ class JobNotificationsAdmin:
                 if match_footballgame:
                     update_result, result_home, result_away = FootballGames_.update_footballgames_from_api(footballgame, match_footballgame, update_result, db)
                 else:
-                    update_result, result_home, result_away = FootballGames_.update_footballgames_from_random(footballgame, match_footballgame, update_result, db)
+                    update_result, result_home, result_away = FootballGames_.update_footballgames_from_random(footballgame, update_result, db)
                 # Activa los flujos para pasar de etapas en el torneo.
                 FootballGames_.update_stage(footballgame, result_home, result_away, db)
         NotificacionesAdmin_.send_whatsapp_update_footballgames(update_result)
