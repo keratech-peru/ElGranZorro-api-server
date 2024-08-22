@@ -51,10 +51,10 @@ async def create_tournaments(request: Request,
     id, codigo = Tournaments_.create(obj, db)
     
     FootballGames_.create_groups_stage(id, codigo, start_date, db)
-    FootballGames_.create_eighths_stage(id, codigo, start_date, db)
-    FootballGames_.create_quarter_stage(id, codigo, start_date, db)
-    FootballGames_.create_semifinal_stage(id, codigo, start_date, db)
-    FootballGames_.create_final_stage(id, codigo, start_date, db)
+    FootballGames_.create_keys_stage(id, codigo, start_date, "OC", db)
+    FootballGames_.create_keys_stage(id, codigo, start_date, "CU", db)
+    FootballGames_.create_keys_stage(id, codigo, start_date, "SF", db)
+    FootballGames_.create_keys_stage(id, codigo, start_date, "FI", db)
 
     numb_fooballgames_api = Competitions_.assignment_api(id, db)
     # Eliminar cuando se pase a produccion.

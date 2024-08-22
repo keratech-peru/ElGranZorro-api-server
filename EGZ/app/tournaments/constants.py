@@ -18,6 +18,7 @@ STATUS_TOURNAMENT = {
     "TE":"TERMINADO"
 }
 
+FOOTBALLGAMES_BY_STAGE = {"OC":8, "CU":4, "SF":2, "FI":1}
 GROUPS = ["A","B","C","D","E","F","G","H"]
 
 class Origin:

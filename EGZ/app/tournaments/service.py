@@ -4,7 +4,7 @@ from app.users.models import PlaysUsers, EnrollmentUsers, AppUsers
 from app.users.constants import USER_STATUS_IN_TOURNAMENT
 from app.tournaments.models import Tournaments, FootballGames, GroupStage, ConfrontationsGroupStage, ConfrontationsKeyStage
 from app.tournaments import schemas
-from app.tournaments.constants import GROUPS, STATUS_TOURNAMENT, Origin
+from app.tournaments.constants import GROUPS, STATUS_TOURNAMENT, FOOTBALLGAMES_BY_STAGE, Origin
 from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over, code_generator_tournaments
 from app.notifications.service import Notificaciones_
 from app.competitions.models import Teams, MatchsFootballGames, Matchs, Competitions
@@ -326,19 +326,17 @@ class FootballGames_(CRUD):
 
         Confrontations_.create_groups_stage(id, db, codigo)
 
-    def create_eighths_stage(id: int , codigo:str, start_date:str, db: Session):
+    def create_keys_stage(id: int , codigo:str, start_date:str, stage: str, db: Session):
         list_footballgames = []
-        cont = 0
         for i in range(1,4):
-            cont = cont + 1
             date = datetime.strptime(start_date, '%d/%m/%y') + timedelta(days = 3)
             obj_temp = schemas.FootballGames(
-                codigo=codigo+'OC'+str(cont),
+                codigo=codigo+stage+str(i),
                 tournament_id=id,
-                tournament_stage=f"OCTAVOS",
+                tournament_stage=STATUS_TOURNAMENT[stage],
                 date=datetime.strftime(date,'%d/%m/%y'),
                 hour=None,
-                type_footballgames= "RESULT" if cont%2 == 0 else "SCORE",
+                type_footballgames= "RESULT" if i%2 == 0 else "SCORE",
                 home_team=None,
                 away_team=None,
                 home_score=None,
@@ -346,76 +344,7 @@ class FootballGames_(CRUD):
             )
             list_footballgames.append(FootballGames(**obj_temp.dict()))
         CRUD.bulk_insert(db, list_footballgames)
-
-        Confrontations_.create_eighths_stage(id, db, codigo)
-
-    def create_quarter_stage(id: int , codigo:str, start_date:str, db: Session):
-        list_footballgames = []
-        cont = 0
-        for i in range(1,4):
-            cont = cont + 1
-            date = datetime.strptime(start_date, '%d/%m/%y') + timedelta(days = 4)
-            obj_temp = schemas.FootballGames(
-                codigo=codigo+'CU'+str(cont),
-                tournament_id=id,
-                tournament_stage=f"CUARTOS",
-                date=datetime.strftime(date,'%d/%m/%y'),
-                hour=None,
-                type_footballgames= "RESULT" if cont%2 == 0 else "SCORE",
-                home_team=None,
-                away_team=None,
-                home_score=None,
-                away_score=None                                                                                     
-            )
-            list_footballgames.append(FootballGames(**obj_temp.dict()))
-        CRUD.bulk_insert(db, list_footballgames)
-
-        Confrontations_.create_quarter_stage(id, db, codigo)
-
-    def create_semifinal_stage(id: int , codigo:str, start_date:str, db: Session):
-        list_footballgames = []
-        cont = 0
-        for i in range(1,4):
-            cont = cont + 1
-            date = datetime.strptime(start_date, '%d/%m/%y') + timedelta(days = 5)
-            obj_temp = schemas.FootballGames(
-                codigo=codigo+'SF'+str(cont),
-                tournament_id=id,
-                tournament_stage=f"SEMI-FINAL",
-                date=datetime.strftime(date,'%d/%m/%y'),
-                hour=None,
-                type_footballgames= "RESULT" if cont%2 == 0 else "SCORE",
-                home_team=None,
-                away_team=None,
-                home_score=None,
-                away_score=None                                                                                     
-            )
-            list_footballgames.append(FootballGames(**obj_temp.dict()))
-        CRUD.bulk_insert(db, list_footballgames)
-
-        Confrontations_.create_semifinal_stage(id, db, codigo)
-
-    def create_final_stage(id: int , codigo:str, start_date:str, db: Session):
-        list_footballgames = []
-        cont = 0
-        for i in range(1,4):
-            cont = cont + 1
-            date = datetime.strptime(start_date, '%d/%m/%y') + timedelta(days = 6)
-            obj_temp = schemas.FootballGames(
-                codigo=codigo+'FI'+str(cont),
-                tournament_id=id,
-                tournament_stage=f"FINAL",
-                date=datetime.strftime(date,'%d/%m/%y'),
-                hour=None,
-                type_footballgames= "RESULT" if cont%2 == 0 else "SCORE",
-                home_team=None,
-                away_team=None,
-                home_score=None,
-                away_score=None                                                                                     
-            )
-            list_footballgames.append(FootballGames(**obj_temp.dict()))
-        CRUD.bulk_insert(db, list_footballgames)
-        Confrontations_.create_final_stage(id, db, codigo)
+        Confrontations_.create_keys_stage(id, db, codigo, stage)
 
     def update_group_stage(footballgame: FootballGames, home_score: int,  away_score: int, db: Session):
         tournament_cod = footballgame.codigo[:-3]
@@ -586,51 +515,16 @@ class Confrontations_(CRUD):
                 list_confrontations.append(ConfrontationsGroupStage(**obj_temp.dict()))
         CRUD.bulk_insert(db, list_confrontations)
     
-    def create_eighths_stage(tournament_id: int, db: Session, cod_tournament: str):
+    def create_keys_stage(tournament_id: int, db: Session, cod_tournament: str, stage: str):
         list_confrontations = []
-        for _ in range(8):
-            codigos = [ cod_tournament+'OC'+'1', cod_tournament+'OC'+'2', cod_tournament+'OC'+'3']
+        for _ in range(FOOTBALLGAMES_BY_STAGE[stage]):
+            codigos = [ cod_tournament+stage+'1', cod_tournament+stage+'2', cod_tournament+stage+'3']
             for cod in codigos:
                 obj_temp = schemas.ConfrontationsKeyStage(
                     football_games_cod=cod,
                     tournaments_id=tournament_id
                 )
                 list_confrontations.append(ConfrontationsKeyStage(**obj_temp.dict()))
-        CRUD.bulk_insert(db, list_confrontations)
-    
-    def create_quarter_stage(tournament_id: int, db: Session, cod_tournament: str):
-        list_confrontations = []
-        for _ in range(4):
-            codigos = [ cod_tournament+'CU'+'1', cod_tournament+'CU'+'2', cod_tournament+'CU'+'3']
-            for cod in codigos:
-                obj_temp = schemas.ConfrontationsKeyStage(
-                    football_games_cod=cod,
-                    tournaments_id=tournament_id
-                )
-                list_confrontations.append(ConfrontationsKeyStage(**obj_temp.dict()))
-        CRUD.bulk_insert(db, list_confrontations)
-
-    def create_semifinal_stage(tournament_id: int, db: Session, cod_tournament: str):
-        list_confrontations = []
-        for _ in range(2):
-            codigos = [ cod_tournament+'SF'+'1', cod_tournament+'SF'+'2', cod_tournament+'SF'+'3']
-            for cod in codigos:
-                obj_temp = schemas.ConfrontationsKeyStage(
-                    football_games_cod=cod,
-                    tournaments_id=tournament_id
-                )
-                list_confrontations.append(ConfrontationsKeyStage(**obj_temp.dict()))
-        CRUD.bulk_insert(db, list_confrontations)
-
-    def create_final_stage(tournament_id: int, db: Session, cod_tournament: str):
-        list_confrontations = []
-        codigos = [ cod_tournament+'FI'+'1', cod_tournament+'FI'+'2', cod_tournament+'FI'+'3']
-        for cod in codigos:
-            obj_temp = schemas.ConfrontationsKeyStage(
-                football_games_cod=cod,
-                tournaments_id=tournament_id
-            )
-            list_confrontations.append(ConfrontationsKeyStage(**obj_temp.dict()))
         CRUD.bulk_insert(db, list_confrontations)
 
     def ids_point_play_and_not_play_group_stage(db: Session, footballgame_cod: str, appuser_id_point_plays):
