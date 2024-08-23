@@ -10,6 +10,7 @@ class AppUsers(BaseModel):
     dni: str
     imagen: Optional[str] = None
     team_name: Optional[str] = None
+    level: int = 1
 
 class UpdateAppUser(BaseModel):
     name: Optional[str] = None

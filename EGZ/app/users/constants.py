@@ -31,3 +31,9 @@ USER_STATUS_IN_TOURNAMENT = {
     "EFI": "ELIMINADO - " + STATUS_TOURNAMENT["FI"],
     "GA": "GANADOR"
 }
+
+TOURNAMENT_LEVELS = {
+    "1": 5,
+    "2": 10,
+    "3": 15
+}

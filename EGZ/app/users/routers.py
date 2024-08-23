@@ -7,6 +7,7 @@ from app.users import schemas
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
 from app.tournaments import models, utils, exception as exception_tournaments
 from app.users import exception
+from app.users.constants import TOURNAMENT_LEVELS
 from app.database import get_db
 from app.security import create_token, valid_header, get_user_current
 from app.config import ApiKey, TOKEN_SCONDS_EXP
@@ -43,7 +44,8 @@ def user_create(
 
 @router.get("/", status_code=status.HTTP_200_OK)
 def user_get(
-    user: AppUsers = Depends(get_user_current)
+    user: AppUsers = Depends(get_user_current),
+    db: Session = Depends(get_db)
     ) -> Dict[str, object]:
         """
         **Descripcion** : El servicio muestra la informacion del usuario logiado.
@@ -51,7 +53,12 @@ def user_get(
             \n- El servicio requiere autorizacion via token
             \n- El servicio tiene excepcion si el token es invalido o expiro
         """
-        return {"status":"done", "data":user}
+        bar_level = {}
+        bar_level["numb_enrollments"] = db.query(EnrollmentUsers).filter(EnrollmentUsers.appuser_id == user.id).count()
+        bar_level["current_level"] = str(user.level)
+        bar_level["next_level"] = str(user.level+1)
+        bar_level["numb_enrollments_next_level"] = TOURNAMENT_LEVELS[user.level]
+        return {"status":"done", "data":user, "bar_level": bar_level}
 
 @router.patch("/", status_code=status.HTTP_200_OK)
 def user_patch(
