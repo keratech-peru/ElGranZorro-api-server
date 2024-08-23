@@ -46,7 +46,7 @@ d{% extends "layout.html" %}
                     <th>stage</th>
                     <th>number_enrollment</th>
                     <th>is_active</th>
-                    <th>max_number_of_players</th>
+                    <th>level</th>
                     <th>tournament_rules</th>
                     <th></th>
             </tr>
@@ -82,7 +82,7 @@ d{% extends "layout.html" %}
                         {% endif %}
                         {{ tabla.is_active }}</span>
                       </td>
-                      <td>{{ tabla.max_number_of_players }}</td>
+                      <td>{{ tabla.level }}</td>
                       <td>{{ tabla.tournament_rules }}</td>
                       <td class="text-end">
                         <span class="dropdown">

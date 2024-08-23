@@ -39,12 +39,14 @@ async def create_tournaments(request: Request,
             logo: str = Form(...),
             start_date: str = Form(...),
             tournament_rules: str = Form(...),
+            level: str = Form(...),
             db: Session = Depends(get_db)):       
     obj = SchemasTournaments(               
         name=name,
         logo=logo,
         start_date=start_date,
-        tournament_rules=tournament_rules                                                                                      
+        tournament_rules=tournament_rules ,
+        level=level                                                                                    
     )
     id, codigo = Tournaments_.create(obj, db)
     

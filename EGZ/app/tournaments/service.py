@@ -423,7 +423,7 @@ class FootballGames_(CRUD):
             "OC":["OC1","OC2","OC3"],
             "CU":["CU1","CU2","CU3"],
             "SF":["SF1","SF2","SF3"],
-            "FI":["FI1","FI2","FI3","FI4","FI5"]
+            "FI":["FI1","FI2","FI3"]
         }
         result = False
         for cod in stages_cod[stage]:
@@ -436,6 +436,9 @@ class FootballGames_(CRUD):
         headers = { 'X-Auth-Token':  KEY_FOOTBALL_DATA}
         response = requests.get(uri, headers=headers).json()
         status = response["status"]
+        update_result = []
+        result_home = None
+        result_away = None
         if status == "FINISHED":
             result_home = response["score"]["fullTime"]["home"]
             result_away = response["score"]["fullTime"]["away"]
