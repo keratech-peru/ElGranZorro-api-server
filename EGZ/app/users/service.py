@@ -28,24 +28,11 @@ class AppUsers_(CRUD):
     def get(db: Session, email: str, phone: str):
         return db.query(AppUsers).filter(AppUsers.email == email, AppUsers.phone == phone).first()
 
-    def update(db: Session, user_old: AppUsers, user_new: schemas.UpdateAppUser):
-        user_new_ = user_new.__dict__
-        user_old.name = user_new_["name"] if user_new_["name"] else user_old.name
-        user_old.lastname = user_new_["lastname"] if user_new_["lastname"] else user_old.lastname
-        user_old.birthdate = user_new_["birthdate"] if user_new_["birthdate"] else user_old.birthdate
-        user_old.email = user_new_["email"] if user_new_["email"] else user_old.email
-        user_old.dni = user_new_["dni"] if user_new_["dni"] else user_old.dni
-        user_old.imagen = user_new_["imagen"] if user_new_["imagen"] else user_old.imagen
-        user_old.username = user_new_["username"] if user_new_["username"] else user_old.username
-        user_old.team_name = user_new_["team_name"] if user_new_["team_name"] else user_old.team_name
-        user_old.team_logo = user_new_["team_logo"] if user_new_["team_logo"] else user_old.team_logo
-
-        if user_new_["phone"]:
-            user_old.phone = user_new_["phone"]
-            new_otp, __ = OtpUsers_.resend(db, user_old.id)
-            Notificaciones_.send_whatsapp_otp(user_new_["phone"] ,new_otp, count_max=False)
-        CRUD.insert(db, user_old)
-
+    def update(db: Session, user_old: AppUsers, update_user: schemas.UpdateAppUser):
+        user_old.name =  user_old.name if update_user.name is None else update_user.name
+        user_old.name =  user_old.lastname if update_user.lastname is None else update_user.lastname
+        user_old.name =  user_old.team_name if update_user.team_name is None else update_user.team_name
+        CRUD.update(db, user_old)
         return user_old.id
 
     def authenticate(db: Session, email, phone):

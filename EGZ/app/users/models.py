@@ -16,9 +16,8 @@ class AppUsers(Base):
     email = Column(String, unique=True)
     dni = Column(String)
     imagen = Column(String)
-    username = Column(String)
     team_name = Column(String)
-    team_logo = Column(String)
+    nivel = Column(Integer)
 
     enrollment_user = relationship("EnrollmentUsers", back_populates="appuser")
     plays_users = relationship("PlaysUsers", back_populates="appuser")
