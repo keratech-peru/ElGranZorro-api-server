@@ -17,10 +17,10 @@ class Tournaments(Base):
     game_mode = Column(String)
     tournament_rules = Column(String)
     is_active = Column(Boolean, default=False)
-    type_tournament = Column(String)
     stage = Column(String)
     quota = Column(Integer)
     reward = Column(Integer)
+    level = Column(String)
 
     football_game = relationship("FootballGames", back_populates="tournament")
 

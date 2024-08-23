@@ -20,6 +20,11 @@ STATUS_TOURNAMENT = {
 
 FOOTBALLGAMES_BY_STAGE = {"OC":8, "CU":4, "SF":2, "FI":1}
 GROUPS = ["A","B","C","D","E","F","G","H"]
+LEVELS = {
+    "1":{"quota":20,"reward":320},
+    "2":{"quota":50,"reward":800},
+    "3":{"quota":80,"reward":1500}
+    }
 
 class Origin:
     API = "API-FOOTBALL-DATA"

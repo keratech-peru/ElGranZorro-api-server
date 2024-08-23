@@ -1,21 +1,30 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional
-from app.tournaments.constants import STATUS_TOURNAMENT, Origin
+from app.tournaments.constants import STATUS_TOURNAMENT, LEVELS, Origin, Players
 
 class Tourmaments(BaseModel):
     name: str
     codigo: str = "T32000"
     logo: str
     start_date: str
-    max_number_of_players: str
-    game_mode: str
+    max_number_of_players: str = Players.MAXIMO
+    game_mode: str = Players.GAME_MODE
     tournament_rules: str
     is_active: bool = False
-    type_tournament: str = "TIPO D"
     stage: str = STATUS_TOURNAMENT["EE"]
-    quota: int = 20
-    reward: int = 200
+    level: str = "1"
+    quota: Optional[int]
+    reward: Optional[int] 
 
+    @validator('quota', always=True)
+    def set_quota(cls, v, values):
+        level = values.get('level')
+        return LEVELS[level]["quota"]
+
+    @validator('reward', always=True)
+    def set_reward(cls, v, values):
+        level = values.get('level')
+        return LEVELS[level]["reward"]
 
 class GroupStage(BaseModel):
     tournament_cod: str

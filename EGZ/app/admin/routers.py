@@ -44,8 +44,6 @@ async def create_tournaments(request: Request,
         name=name,
         logo=logo,
         start_date=start_date,
-        max_number_of_players=Players.MAXIMO,
-        game_mode=Players.GAME_MODE,
         tournament_rules=tournament_rules                                                                                      
     )
     id, codigo = Tournaments_.create(obj, db)

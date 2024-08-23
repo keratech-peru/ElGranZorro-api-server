@@ -17,7 +17,7 @@ class AppUsers(Base):
     dni = Column(String)
     imagen = Column(String)
     team_name = Column(String)
-    nivel = Column(Integer)
+    level = Column(Integer)
 
     enrollment_user = relationship("EnrollmentUsers", back_populates="appuser")
     plays_users = relationship("PlaysUsers", back_populates="appuser")
