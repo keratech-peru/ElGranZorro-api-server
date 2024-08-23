@@ -9,9 +9,7 @@ class AppUsers(BaseModel):
     email: str
     dni: str
     imagen: Optional[str] = None
-    username: Optional[str] = None
     team_name: Optional[str] = None
-    team_logo: Optional[str] = None
 
 class UpdateAppUser(BaseModel):
     name: Optional[str] = None

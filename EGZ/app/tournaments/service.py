@@ -87,7 +87,7 @@ class Tournaments_(CRUD):
         for group_stage in groups_stage:
             group_stage_ = group_stage.__dict__
             appuser = db.query(AppUsers).filter(AppUsers.id == group_stage_['appuser_id']).first()
-            group_stage_["team"] = {"team_name":appuser.team_name, "team_logo":appuser.team_logo} if appuser else None
+            group_stage_["team"] = {"team_name":appuser.team_name} if appuser else None
             group_stage_["points"] = group_stage_point[group_stage.id]
             group_stage_["is_user_team"] = appuser.id == user_id if appuser else None
             group_stage_table.append(group_stage_)
@@ -107,12 +107,12 @@ class Tournaments_(CRUD):
             appuser_visit  = db.query(AppUsers).filter(AppUsers.id == appuser_id_visit).first()  
             plays_.append({ "id_local":appuser_id_local,
                             "team_local_name":None if appuser_local is None else appuser_local.team_name,
-                            "team_local_logo":None if appuser_local is None else appuser_local.team_logo,
+                            "team_local_logo":None,
                             "plays_local": hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_local, plays_local),
                             "points_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_local, confrontation.points_1),
                             "id_visit":appuser_id_visit,
                             "team_visit_name":None if appuser_visit is None else appuser_visit.team_name,
-                            "team_visit_logo":None if appuser_visit is None else appuser_visit.team_logo,
+                            "team_visit_logo":None,
                             "plays_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_visit, plays_visit),
                             "points_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_visit, confrontation.points_2),
                             "is_user_play": user_id in [appuser_id_local, appuser_id_visit],
@@ -133,12 +133,12 @@ class Tournaments_(CRUD):
             cont = cont + 1
             plays_.append({ "id_local":confrontation.appuser_1_id,
                             "team_local_name":appuser_local.team_name if appuser_local else None,
-                            "team_local_logo":appuser_local.team_logo if appuser_local else None,
+                            "team_local_logo":None,
                             "plays_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_1_id, plays_local),
                             "points_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_1_id, confrontation.points_1),
                             "id_visit":confrontation.appuser_2_id,
                             "team_visit_name":appuser_visit.team_name if appuser_visit else None,
-                            "team_visit_logo":appuser_visit.team_logo if appuser_visit else None,
+                            "team_visit_logo":None,
                             "plays_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_2_id, plays_visit),
                             "points_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_2_id, confrontation.points_2),
                             "is_user_play": user_id in [confrontation.appuser_1_id, confrontation.appuser_2_id],
