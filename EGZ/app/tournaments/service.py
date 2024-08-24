@@ -393,6 +393,7 @@ class FootballGames_(CRUD):
                 AppUsers_.eliminated_key_stage(db, "FI", list_appuser_id, tournament_id)
                 Notificaciones_.send_whatsapp_user_winner(db, tournament_cod, list_appuser_id[0])
                 Tournaments_.update_stage(db, tournament_cod, key="TE")
+                AppUsers_.update_level(db, tournament_id)
 
     def update_stage(footballgame: FootballGames, home_score: int,  away_score: int, db: Session):
         if (home_score != None) and (away_score != None):

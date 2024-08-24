@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.users.service import AppUsers_, OtpUsers_, EventOtpUsers_
 from app.users import schemas
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser
-from app.tournaments import models, utils, exception as exception_tournaments
+from app.tournaments import models, utils, exception as exception_tournaments, constants
 from app.users import exception
 from app.users.constants import TOURNAMENT_LEVELS
 from app.database import get_db
@@ -54,10 +54,10 @@ def user_get(
             \n- El servicio tiene excepcion si el token es invalido o expiro
         """
         bar_level = {}
-        bar_level["numb_enrollments"] = db.query(EnrollmentUsers).filter(EnrollmentUsers.appuser_id == user.id).count()
+        bar_level["current_completed_tournaments"] = AppUsers_.numbers_completed_tournaments(db, user.id)
         bar_level["current_level"] = str(user.level)
         bar_level["next_level"] = str(user.level+1)
-        bar_level["numb_enrollments_next_level"] = TOURNAMENT_LEVELS[user.level]
+        bar_level["next_completed_tournaments"] = TOURNAMENT_LEVELS[str(user.level)]
         return {"status":"done", "data":user, "bar_level": bar_level}
 
 @router.patch("/", status_code=status.HTTP_200_OK)

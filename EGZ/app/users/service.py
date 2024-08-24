@@ -8,7 +8,7 @@ from app.database import CRUD
 from app.users.models import AppUsers, EnrollmentUsers, PlaysUsers, EventLogUser, OtpUsers, EventOtpUsers
 from app.users import exception, schemas 
 from app.users.utils import get_hash, generate_otp_numeric
-from app.users.constants import USER_STATUS_IN_TOURNAMENT
+from app.users.constants import USER_STATUS_IN_TOURNAMENT, TOURNAMENT_LEVELS
 from app.tournaments.models import Tournaments, GroupStage
 from app.tournaments.constants import STATUS_TOURNAMENT
 from app.notifications.service import Notificaciones_
@@ -122,6 +122,30 @@ class AppUsers_(CRUD):
             raise exception.user_failed_validate_password_update
         new_event_log = EventLogUser(due_date = datetime.utcnow(), appuser_id = user.id, servicio = "password_update_validation", status = 200)
         CRUD.insert(db, new_event_log)
+
+    def numbers_completed_tournaments(db: Session, user_id: int):
+        enrollments = db.query(EnrollmentUsers).filter(EnrollmentUsers.appuser_id == user_id).all()
+        cont = 0
+        for enrollment in enrollments:
+            stage_tournament = db.query(Tournaments.stage).filter(Tournaments.id == enrollment.tournaments_id).first()[0]
+            if stage_tournament == STATUS_TOURNAMENT["TE"]:
+                cont = cont + 1
+        return cont
+
+    def update_level(db: Session, tournament_id: int):
+        users_id = db.query(EnrollmentUsers.appuser_id).filter(EnrollmentUsers.tournaments_id == tournament_id).all()
+        for user_id in users_id:
+            completed_tournaments =  AppUsers_.numbers_completed_tournaments(db, user_id)
+            user = db.query(AppUsers).filter(AppUsers.id == user_id).first()
+            if TOURNAMENT_LEVELS["1"] == completed_tournaments:
+                user.level = 2
+                CRUD.update(db, user)
+            if TOURNAMENT_LEVELS["2"] == completed_tournaments:
+                user.level = 3
+                CRUD.update(db, user)
+            if TOURNAMENT_LEVELS["3"] == completed_tournaments:
+                user.level = 4
+                CRUD.update(db, user)                                       
 
 class OtpUsers_(CRUD):
     @staticmethod
