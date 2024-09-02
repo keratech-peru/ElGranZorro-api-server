@@ -133,3 +133,15 @@ class NotificacionesAdmin_:
             hour = footballgame.hour
             text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {hour}\n"
         Notificaciones_.send_whatsapp("936224658", text)
+
+    @staticmethod
+    def send_whatsapp_checkout_match(text : str) -> None:
+        text_0 = "*ADMINISTRADOR* se actualizaron los siguientes registros:\n"
+        if text:
+            Notificaciones_.send_whatsapp("936224658", text_0 + text)
+
+    @staticmethod
+    def send_whatsapp_checkout_match_timed(text : str) -> None:
+        text_0 = "*ADMINISTRADOR* se detectaron match reprogramados:\n"
+        if text:
+            Notificaciones_.send_whatsapp("936224658", text_0 + text)

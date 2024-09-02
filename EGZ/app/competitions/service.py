@@ -207,3 +207,30 @@ class Competitions_(CRUD):
         CRUD.bulk_insert(db, objects_list)
 
         NotificacionesAdmin_.send_whatsapp_adding_match(numb_match = len(objects_list), start_date = day_now, end_date = day_last_moth)
+
+    @staticmethod
+    def checkout_match(footballgames: List[FootballGames], db: Session):
+        text = ""
+        text_timed = ""
+        for footballgame in footballgames:
+            match_id = db.query(MatchsFootballGames.id_match).filter(MatchsFootballGames.id_footballgames == footballgame.id).first()[0]
+            match = db.query(Matchs).filter(Matchs.id == match_id).first()
+            uri = API_FOOTBALL_DATA + f'matches/{match.id_match}'
+            headers = { 'X-Auth-Token': KEY_FOOTBALL_DATA }
+            response = requests.get(uri, headers=headers).json()
+            list_datetime = str(datetime.strptime(response["utcDate"], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc) - timedelta(hours=5)).split(" ")
+            home_team = footballgame.home_team
+            away_team = footballgame.away_team
+            if footballgame.date != format_date(list_datetime[0]) or footballgame.hour != list_datetime[1][:8]:
+                if response["status"] != "TIMED":
+                    footballgame.date = format_date(list_datetime[0])
+                    footballgame.hour = list_datetime[1][:8]
+                    CRUD.update(db, footballgame)
+                    match.date = format_date(list_datetime[0])
+                    match.hour = list_datetime[1][:8]
+                    CRUD.update(db, match)
+                    text = text + f"*{home_team} - {away_team}*\nFootballGames : {footballgame.date} {footballgame.hour}\nApi_new : {format_date(list_datetime[0])} {list_datetime[1][:8]}\n\n"
+                else:
+                    text_timed = text_timed + f"*{home_team} - {away_team}*\n\n"
+        NotificacionesAdmin_.send_whatsapp_checkout_match_timed(text)
+        NotificacionesAdmin_.send_whatsapp_checkout_match(text)
