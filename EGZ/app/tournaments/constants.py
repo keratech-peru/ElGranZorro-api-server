@@ -18,7 +18,11 @@ STATUS_TOURNAMENT = {
     "TE":"TERMINADO"
 }
 
-FOOTBALLGAMES_BY_STAGE = {"OC":8, "CU":4, "SF":2, "FI":1}
+FOOTBALLGAMES_BY_STAGE = {"OC":{"number_competencies":8,"days_after_starting":3},
+                          "CU":{"number_competencies":4,"days_after_starting":4},
+                          "SF":{"number_competencies":2,"days_after_starting":5},
+                          "FI":{"number_competencies":1,"days_after_starting":6}}
+
 GROUPS = ["A","B","C","D","E","F","G","H"]
 LEVELS = {
     "1":{"quota":20,"reward":320},
