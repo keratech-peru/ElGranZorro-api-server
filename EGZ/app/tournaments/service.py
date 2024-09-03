@@ -60,6 +60,7 @@ class Tournaments_(CRUD):
                 EnrollmentUsers.appuser_id == appuser_id
                 ).first() else False
             tournament_["competition_emblems"] = Tournaments_.get_competition_emblems(db, tournament.id)
+            tournament_["active_for_user"] = None
             if tournament_["is_enrolled_user"]:
                 tournaments_.append(tournament_)
             elif not is_past(tournament.start_date):
@@ -170,6 +171,7 @@ class Tournaments_(CRUD):
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
         football_stage_keys["WINNERS"] = Tournaments_.all_winners(db, tournament.id, tournament.stage)
         tournament_ = tournament.__dict__
+        tournament_["winner"] = football_stage_keys["WINNERS"].get("FINAL")[0] if football_stage_keys["WINNERS"].get("FINAL") else None
 
         return tournament_, group_stage_table, football_stage_group, football_stage_keys
 
