@@ -2,7 +2,7 @@ import pytz
 from fastapi import Depends
 from datetime import datetime
 from app.config import SQLALCHEMY_DATABASE_URI
-from app.competitions.models import Competitions, MatchsFootballGames, Matchs
+from app.competitions.models import Competitions
 from app.competitions.service import Competitions_
 from app.tournaments.service import Tournaments_
 from app.tournaments.models import Tournaments, FootballGames
