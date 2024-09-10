@@ -178,6 +178,7 @@ class Competitions_(CRUD):
     @staticmethod
     def add_match(competitions: List[Competitions], db: Session):
         objects_list = []
+        objects_list_update = []
         datetime_now = datetime.now(pytz.timezone("America/Lima"))
         datetime_last_moth = datetime_now + timedelta(days=10)
         day_now = str(datetime_now).split(" ")[0]
@@ -189,14 +190,16 @@ class Competitions_(CRUD):
             for match in response["matches"]:
                 list_datetime = str(datetime.strptime(match["utcDate"], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc) - timedelta(hours=5)).split(" ")
                 matchh = db.query(Matchs).filter(Matchs.id_match == match["id"]).first()
+                date_api = format_date(list_datetime[0])
+                hour_api = list_datetime[1][:8]
                 if matchh:
-                    pass
+                    objects_list_update = Competitions_.update_match(matchh, date_api, hour_api, objects_list_update, db)
                 else:
                     match_ = Matchs(
                         id_match=match["id"],
                         cod_competitions=match["competition"]["code"],
-                        date=format_date(list_datetime[0]),
-                        hour=list_datetime[1][:8],
+                        date=date_api,
+                        hour=hour_api,
                         id_team_home=match["homeTeam"]["id"],
                         id_team_away=match["awayTeam"]["id"],
                         score_home=None,
@@ -206,6 +209,7 @@ class Competitions_(CRUD):
                     objects_list.append(match_)
         CRUD.bulk_insert(db, objects_list)
 
+        NotificacionesAdmin_.send_whatsapp_update_match(objects_list_update ,numb_match = len(objects_list_update), start_date = day_now, end_date = day_last_moth)
         NotificacionesAdmin_.send_whatsapp_adding_match(numb_match = len(objects_list), start_date = day_now, end_date = day_last_moth)
 
     @staticmethod
@@ -234,3 +238,56 @@ class Competitions_(CRUD):
                     text_timed = text_timed + f"*{home_team} - {away_team}*\n\n"
         NotificacionesAdmin_.send_whatsapp_checkout_match_timed(text)
         NotificacionesAdmin_.send_whatsapp_checkout_match(text)
+
+    @staticmethod
+    def update_match(match: Matchs, date_api: str, hour_api: str, objects_list_update: list, db: Session):
+        if match.date == date_api and match.hour != hour_api:
+            match.hour = hour_api
+            CRUD.update(db ,match)   
+            match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_match == match.id).first()
+            if match_footballgame:
+                footballgame = db.query(FootballGames).filter(FootballGames.id == match_footballgame.id_footballgames).first()
+                dict_temp = {
+                    "codigo":footballgame.codigo,
+                    "status":"API",
+                    "home_team":{"old":footballgame.home_team,"new":footballgame.home_team},
+                    "away_team":{"old":footballgame.away_team,"new":footballgame.away_team},
+                    "day":{"old":None,"new":None},
+                    "hour":{"old":footballgame.hour,"new":hour_api}
+                }
+                objects_list_update.append(dict_temp)
+                footballgame.hour = hour_api
+                CRUD.update(db ,footballgame)
+
+        elif match.date != date_api and match.hour != hour_api:
+            match.hour = hour_api
+            match.date = date_api
+            CRUD.update(db ,match)
+                        
+            match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_match == match.id).first()
+            if match_footballgame:
+                footballgame = db.query(FootballGames).filter(FootballGames.id == match_footballgame.id_footballgames).first()
+                if footballgame:
+                    home_team_temp = footballgame.home_team
+                    away_team_temp = footballgame.away_team
+                    hour_temp = footballgame.hour
+
+                    teams = db.query(Teams.name).all()
+                    matchs = db.query(Matchs.hour).all()
+                    footballgame.hour = random.choice(matchs)[0]
+                    footballgame.home_team = random.choice(teams)[0]
+                    footballgame.away_team = random.choice(teams)[0]
+                    footballgame.origin = Origin.HANDBOOK
+                                
+                    dict_temp = {
+                        "codigo":footballgame.codigo,
+                        "status":"RANDOM",
+                        "home_team":{"old":home_team_temp,"new":footballgame.home_team},
+                        "away_team":{"old":away_team_temp,"new":footballgame.away_team},
+                        "day":{"old":footballgame.date,"new":footballgame.date},
+                        "hour":{"old":hour_temp,"new":footballgame.hour}
+                    }
+                    objects_list_update.append(dict_temp)
+                    CRUD.update(db, footballgame)
+        
+        return objects_list_update

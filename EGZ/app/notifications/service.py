@@ -109,6 +109,23 @@ class NotificacionesAdmin_:
         Notificaciones_.send_whatsapp("936224658", text)
 
     @staticmethod
+    def send_whatsapp_update_match(footballgames: List[dict], numb_match: int, start_date:str, end_date:str) -> None:
+        text = f"*ADMINISTRADOR* se han actualizado {numb_match} match nuevos correspondietes a las fechas *{start_date}* al *{end_date}*\n"
+        for footballgame in footballgames:
+            codigo = footballgame["codigo"]
+            status = footballgame["status"]
+            home_team_old = footballgame["home_team"]["old"]
+            home_team_new = footballgame["home_team"]["new"]
+            away_team_old = footballgame["away_team"]["old"]
+            away_team_new = footballgame["away_team"]["new"]
+            day_old = footballgame["day"]["old"]
+            day_new = footballgame["day"]["new"]
+            hour_old = footballgame["hour"]["old"]
+            hour_new = footballgame["hour"]["new"]
+            text = text + f"- *{codigo}* -> *{status}* -> {home_team_old} vs {away_team_old} -> {home_team_new} vs {away_team_new} -> {day_old}/{hour_old} -> {day_new}/{hour_new}\n"        
+        Notificaciones_.send_whatsapp("936224658", text)
+
+    @staticmethod
     def send_whatsapp_update_footballgames(update_results: List[dict]) -> None:
         if len(update_results) > 0:
             text = "*ADMINISTRADOR* se actualizo el registro de los footballgames:\n"
