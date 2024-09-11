@@ -241,53 +241,80 @@ class Competitions_(CRUD):
 
     @staticmethod
     def update_match(match: Matchs, date_api: str, hour_api: str, objects_list_update: list, db: Session):
+        dict_temp = None
         if match.date == date_api and match.hour != hour_api:
+            hour_temp = match.hour
             match.hour = hour_api
             CRUD.update(db ,match)   
             match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_match == match.id).first()
             if match_footballgame:
                 footballgame = db.query(FootballGames).filter(FootballGames.id == match_footballgame.id_footballgames).first()
                 dict_temp = {
-                    "codigo":footballgame.codigo,
-                    "status":"API",
+                    "codigo_match":match.id,
+                    "codigo_footballgame":footballgame.codigo,
+                    "status":"API-MATCH , RANDOM-FOOTBALLGAME",
                     "home_team":{"old":footballgame.home_team,"new":footballgame.home_team},
                     "away_team":{"old":footballgame.away_team,"new":footballgame.away_team},
-                    "day":{"old":None,"new":None},
+                    "day":{"old":footballgame.date,"new":footballgame.date},
                     "hour":{"old":footballgame.hour,"new":hour_api}
                 }
-                objects_list_update.append(dict_temp)
                 footballgame.hour = hour_api
                 CRUD.update(db ,footballgame)
-
+            else:
+                home_team = db.query(Teams.name).filter(Teams.id_team == match.id_team_home).first()[0]
+                away_team = db.query(Teams.name).filter(Teams.id_team == match.id_team_away).first()[0]
+                dict_temp = {
+                    "codigo_match":match.id,
+                    "codigo_footballgame":None,
+                    "status":"API-MATCH",
+                    "home_team":{"old":home_team,"new":home_team},
+                    "away_team":{"old":away_team,"new":away_team},
+                    "day":{"old":match.date,"new":match.date},
+                    "hour":{"old":hour_temp,"new":hour_api}
+                }
         elif match.date != date_api and match.hour != hour_api:
+            hour_temp = match.hour
+            date_temp = match.date
             match.hour = hour_api
             match.date = date_api
-            CRUD.update(db ,match)
-                        
+            CRUD.update(db ,match)  
             match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_match == match.id).first()
             if match_footballgame:
                 footballgame = db.query(FootballGames).filter(FootballGames.id == match_footballgame.id_footballgames).first()
-                if footballgame:
-                    home_team_temp = footballgame.home_team
-                    away_team_temp = footballgame.away_team
-                    hour_temp = footballgame.hour
+                home_team_temp = footballgame.home_team
+                away_team_temp = footballgame.away_team
+                hour_temp = footballgame.hour
 
-                    teams = db.query(Teams.name).all()
-                    matchs = db.query(Matchs.hour).all()
-                    footballgame.hour = random.choice(matchs)[0]
-                    footballgame.home_team = random.choice(teams)[0]
-                    footballgame.away_team = random.choice(teams)[0]
-                    footballgame.origin = Origin.HANDBOOK
-                                
-                    dict_temp = {
-                        "codigo":footballgame.codigo,
-                        "status":"RANDOM",
-                        "home_team":{"old":home_team_temp,"new":footballgame.home_team},
-                        "away_team":{"old":away_team_temp,"new":footballgame.away_team},
-                        "day":{"old":footballgame.date,"new":footballgame.date},
-                        "hour":{"old":hour_temp,"new":footballgame.hour}
-                    }
-                    objects_list_update.append(dict_temp)
-                    CRUD.update(db, footballgame)
-        
+                teams = db.query(Teams.name).all()
+                matchs = db.query(Matchs.hour).all()
+                footballgame.hour = random.choice(matchs)[0]
+                footballgame.home_team = random.choice(teams)[0]
+                footballgame.away_team = random.choice(teams)[0]
+                footballgame.origin = Origin.HANDBOOK
+                dict_temp = {
+                    "codigo_match":match.id,
+                    "codigo_footballgame":footballgame.codigo,
+                    "status":"API-MATCH , RANDOM-FOOTBALLGAME",
+                    "home_team":{"old":home_team_temp,"new":footballgame.home_team},
+                    "away_team":{"old":away_team_temp,"new":footballgame.away_team},
+                    "day":{"old":date_temp,"new":footballgame.date},
+                    "hour":{"old":hour_temp,"new":footballgame.hour}
+                }
+                CRUD.update(db, footballgame)
+            else:
+                home_team = db.query(Teams.name).filter(Teams.id_team == match.id_team_home).first()[0]
+                away_team = db.query(Teams.name).filter(Teams.id_team == match.id_team_away).first()[0]
+                dict_temp = {
+                    "codigo_match":match.id,
+                    "codigo_footballgame":None,
+                    "status":"API-MATCH",
+                    "home_team":{"old":home_team,"new":home_team},
+                    "away_team":{"old":away_team,"new":away_team},
+                    "day":{"old":date_temp,"new":date_api},
+                    "hour":{"old":hour_temp,"new":hour_api}
+                }
+
+        if dict_temp is not None:
+            objects_list_update.append(dict_temp)
+
         return objects_list_update
