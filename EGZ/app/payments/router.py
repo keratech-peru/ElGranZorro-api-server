@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Request
 from typing import Dict, List
 from sqlalchemy.orm import Session
 from app.users.models import AppUsers
-from app.tournaments.models import Tournaments
 from app.payments import exception
-from app.payments import schemas
-from app.payments.models import CommissionAgent, EventCoupon
+from app.payments.schemas import InputPayments
+from app.payments.models import CommissionAgent, EventCoupon, Payments
 from app.payments.service import CommissionAgent_, Payments_, EventCoupon_
 from app.database import get_db
 from app.security import get_user_current
@@ -47,23 +46,54 @@ def discount_get(
             raise exception.coupon_expired
         return {"status":"done", "coupon":{"percent": commission_agent.percent, "id": commission_agent.id}}
 
+# @router.post("/hola", status_code=status.HTTP_201_CREATED)
+# def payments(
+#     payments_in: schemas.Payments,
+#     db: Session = Depends(get_db),
+#     user: AppUsers = Depends(get_user_current)
+#     ) -> Dict[str, object]:
+#         """
+#         **Descripcion** : El servicio para realizar un pago.
+#         \n**Excepcion** : 
+#             \n- El servicio requiere api-key.
+#         """
+#         commission_agent = db.query(CommissionAgent).filter(CommissionAgent.id == payments_in.commission_agent_id).first()
+#         if not commission_agent:
+#             raise exception.not_existent_commission_agent
+#         tournament = db.query(Tournaments).filter(Tournaments.id == payments_in.tournaments_id).first()
+#         if not tournament:
+#             raise exception.tournament_does_not_exist
+#         new_payment = Payments_.create(db, user.id, payments_in)
+#         EventCoupon_.create(db, user.id, payments_in.tournaments_id, payments_in.commission_agent_id)
+#         return {"status": "done", "payment_id": new_payment.id}
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def payments(
-    payments_in: schemas.Payments,
+    input_payments: InputPayments,
     db: Session = Depends(get_db),
     user: AppUsers = Depends(get_user_current)
     ) -> Dict[str, object]:
-        """
+    """
         **Descripcion** : El servicio para realizar un pago.
         \n**Excepcion** : 
-            \n- El servicio requiere api-key.
-        """
-        commission_agent = db.query(CommissionAgent).filter(CommissionAgent.id == payments_in.commission_agent_id).first()
-        if not commission_agent:
-            raise exception.not_existent_commission_agent
-        tournament = db.query(Tournaments).filter(Tournaments.id == payments_in.tournaments_id).first()
-        if not tournament:
-            raise exception.tournament_does_not_exist
-        new_payment = Payments_.create(db, user.id, payments_in)
-        EventCoupon_.create(db, user.id, payments_in.tournaments_id, payments_in.commission_agent_id)
-        return {"status": "done", "payment_id": new_payment.id}
+            \n- El servicio requiere autenticacion.
+            \n- 
+    """
+    resp_toke = Payments_.toke_generation_mercado_pago(input_payments.phone, input_payments.approval_code)
+    if resp_toke.status_code != 200:
+        raise exception.token_generation_fails
+    token = resp_toke.json()["id"]
+
+    resp_payment = Payments_.payment_mercado_pago(db, user.email, input_payments.tournament_id, input_payments.discount, token)
+    if resp_payment.json()["status"] !=  "approved":
+        raise exception.rejected_payment
+    new_payment = Payments_.create(
+        db,
+        user.id,
+        input_payments,
+        id_mercado_pago = resp_payment.json()["id"],
+        total_paid_amount = resp_payment.json()["transaction_details"]["total_paid_amount"],
+        net_received_amount = resp_payment.json()["transaction_details"]["net_received_amount"]
+    )
+
+    return {"data":new_payment}

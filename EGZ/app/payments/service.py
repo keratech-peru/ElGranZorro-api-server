@@ -1,13 +1,16 @@
-import random
+import requests
 import pytz
 from typing import List
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.database import CRUD
 from app.users.models import AppUsers
+from app.tournaments.models import Tournaments
 from app.payments.models import CommissionAgent, EventCoupon, Payments
-from app.payments.constants import Coupon
+from app.payments.constants import Coupon, URL_GENERATE_TOKEN, URL_PAYMENT
 from app.payments import schemas
+from app.config import YOUR_ACCESS_TOKEN, YOUR_PUBLIC_KEY
+import uuid
 
 class CommissionAgent_(CRUD):
     @staticmethod
@@ -43,16 +46,53 @@ class EventCoupon_(CRUD):
 
 class Payments_(CRUD):
     @staticmethod
-    def create(db: Session, user_id:int, payment_in: schemas.Payments) -> Payments:
+    def create(
+            db: Session,
+            user_id:int,
+            input_payment: schemas.InputPayments,
+            id_mercado_pago: int,
+            total_paid_amount:float,
+            net_received_amount:float
+        ) -> Payments:
         date_now, hour_now = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
         new_payment = Payments(
             appuser_id=user_id,
-            commission_agent_id=payment_in.commission_agent_id,
-            tournaments_id=payment_in.tournaments_id,
+            commission_agent_id=input_payment.commission_agent_id,
+            tournaments_id=input_payment.tournaments_id,
             day=date_now,
             hour=hour_now,
-            amount_pay=payment_in.amount_pay,
-            payment_accepted=True
+            pay_phone=input_payment.phone,
+            id_mercado_pago=id_mercado_pago,
+            total_paid_amount=total_paid_amount,
+            net_received_amount=net_received_amount
         )
         CRUD.insert(db, new_payment)
         return new_payment
+
+    @staticmethod
+    def toke_generation_mercado_pago(phone, approval_code):
+        query_params = {'public_key': YOUR_PUBLIC_KEY}
+        body = { "phoneNumber": phone ,"otp": approval_code }
+        resp_token = requests.post(URL_GENERATE_TOKEN, json=body, params=query_params)
+        return resp_token
+    
+    @staticmethod
+    def payment_mercado_pago(db : Session, email: str, tournament_id: int, discount: float, token:str):
+        tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
+        headers = {
+            'Authorization': f'Bearer {YOUR_ACCESS_TOKEN}',
+            "Content-Type": "application/json",
+            "x-idempotency-key": str(uuid.uuid4())
+        }
+        body = {
+            "token": token,
+            "transaction_amount": (tournament.quota)*(1 - discount),
+            "description": f"tournament_id: {tournament.id} , tournament_name: {tournament.name}",
+            "installments": 1,
+            "payment_method_id": "yape",
+            "payer": {
+                "email": email
+            }
+        }
+        resp_payment = requests.post(URL_PAYMENT, headers=headers, json=body)
+        return resp_payment
