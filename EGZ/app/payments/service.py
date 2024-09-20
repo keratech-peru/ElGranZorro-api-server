@@ -58,7 +58,7 @@ class Payments_(CRUD):
         new_payment = Payments(
             appuser_id=user_id,
             commission_agent_id=input_payment.commission_agent_id,
-            tournaments_id=input_payment.tournaments_id,
+            tournaments_id=input_payment.tournament_id,
             day=date_now,
             hour=hour_now,
             pay_phone=input_payment.phone,
@@ -86,7 +86,7 @@ class Payments_(CRUD):
         }
         body = {
             "token": token,
-            "transaction_amount": (tournament.quota)*(1 - discount),
+            "transaction_amount": round((tournament.quota)*(1 - discount),1),
             "description": f"tournament_id: {tournament.id} , tournament_name: {tournament.name}",
             "installments": 1,
             "payment_method_id": "yape",
