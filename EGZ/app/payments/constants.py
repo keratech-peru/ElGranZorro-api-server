@@ -4,6 +4,7 @@ class Coupon:
 
 class ErrorCode:
     NOT_EXISTENT_COMMISSION_AGENT = "El agente comisionado no existe"
+    USER_ALREADY_COMMISSION_AGENT = "Usuario ya es un agente comisionado"
     TOURNAMENT_DOES_NOT_EXIST = "El torneo no existe."
     TOKEN_GENERATION_FAILS = "Fallo la creacion del token"
     REJECTED_PAYMENT = "Pago rechazado"

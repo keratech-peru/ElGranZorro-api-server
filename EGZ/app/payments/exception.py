@@ -8,6 +8,13 @@ not_existent_commission_agent = HTTPException(
     },
 )
 
+user_already_commission_agent = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.USER_ALREADY_COMMISSION_AGENT
+    },
+)
+
 tournament_does_not_exist = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail={
