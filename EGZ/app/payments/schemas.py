@@ -8,7 +8,6 @@ from typing import Optional
 
 class InputPayments(BaseModel):
     commission_agent_id: Optional[int] = None
-    discount: Optional[float] = 0
     phone: str
     approval_code: str
     tournament_id: int

@@ -46,27 +46,6 @@ def discount_get(
             raise exception.coupon_expired
         return {"status":"done", "coupon":{"percent": commission_agent.percent, "id": commission_agent.id}}
 
-# @router.post("/hola", status_code=status.HTTP_201_CREATED)
-# def payments(
-#     payments_in: schemas.Payments,
-#     db: Session = Depends(get_db),
-#     user: AppUsers = Depends(get_user_current)
-#     ) -> Dict[str, object]:
-#         """
-#         **Descripcion** : El servicio para realizar un pago.
-#         \n**Excepcion** : 
-#             \n- El servicio requiere api-key.
-#         """
-#         commission_agent = db.query(CommissionAgent).filter(CommissionAgent.id == payments_in.commission_agent_id).first()
-#         if not commission_agent:
-#             raise exception.not_existent_commission_agent
-#         tournament = db.query(Tournaments).filter(Tournaments.id == payments_in.tournaments_id).first()
-#         if not tournament:
-#             raise exception.tournament_does_not_exist
-#         new_payment = Payments_.create(db, user.id, payments_in)
-#         EventCoupon_.create(db, user.id, payments_in.tournaments_id, payments_in.commission_agent_id)
-#         return {"status": "done", "payment_id": new_payment.id}
-
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def payments(
     input_payments: InputPayments,
@@ -79,21 +58,24 @@ def payments(
             \n- El servicio requiere autenticacion.
             \n- 
     """
+    commission_agent = db.query(CommissionAgent).filter(CommissionAgent.id == input_payments.commission_agent_id).first()
     resp_toke = Payments_.toke_generation_mercado_pago(input_payments.phone, input_payments.approval_code)
     if resp_toke.status_code != 200:
         raise exception.token_generation_fails
     token = resp_toke.json()["id"]
 
-    resp_payment = Payments_.payment_mercado_pago(db, user.email, input_payments.tournament_id, input_payments.discount, token)
-    if resp_payment.json()["status"] !=  "approved":
-        raise exception.rejected_payment
+    resp_payment, amount = Payments_.payment_mercado_pago(db, user.email, input_payments.tournament_id, commission_agent.percent/100, token)
+    if amount > 2:
+        if resp_payment.json()["status"] !=  "approved":
+            raise exception.rejected_payment
+
+    EventCoupon_.create(db, user.id, input_payments.tournament_id, input_payments.commission_agent_id)
     new_payment = Payments_.create(
         db,
         user.id,
         input_payments,
-        id_mercado_pago = resp_payment.json()["id"],
-        total_paid_amount = resp_payment.json()["transaction_details"]["total_paid_amount"],
-        net_received_amount = resp_payment.json()["transaction_details"]["net_received_amount"]
+        id_mercado_pago = resp_payment.json()["id"] if amount > 2 else "GRATIS",
+        total_paid_amount = resp_payment.json()["transaction_details"]["total_paid_amount"] if amount > 2 else 0,
+        net_received_amount = resp_payment.json()["transaction_details"]["net_received_amount"] if amount > 2 else 0
     )
-
     return {"data":new_payment}

@@ -21,7 +21,7 @@ class CommissionAgent_(CRUD):
             appuser_id=appuser.id,
             start_date=start_date.strftime('%d/%m/%Y'),
             end_date=end_date.strftime('%d/%m/%Y'),
-            codigo=appuser.dni[:4],
+            codigo=appuser.dni[:4] + appuser.name[:2].upper(),
             percent=Coupon.PERCENT
         )
         CRUD.insert(db, new_commission_agent)
@@ -37,9 +37,12 @@ class CommissionAgent_(CRUD):
 class EventCoupon_(CRUD):
     @staticmethod
     def create(db: Session, appuser_id: int, tournament_id: int, commission_agent_id: int) -> EventCoupon:
+        date_now, hour_now = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
         new_event_coupon = EventCoupon(
             appuser_id=appuser_id,
-            commission_agent_id=commission_agent_id.id,
+            day=date_now,
+            hour=hour_now,
+            commission_agent_id=commission_agent_id,
             tournaments_id=tournament_id,
         )
         CRUD.insert(db, new_event_coupon)
@@ -79,6 +82,7 @@ class Payments_(CRUD):
     @staticmethod
     def payment_mercado_pago(db : Session, email: str, tournament_id: int, discount: float, token:str):
         tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
+        amount = round((tournament.quota)*(1 - discount),1)
         headers = {
             'Authorization': f'Bearer {YOUR_ACCESS_TOKEN}',
             "Content-Type": "application/json",
@@ -86,7 +90,7 @@ class Payments_(CRUD):
         }
         body = {
             "token": token,
-            "transaction_amount": round((tournament.quota)*(1 - discount),1),
+            "transaction_amount": amount,
             "description": f"tournament_id: {tournament.id} , tournament_name: {tournament.name}",
             "installments": 1,
             "payment_method_id": "yape",
@@ -94,5 +98,7 @@ class Payments_(CRUD):
                 "email": email
             }
         }
-        resp_payment = requests.post(URL_PAYMENT, headers=headers, json=body)
-        return resp_payment
+        resp_payment = {}
+        if amount > 2:
+            resp_payment = requests.post(URL_PAYMENT, headers=headers, json=body)
+        return resp_payment, amount

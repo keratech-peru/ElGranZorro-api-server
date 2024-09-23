@@ -17,9 +17,7 @@ class ErrorCode:
     USER_MAX_ATTEMPS_VALIDATE_PASSWORD_UPDATE = "Error en la validacion, se supero el maximo de intentos. Vuelve a intentarlo en 30 min."
     USER_FAILED_VALIDATE_PASSWORD_UPDATE = "Error en la recuperacion de la contraseña, los valores ingresados no son los correctos."
     OPTION_NOT_ALLOWED = "Opcion no permitida"
-    USER_ALREADY_COMMISSION_AGENT = "El usuario ya fue registrado como un agente comisionado."
     INVALID_COUPON = "Cupon invalido, prueba con otro."
-    EXPIRED_COUPON = "El cupon expiro."
 
 USER_STATUS_IN_TOURNAMENT = {
     "EE": STATUS_TOURNAMENT["EE"],

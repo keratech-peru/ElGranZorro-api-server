@@ -19,6 +19,8 @@ class EventCoupon(Base):
     __tablename__ = "payments_event_coupon"
     id = Column(Integer, primary_key=True, autoincrement=True)
     appuser_id = Column(Integer)
+    day = Column(String)
+    hour = Column(String)
     commission_agent_id = Column(Integer, ForeignKey("payments_commission_agent.id"))
     tournaments_id = Column(Integer)
 

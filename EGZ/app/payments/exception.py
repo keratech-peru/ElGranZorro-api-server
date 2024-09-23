@@ -15,6 +15,20 @@ user_already_commission_agent = HTTPException(
     },
 )
 
+invalid_coupon= HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.INVALID_COUPON
+    },
+)
+
+coupon_expired= HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.EXPIRED_COUPON
+    },
+)
+
 tournament_does_not_exist = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail={

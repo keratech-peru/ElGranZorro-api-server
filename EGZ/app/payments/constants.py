@@ -8,6 +8,8 @@ class ErrorCode:
     TOURNAMENT_DOES_NOT_EXIST = "El torneo no existe."
     TOKEN_GENERATION_FAILS = "Fallo la creacion del token"
     REJECTED_PAYMENT = "Pago rechazado"
+    INVALID_COUPON = "Cupon invalido."
+    EXPIRED_COUPON = "El cupon expiro."
 
 URL_GENERATE_TOKEN = "https://api.mercadopago.com/platforms/pci/yape/v1/payment"
 URL_PAYMENT = "https://api.mercadopago.com/v1/payments"
