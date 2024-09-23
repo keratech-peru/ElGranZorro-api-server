@@ -38,3 +38,4 @@ class Payments(Base):
     id_mercado_pago = Column(String)
     total_paid_amount = Column(Float)
     net_received_amount = Column(Float)
+    status = Column(Boolean)

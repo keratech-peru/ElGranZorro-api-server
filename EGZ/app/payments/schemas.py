@@ -22,3 +22,4 @@ class Payments(BaseModel):
     id_mercado_pago: str
     total_paid_amount: float
     net_received_amount: float
+    status: str

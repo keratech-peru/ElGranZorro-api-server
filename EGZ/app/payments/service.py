@@ -67,7 +67,8 @@ class Payments_(CRUD):
             pay_phone=input_payment.phone,
             id_mercado_pago=id_mercado_pago,
             total_paid_amount=total_paid_amount,
-            net_received_amount=net_received_amount
+            net_received_amount=net_received_amount,
+            status="RECIBIDO" 
         )
         CRUD.insert(db, new_payment)
         return new_payment
