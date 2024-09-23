@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, status, Request
-from typing import Dict, List
+from typing import Dict
 from sqlalchemy.orm import Session
 from app.users.models import AppUsers
 from app.payments import exception
 from app.payments.schemas import InputPayments
-from app.payments.models import CommissionAgent, EventCoupon, Payments
-from app.payments.service import CommissionAgent_, Payments_, EventCoupon_
+from app.payments.models import CommissionAgent
+from app.payments.service import CommissionAgent_, Payments_
 from app.database import get_db
 from app.security import get_user_current
 
@@ -69,7 +69,6 @@ def payments(
         if resp_payment.json()["status"] !=  "approved":
             raise exception.rejected_payment
 
-    EventCoupon_.create(db, user.id, input_payments.tournament_id, input_payments.commission_agent_id)
     new_payment = Payments_.create(
         db,
         user.id,

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import CRUD
 from app.users.models import AppUsers
 from app.tournaments.models import Tournaments
-from app.payments.models import CommissionAgent, EventCoupon, Payments
+from app.payments.models import CommissionAgent, Payments
 from app.payments.constants import Coupon, StatusPayments
 from app.payments import schemas
 from app.config import MercadoPago
@@ -33,19 +33,6 @@ class CommissionAgent_(CRUD):
         end_date = datetime.strptime(f'{commission_agent.end_date}', '%d/%m/%Y').replace(tzinfo=timezone.utc)
         dif = end_date - now_date
         return int(dif.days) >= 0
-
-class EventCoupon_(CRUD):
-    @staticmethod
-    def create(db: Session, appuser_id: int, tournament_id: int, commission_agent_id: int) -> EventCoupon:
-        date_now, hour_now = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
-        new_event_coupon = EventCoupon(
-            appuser_id=appuser_id,
-            day=date_now,
-            hour=hour_now,
-            commission_agent_id=commission_agent_id,
-            tournaments_id=tournament_id,
-        )
-        CRUD.insert(db, new_event_coupon)
 
 class Payments_(CRUD):
     @staticmethod
