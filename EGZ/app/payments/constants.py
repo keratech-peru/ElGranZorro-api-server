@@ -11,5 +11,8 @@ class ErrorCode:
     INVALID_COUPON = "Cupon invalido."
     EXPIRED_COUPON = "El cupon expiro."
 
-URL_GENERATE_TOKEN = "https://api.mercadopago.com/platforms/pci/yape/v1/payment"
-URL_PAYMENT = "https://api.mercadopago.com/v1/payments"
+class StatusPayments:
+    RECEIVED = "RECIBIDO"
+    APPROVED = "APROBADO"
+    WAITING_FOR_REFOUND = "EN ESPERA DE DEVOLUCION"
+    REFUND = "REEMBOLSO"

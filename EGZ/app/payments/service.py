@@ -7,9 +7,9 @@ from app.database import CRUD
 from app.users.models import AppUsers
 from app.tournaments.models import Tournaments
 from app.payments.models import CommissionAgent, EventCoupon, Payments
-from app.payments.constants import Coupon, URL_GENERATE_TOKEN, URL_PAYMENT
+from app.payments.constants import Coupon, StatusPayments
 from app.payments import schemas
-from app.config import YOUR_ACCESS_TOKEN, YOUR_PUBLIC_KEY
+from app.config import MercadoPago
 import uuid
 
 class CommissionAgent_(CRUD):
@@ -68,16 +68,16 @@ class Payments_(CRUD):
             id_mercado_pago=id_mercado_pago,
             total_paid_amount=total_paid_amount,
             net_received_amount=net_received_amount,
-            status="RECIBIDO" 
+            status = StatusPayments.RECEIVED
         )
         CRUD.insert(db, new_payment)
         return new_payment
 
     @staticmethod
     def toke_generation_mercado_pago(phone, approval_code):
-        query_params = {'public_key': YOUR_PUBLIC_KEY}
+        query_params = {'public_key': MercadoPago.PUBLIC_KEY}
         body = { "phoneNumber": phone ,"otp": approval_code }
-        resp_token = requests.post(URL_GENERATE_TOKEN, json=body, params=query_params)
+        resp_token = requests.post(MercadoPago.URL_GENERATE_TOKEN, json=body, params=query_params)
         return resp_token
     
     @staticmethod
@@ -85,7 +85,7 @@ class Payments_(CRUD):
         tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
         amount = round((tournament.quota)*(1 - discount),1)
         headers = {
-            'Authorization': f'Bearer {YOUR_ACCESS_TOKEN}',
+            'Authorization': f'Bearer {MercadoPago.ACCESS_TOKEN}',
             "Content-Type": "application/json",
             "x-idempotency-key": str(uuid.uuid4())
         }
@@ -101,5 +101,5 @@ class Payments_(CRUD):
         }
         resp_payment = {}
         if amount > 2:
-            resp_payment = requests.post(URL_PAYMENT, headers=headers, json=body)
+            resp_payment = requests.post(MercadoPago.URL_PAYMENT, headers=headers, json=body)
         return resp_payment, amount
