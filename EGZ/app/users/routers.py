@@ -12,8 +12,9 @@ from app.database import get_db
 from app.security import create_token, valid_header, get_user_current
 from app.config import ApiKey, TOKEN_SCONDS_EXP
 from datetime import datetime, timedelta
-from app.notifications.service import Notificaciones_
+from app.notifications.service import Notificaciones_, NotificacionesAdmin_
 from app.notifications.constants import TextToSend
+from app.payments.service import Payments_
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -150,7 +151,9 @@ def user_declining(
         if utils.is_past(tournament.start_date):
             raise exception.user_cannot_withdraw_tournament_already_started
         AppUsers_.decline(db, user, tournament.codigo, enrollment)
+        Payments_.pending_refund(db, tournament.id, user)
         Notificaciones_.send_whatsapp(user.phone , TextToSend.declining(tournament, user.name))
+        NotificacionesAdmin_.send_whatsapp_pending_refund(user, tournament.id)
         return {"status": "done"}
 
 @router.put("/plays", status_code=status.HTTP_201_CREATED)

@@ -90,3 +90,9 @@ class Payments_(CRUD):
         if amount > 2:
             resp_payment = requests.post(MercadoPago.URL_PAYMENT, headers=headers, json=body)
         return resp_payment, amount
+
+    @staticmethod
+    def pending_refund(db : Session ,tournament_id : int , user):
+        payment = db.query(Payments).filter(Payments.appuser_id == user.id, Payments.tournaments_id == tournament_id).first()
+        payment.status = StatusPayments.WAITING_FOR_REFOUND
+        CRUD.update(db, payment)

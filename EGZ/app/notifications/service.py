@@ -166,3 +166,7 @@ class NotificacionesAdmin_:
         text_0 = "*ADMINISTRADOR* se detectaron match reprogramados:\n"
         if text:
             Notificaciones_.send_whatsapp("936224658", text_0 + text)
+    
+    @staticmethod
+    def send_whatsapp_pending_refund(user: AppUsers, tournament_id: int) -> None:
+        Notificaciones_.send_whatsapp("936224658", f"Se reporto una devolucion para:\nuser:{user.name}\nphone:{user.phone}\ntournament_id:{tournament_id}")
