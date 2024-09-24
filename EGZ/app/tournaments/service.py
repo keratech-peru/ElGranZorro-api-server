@@ -9,11 +9,12 @@ from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser,
 from app.notifications.service import Notificaciones_
 from app.competitions.models import Teams, MatchsFootballGames, Matchs, Competitions
 from app.competitions.constants import DataDummyTeam, DataDummyCompetition
+from app.competitions.utils import format_date
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List, Dict
 from app.config import API_FOOTBALL_DATA, KEY_FOOTBALL_DATA
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import requests
 import random
 class Tournaments_(CRUD):
@@ -440,7 +441,6 @@ class FootballGames_(CRUD):
         headers = { 'X-Auth-Token':  KEY_FOOTBALL_DATA}
         response = requests.get(uri, headers=headers).json()
         status = response["status"]
-        update_result = []
         result_home = None
         result_away = None
         if status == "FINISHED":

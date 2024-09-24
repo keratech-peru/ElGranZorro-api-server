@@ -225,18 +225,16 @@ class Competitions_(CRUD):
             list_datetime = str(datetime.strptime(response["utcDate"], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc) - timedelta(hours=5)).split(" ")
             home_team = footballgame.home_team
             away_team = footballgame.away_team
-            if footballgame.date != format_date(list_datetime[0]) or footballgame.hour != list_datetime[1][:8]:
-                if response["status"] != "TIMED":
-                    footballgame.date = format_date(list_datetime[0])
-                    footballgame.hour = list_datetime[1][:8]
-                    CRUD.update(db, footballgame)
-                    match.date = format_date(list_datetime[0])
-                    match.hour = list_datetime[1][:8]
-                    CRUD.update(db, match)
-                    text = text + f"*{home_team} - {away_team}*\nFootballGames : {footballgame.date} {footballgame.hour}\nApi_new : {format_date(list_datetime[0])} {list_datetime[1][:8]}\n\n"
-                else:
-                    text_timed = text_timed + f"*{home_team} - {away_team}*\n\n"
-        NotificacionesAdmin_.send_whatsapp_checkout_match_timed(text)
+            if footballgame.date == format_date(list_datetime[0]) or footballgame.hour != list_datetime[1][:8]:
+                footballgame_hour_temp = footballgame.hour
+                footballgame.hour = list_datetime[1][:8]
+                match.hour = list_datetime[1][:8]
+                CRUD.update(db, footballgame)
+                CRUD.update(db, match)
+                text = text + f"*{home_team} - {away_team}*\nFootballGames : {footballgame.date} {footballgame_hour_temp}\nApi_new : {format_date(list_datetime[0])} {list_datetime[1][:8]}\n\n"
+            elif footballgame.date != format_date(list_datetime[0]):
+                text_timed = text_timed + f"*{home_team} - {away_team}*\nFootballGames : {footballgame.date} {footballgame.hour}\nApi_new : {format_date(list_datetime[0])} {list_datetime[1][:8]}\n\n"
+        NotificacionesAdmin_.send_whatsapp_checkout_match_timed(text_timed)
         NotificacionesAdmin_.send_whatsapp_checkout_match(text)
 
     @staticmethod

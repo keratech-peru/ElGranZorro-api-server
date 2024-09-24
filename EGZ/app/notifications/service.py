@@ -163,7 +163,7 @@ class NotificacionesAdmin_:
 
     @staticmethod
     def send_whatsapp_checkout_match_timed(text : str) -> None:
-        text_0 = "*ADMINISTRADOR* se detectaron match reprogramados:\n"
+        text_0 = "*ADMINISTRADOR* se detectaron match *reprogramados*:\n"
         if text:
             Notificaciones_.send_whatsapp("936224658", text_0 + text)
     
