@@ -55,7 +55,7 @@ class Payments_(CRUD):
             id_mercado_pago=id_mercado_pago,
             total_paid_amount=total_paid_amount,
             net_received_amount=net_received_amount,
-            status = StatusPayments.RECEIVED
+            status = StatusPayments.FREE if id_mercado_pago == "" else StatusPayments.RECEIVED
         )
         CRUD.insert(db, new_payment)
         return new_payment
@@ -96,3 +96,19 @@ class Payments_(CRUD):
         payment = db.query(Payments).filter(Payments.appuser_id == user.id, Payments.tournaments_id == tournament_id).first()
         payment.status = StatusPayments.WAITING_FOR_REFOUND
         CRUD.update(db, payment)
+    
+    @staticmethod
+    def list_search_codigo(db):
+        payments_ = []
+        payments = db.query(Payments).order_by(Payments.id.desc()).all()
+        for payment in payments:
+            appuser = db.query(AppUsers).filter(AppUsers.id == payment.appuser_id).first()
+            commission_agent = db.query(CommissionAgent).filter(CommissionAgent.id == payment.commission_agent_id).first()
+            tournament = db.query(Tournaments).filter(Tournaments.id == payment.tournaments_id).first()
+            payment_ = payment.__dict__
+            payment_["appuser"] = appuser.name + " " + appuser.lastname
+            payment_["commission_agent"] = commission_agent.codigo
+            payment_["tournament"] = tournament.codigo
+            payment_["day_hour"] = payment.day + " " + payment.hour
+            payments_.append(payment_)
+        return payments_

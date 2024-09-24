@@ -1,0 +1,110 @@
+d{% extends "layout.html" %}
+{% block page_body %}
+<div class="col-12">
+  <div class="card">
+      <div class="card-header">
+        <form action="/admin/appusers/list/1" method="get" class="w-100">
+          <div class="d-flex">
+            <div class="d-flex ms-auto">
+              <div class="mx-2">
+                <div class="text-muted">
+                  Email : 
+                  <div class="d-inline-block">
+                    <input class="form-control" type="text" name="email" value placeholder="">
+                  </div>
+                </div>
+              </div>
+              <div class="ms-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i>
+                    {{ ('search') }}
+                  </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="table-responsive">
+        <table id="data" class="table card-table table-vcenter text-nowrap datatable">
+          <thead>
+            <tr>
+                    <th class="w-1">
+                      <input class="form-check-input m-0 align-middle" type="checkbox" id="checkbox-select-all"/>
+                    </th>
+                    <th>id</th>
+                    <th>appuser</th>
+                    <th>commission_agent</th>
+                    <th>tournament</th>
+                    <th>day_hour</th>
+                    <th>id_mercado_pago</th>
+                    <th>status</th>
+                    <th></th>
+            </tr>
+          </thead>
+          <tbody>
+                  {% for tabla in tablas %}
+                    <tr>
+                      <td>
+                        <input data-id="{{ tabla.id|int }}" class="form-check-input m-0 align-middle checkbox-select-item" type="checkbox"/>
+                      </td>
+                      <td>{{ tabla.id }}</td>
+                      <td>{{ tabla.appuser }}</td>
+                      <td>{{ tabla.commission_agent }}</td>
+                      <td>{{ tabla.tournament }}</td>
+                      <td>{{ tabla.day_hour }}</td>
+                      <td>{{ tabla.id_mercado_pago }}</td>
+                      <td>
+                        {% set color_class = colors_payments[tabla.status] %}
+                        <span class="badge {{ color_class }}">{{ tabla.status }}</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer d-flex align-items-center">
+        <p class="m-0 text-muted"> Showing {{page_number}} to {{total_page}} of {{total_items}} entries </p>
+        <ul class="pagination m-0 ms-auto">
+          <li class="page-item {% if page_number <= 1 %} disabled {% endif %}">
+            <a class="page-link" href="/admin/appusers/list/{{page_number-1}}" tabindex="-1" aria-disabled="true">
+              <i class="ti ti-chevron-left"></i>
+              prev_page
+            </a>
+          </li>
+          {% for i in range(1,total_page+1) %}
+            <li class="page-item {% if i == (page_number or 1) %} active {% endif %}">
+              <a class="page-link" href="/admin/appusers/list/{{i}}" >{{i}}</a>
+            </li>
+          {% endfor %}
+          <li class="page-item {% if page_number >= total_page %} disabled {% endif %}">
+            <a class="page-link" href="/admin/appusers/list/{{page_number+1}}">
+              next_page
+              <i class="ti ti-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+
+      </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(function () {
+      $('#data').DataTable({
+        columns: [
+          {searchable: false},
+          {searchable: false},
+          {searchable: false},
+          {orderable: true, searchable: true},
+          {searchable: false},
+          {searchable: false},
+          {searchable: false},
+          {searchable: false},
+          {searchable: false}],
+      });
+    });
+  </script>
+{% endblock %}

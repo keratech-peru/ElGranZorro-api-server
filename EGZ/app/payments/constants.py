@@ -16,3 +16,12 @@ class StatusPayments:
     APPROVED = "APROBADO"
     WAITING_FOR_REFOUND = "EN ESPERA DE DEVOLUCION"
     REFUND = "REEMBOLSO"
+    FREE = "GRATIS"
+
+COLORS_PAYMENTS = {
+    StatusPayments.RECEIVED : "bg-yellow",
+    StatusPayments.APPROVED : "bg-blue",
+    StatusPayments.WAITING_FOR_REFOUND : "bg-green",
+    StatusPayments.REFUND : "bg-red",
+    StatusPayments.FREE : "bg-purple"
+}

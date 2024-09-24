@@ -13,6 +13,7 @@ from app.tournaments.constants import Players
 from app.users.models import PlaysUsers as ModelsPlaysUsers
 from app.users.service import AppUsers_
 from app.notifications.service import NotificacionesAdmin_
+from app.payments.service import Payments_
 from app.database import get_db, CRUD
 from app.security import valid_access_token, create_token
 from app.admin import exception, utils
@@ -162,6 +163,8 @@ def view_table(
         list_all = FootballGames_.list_search_codigo(db, codigo, date)
     elif table_name in 'appusers':
         list_all = AppUsers_.list_search_email(db, email)
+    elif table_name in 'payments':
+        list_all = Payments_.list_search_codigo(db)
     else:
         raise exception.table_does_not_exist
     contex = utils.get_context_view_pagination(request, table_name, page_number, list_all)

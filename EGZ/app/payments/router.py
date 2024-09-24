@@ -73,7 +73,7 @@ def payments(
         db,
         user.id,
         input_payments,
-        id_mercado_pago = resp_payment.json()["id"] if amount > 2 else "GRATIS",
+        id_mercado_pago = resp_payment.json()["id"] if amount > 2 else "",
         total_paid_amount = resp_payment.json()["transaction_details"]["total_paid_amount"] if amount > 2 else 0,
         net_received_amount = resp_payment.json()["transaction_details"]["net_received_amount"] if amount > 2 else 0
     )

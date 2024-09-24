@@ -5,9 +5,9 @@ class ErrorCode:
     FAIL_ACCESS_TOKEN = "Error en el access_token"
 
 
-RESOURCES = [{"label":"footballgames"}, {"label":"tournaments"}, {"label":"appusers"}]
+RESOURCES = [{"label":"footballgames"}, {"label":"tournaments"}, {"label":"appusers"}, {"label":"payments"}]
 
 class ErrorAdmin:
     LOGIN = "Credenciales invalidas"
 
-PAGINATION = {"tournaments" : 10, "footballgames": 21, "appusers": 32}
+PAGINATION = {"tournaments" : 10, "footballgames": 21, "appusers": 32, "payments": 32}
