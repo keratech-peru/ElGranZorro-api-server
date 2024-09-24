@@ -7,6 +7,7 @@ from app.tournaments.models import Tournaments, FootballGames
 from app.tournaments.constants import STATUS_TOURNAMENT
 from app.notifications.constants import Otp
 from app.users.models import AppUsers, PlaysUsers
+from app.payments.models import Payments
 from email.message import EmailMessage
 import smtplib
 import requests
@@ -168,5 +169,7 @@ class NotificacionesAdmin_:
             Notificaciones_.send_whatsapp("936224658", text_0 + text)
     
     @staticmethod
-    def send_whatsapp_pending_refund(user: AppUsers, tournament_id: int) -> None:
-        Notificaciones_.send_whatsapp("936224658", f"Se reporto una devolucion para:\nuser:{user.name}\nphone:{user.phone}\ntournament_id:{tournament_id}")
+    def send_whatsapp_pending_refund(db: Session, user: AppUsers, tournament_id: int) -> None:
+        payment = db.query(Payments).filter(Payments.appuser_id == user.id, Payments.tournaments_id == tournament_id).first()
+        if payment:
+            Notificaciones_.send_whatsapp("936224658", f"Se reporto una devolucion para:\n\nuser : {user.name}\nphone : {user.phone}\ntournament_id : {tournament_id}\nid_mercado_pago : {payment.id_mercado_pago}")

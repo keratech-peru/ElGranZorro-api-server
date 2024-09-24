@@ -153,7 +153,7 @@ def user_declining(
         AppUsers_.decline(db, user, tournament.codigo, enrollment)
         Payments_.pending_refund(db, tournament.id, user)
         Notificaciones_.send_whatsapp(user.phone , TextToSend.declining(tournament, user.name))
-        NotificacionesAdmin_.send_whatsapp_pending_refund(user, tournament.id)
+        NotificacionesAdmin_.send_whatsapp_pending_refund(db, user, tournament.id)
         return {"status": "done"}
 
 @router.put("/plays", status_code=status.HTTP_201_CREATED)
