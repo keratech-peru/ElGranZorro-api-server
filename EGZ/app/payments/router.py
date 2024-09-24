@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.users.models import AppUsers
 from app.payments import exception
 from app.payments.schemas import InputPayments
-from app.payments.models import CommissionAgent
+from app.payments.models import CommissionAgent, Payments
 from app.payments.service import CommissionAgent_, Payments_
 from app.database import get_db
 from app.security import get_user_current
@@ -38,6 +38,9 @@ def discount_get(
         \n**Excepcion** : 
             \n- El servicio requiere autorizacion via token
             \n- El servicio tiene excepcion si el token es invalido o expiro
+            \n- El servicio tiene excepcion cuando el cupon no existe
+            \n- El servicio tiene excepcion cuando el cupon caduco
+            \n- El servicio tiene excepcion cuando el dueño del cupon quiere usar su propio cupon
         """
         commission_agent = db.query(CommissionAgent).filter(CommissionAgent.codigo == codigo).first()
         if not commission_agent:
@@ -46,7 +49,13 @@ def discount_get(
             raise exception.coupon_expired
         if user.id == commission_agent.appuser_id:
             raise exception.coupon_not_allowed_user
-        return {"status":"done", "coupon":{"percent": commission_agent.percent, "id": commission_agent.id}}
+        return {
+            "status":"done",
+            "detail":{
+                "message":f"Cupón valido, descuento del {commission_agent.percent}%",
+                "coupon":{"percent": commission_agent.percent, "id": commission_agent.id}
+                }
+            }
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def payments(
@@ -58,9 +67,19 @@ def payments(
         **Descripcion** : El servicio para realizar un pago.
         \n**Excepcion** : 
             \n- El servicio requiere autenticacion.
-            \n- 
+            \n- El servicio tiene excepcion si el token es invalido o expiro
+            \n- El servicio tiene excepcion cuando la generacion del token falla
+            \n- El servicio tiene excepcion cuando el pago es rechazado
+            \n- El servicio tiene excepcion cuando el dueño del cupon quiere usar su propio cupon 
     """
     commission_agent = db.query(CommissionAgent).filter(CommissionAgent.id == input_payments.commission_agent_id).first()
+    if user.id == commission_agent.appuser_id:
+        raise exception.coupon_not_allowed_user
+
+    payment = db.query(Payments).filter(Payments.appuser_id == user.id , Payments.tournaments_id == input_payments.tournament_id).first()
+    if payment:
+        raise exception.payment_already_registered
+
     resp_toke = Payments_.toke_generation_mercado_pago(input_payments.phone, input_payments.approval_code)
     if resp_toke.status_code != 200:
         raise exception.token_generation_fails

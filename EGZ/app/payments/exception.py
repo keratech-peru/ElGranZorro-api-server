@@ -8,6 +8,13 @@ not_existent_commission_agent = HTTPException(
     },
 )
 
+payment_already_registered = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.PAYMENT_ALREADY_REGISTERED
+    },
+)
+
 coupon_not_allowed_user = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail={
