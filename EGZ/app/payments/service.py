@@ -28,7 +28,7 @@ class CommissionAgent_(CRUD):
         return new_commission_agent
     
     @staticmethod
-    def valid_coupon(commission_agent: CommissionAgent) -> bool:
+    def coupon_valid(commission_agent: CommissionAgent) -> bool:
         now_date = datetime.now(pytz.timezone("America/Lima"))
         end_date = datetime.strptime(f'{commission_agent.end_date}', '%d/%m/%Y').replace(tzinfo=timezone.utc)
         dif = end_date - now_date

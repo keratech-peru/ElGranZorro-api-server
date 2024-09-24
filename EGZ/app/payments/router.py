@@ -31,7 +31,7 @@ def commission_agent_create(
 def discount_get(
     codigo: str,
     db: Session = Depends(get_db),
-    __: AppUsers = Depends(get_user_current)
+    user: AppUsers = Depends(get_user_current)
     ) -> Dict[str, object]:
         """
         **Descripcion** : El servicio permite acceder a un cupon para la inscripcion de un torneo.
@@ -41,9 +41,11 @@ def discount_get(
         """
         commission_agent = db.query(CommissionAgent).filter(CommissionAgent.codigo == codigo).first()
         if not commission_agent:
-            raise exception.invalid_coupon
-        if not CommissionAgent_.valid_coupon(commission_agent):
+            raise exception.not_exist_coupon
+        if not CommissionAgent_.coupon_valid(commission_agent):
             raise exception.coupon_expired
+        if user.id == commission_agent.appuser_id:
+            raise exception.coupon_not_allowed_user
         return {"status":"done", "coupon":{"percent": commission_agent.percent, "id": commission_agent.id}}
 
 @router.post("/", status_code=status.HTTP_201_CREATED)

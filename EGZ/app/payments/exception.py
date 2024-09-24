@@ -8,6 +8,13 @@ not_existent_commission_agent = HTTPException(
     },
 )
 
+coupon_not_allowed_user = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.CUOPON_NOT_ALLOWE
+    },
+)
+
 user_already_commission_agent = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail={
@@ -15,10 +22,10 @@ user_already_commission_agent = HTTPException(
     },
 )
 
-invalid_coupon= HTTPException(
+not_exist_coupon= HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail={
-        "message": ErrorCode.INVALID_COUPON
+        "message": ErrorCode.NOT_EXIST_COUPON
     },
 )
 
