@@ -225,7 +225,7 @@ class Competitions_(CRUD):
             list_datetime = str(datetime.strptime(response["utcDate"], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc) - timedelta(hours=5)).split(" ")
             home_team = footballgame.home_team
             away_team = footballgame.away_team
-            if footballgame.date == format_date(list_datetime[0]) or footballgame.hour != list_datetime[1][:8]:
+            if footballgame.date == format_date(list_datetime[0]) or (footballgame.hour != list_datetime[1][:8]):
                 footballgame_hour_temp = footballgame.hour
                 footballgame.hour = list_datetime[1][:8]
                 match.hour = list_datetime[1][:8]
