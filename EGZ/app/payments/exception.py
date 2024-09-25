@@ -8,6 +8,13 @@ not_existent_commission_agent = HTTPException(
     },
 )
 
+user_is_not_commission_agent = HTTPException(
+    status_code=status.HTTP_400_BAD_REQUEST,
+    detail={
+        "message": ErrorCode.USER_IS_NOT_COMMISSION_AGENT
+    },
+)
+
 payment_already_registered = HTTPException(
     status_code=status.HTTP_400_BAD_REQUEST,
     detail={

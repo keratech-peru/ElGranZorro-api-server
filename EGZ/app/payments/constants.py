@@ -4,6 +4,7 @@ class Coupon:
 
 class ErrorCode:
     NOT_EXISTENT_COMMISSION_AGENT = "El agente comisionado no existe"
+    USER_IS_NOT_COMMISSION_AGENT = "El usuario no es un agente comisionador"
     PAYMENT_ALREADY_REGISTERED = "El pago ya se ha registrado, el par appuser_id y tournament_id debe ser unico."
     CUOPON_NOT_ALLOWE = "Cupon no permitido para tu usuario"
     USER_ALREADY_COMMISSION_AGENT = "Usuario ya es un agente comisionado"
@@ -19,6 +20,11 @@ class StatusPayments:
     WAITING_FOR_REFOUND = "EN ESPERA DE DEVOLUCION"
     REFUND = "REEMBOLSO"
     FREE = "GRATIS"
+
+class StatusPaymentsCommissionAgent:
+    WAITING = "EN ESPERA"
+    REFUND = "REEMBOLSO"
+    APPROVED = "APROBADO"
 
 COLORS_PAYMENTS = {
     StatusPayments.RECEIVED : "bg-yellow",

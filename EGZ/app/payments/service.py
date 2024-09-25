@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from app.database import CRUD
 from app.users.models import AppUsers
 from app.tournaments.models import Tournaments
-from app.payments.models import CommissionAgent, Payments
-from app.payments.constants import Coupon, StatusPayments
+from app.payments.models import CommissionAgent, Payments, PaymentsCommissionAgent
+from app.payments.constants import Coupon, StatusPayments, StatusPaymentsCommissionAgent
 from app.payments import schemas
 from app.config import MercadoPago
 import uuid
@@ -57,6 +57,12 @@ class Payments_(CRUD):
             net_received_amount=net_received_amount,
             status = StatusPayments.FREE if id_mercado_pago == "" else StatusPayments.RECEIVED
         )
+        if input_payment.commission_agent_id:
+            payment_commission_agent = PaymentsCommissionAgent(
+                payment_id = new_payment.id,
+                status = StatusPaymentsCommissionAgent.WAITING
+            )
+            CRUD.insert(db, payment_commission_agent)
         CRUD.insert(db, new_payment)
         return new_payment
 
@@ -96,9 +102,13 @@ class Payments_(CRUD):
         payment = db.query(Payments).filter(Payments.appuser_id == user.id, Payments.tournaments_id == tournament_id).first()
         payment.status = StatusPayments.WAITING_FOR_REFOUND
         CRUD.update(db, payment)
+        payments_commission_agent = db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id == payment.id).first()
+        if payments_commission_agent:
+            payments_commission_agent.status = StatusPaymentsCommissionAgent.REFUND
+            CRUD.update(db, payments_commission_agent)
     
     @staticmethod
-    def list_search_codigo(db):
+    def list_search_codigo(db: Session):
         payments_ = []
         payments = db.query(Payments).order_by(Payments.id.desc()).all()
         for payment in payments:
@@ -112,3 +122,21 @@ class Payments_(CRUD):
             payment_["day_hour"] = payment.day + " " + payment.hour
             payments_.append(payment_)
         return payments_
+    
+    @staticmethod
+    def list_all_for_commission_agent(db: Session, commission_agent_id: int):
+        payments = db.query(Payments).filter(Payments.commission_agent_id == commission_agent_id).all()
+        payments_commission_agent = []
+        payments_enabled = False
+        for payment in payments:
+            payment_commission_agent_ = {}
+            payment_commission_agent = db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id == payment.id).first()
+            tournament = db.query(Tournaments).filter(Tournaments.id == payment.tournaments_id).first()
+            payment_commission_agent_["id_mercado_pago"] = payment.id_mercado_pago
+            payment_commission_agent_["tournament"] = tournament.name
+            payment_commission_agent_["appuser_id"] = payment.appuser_id
+            payment_commission_agent_["day_hour"] = payment.day + " " + payment.hour
+            payment_commission_agent_["status"] = payment_commission_agent.status
+            payments_enabled = payments_enabled or (payment_commission_agent_["status"] == StatusPaymentsCommissionAgent.APPROVED)
+            payments_commission_agent.append(payment_commission_agent_)
+        return payments_commission_agent, payments_enabled

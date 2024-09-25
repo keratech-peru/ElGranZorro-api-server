@@ -27,6 +27,31 @@ def commission_agent_create(
         new_commission_agent = CommissionAgent_.create(db, user)
         return {"status": "done", "commission_agent_id": new_commission_agent.id}
 
+@router.get("/commission-agent", status_code=status.HTTP_200_OK)
+def commission_agent(
+    db: Session = Depends(get_db),
+    user: AppUsers = Depends(get_user_current)
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio que muestra la informacion del dashboard de Commision Agent.
+        \n**Excepcion** : 
+            \n- El servicio requiere autorizacion via token
+            \n- El servicio tiene excepcion si el token es invalido o expiro
+            \n- El servicio tiene excepcion si el usuario no es un agente commission-agent
+        """
+        commission_agent = db.query(CommissionAgent).filter(CommissionAgent.appuser_id == user.id).first()
+        if commission_agent:
+            exception.user_is_not_commission_agent
+        commission_table, is_active_botton = Payments_.list_all_for_commission_agent(db , commission_agent.id)
+        return {
+            "status":"done",
+            "data": {
+                "commission_agent" : commission_agent,
+                "commission_table" : commission_table,
+                "is_active_botton" : is_active_botton
+                }
+            }
+
 @router.get("/coupon/{codigo}", status_code=status.HTTP_200_OK)
 def discount_get(
     codigo: str,
