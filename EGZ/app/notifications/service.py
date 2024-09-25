@@ -148,13 +148,14 @@ class NotificacionesAdmin_:
     @staticmethod
     def send_whatsapp_incomplete_footballgames(footballgames: List[FootballGames]) -> None:
         text = "*ADMINISTRADOR* falta completar los siguientes registros del dia:\n"
-        for footballgame in footballgames:
-            codigo = footballgame.codigo
-            home_team = footballgame.home_team
-            away_team = footballgame.away_team
-            hour = footballgame.hour
-            text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {hour}\n"
-        Notificaciones_.send_whatsapp("936224658", text)
+        if footballgames:
+            for footballgame in footballgames:
+                codigo = footballgame.codigo
+                home_team = footballgame.home_team
+                away_team = footballgame.away_team
+                hour = footballgame.hour
+                text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {hour}\n"
+            Notificaciones_.send_whatsapp("936224658", text)
 
     @staticmethod
     def send_whatsapp_checkout_match(text : str) -> None:

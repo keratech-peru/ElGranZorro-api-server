@@ -98,7 +98,7 @@ def payments(
             \n- El servicio tiene excepcion cuando el dueño del cupon quiere usar su propio cupon 
     """
     commission_agent = db.query(CommissionAgent).filter(CommissionAgent.id == input_payments.commission_agent_id).first()
-    if user.id == commission_agent.appuser_id:
+    if commission_agent and (user.id == commission_agent.appuser_id):
         raise exception.coupon_not_allowed_user
 
     payment = db.query(Payments).filter(Payments.appuser_id == user.id , Payments.tournaments_id == input_payments.tournament_id).first()
@@ -110,7 +110,8 @@ def payments(
         raise exception.token_generation_fails
     token = resp_toke.json()["id"]
 
-    resp_payment, amount = Payments_.payment_mercado_pago(db, user.email, input_payments.tournament_id, commission_agent.percent/100, token)
+    percent = commission_agent.percent/100 if commission_agent else 0
+    resp_payment, amount = Payments_.payment_mercado_pago(db, user.email, input_payments.tournament_id, percent, token)
     if amount > 2:
         if resp_payment.json()["status"] !=  "approved":
             raise exception.rejected_payment
@@ -123,4 +124,5 @@ def payments(
         total_paid_amount = resp_payment.json()["transaction_details"]["total_paid_amount"] if amount > 2 else 0,
         net_received_amount = resp_payment.json()["transaction_details"]["net_received_amount"] if amount > 2 else 0
     )
-    return {"data":new_payment}
+    new_payment_commision_agent = Payments_.create_commision_agent(db, new_payment.id)
+    return {"data":new_payment_commision_agent}

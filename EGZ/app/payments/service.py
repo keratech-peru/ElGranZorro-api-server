@@ -57,14 +57,20 @@ class Payments_(CRUD):
             net_received_amount=net_received_amount,
             status = StatusPayments.FREE if id_mercado_pago == "" else StatusPayments.RECEIVED
         )
-        if input_payment.commission_agent_id:
-            payment_commission_agent = PaymentsCommissionAgent(
-                payment_id = new_payment.id,
-                status = StatusPaymentsCommissionAgent.WAITING
-            )
-            CRUD.insert(db, payment_commission_agent)
         CRUD.insert(db, new_payment)
         return new_payment
+
+    @staticmethod
+    def create_commision_agent(
+            db: Session,
+            payment_id: int
+        ) -> Payments:
+        payment_commission_agent = PaymentsCommissionAgent(
+            payment_id = payment_id,
+            status = StatusPaymentsCommissionAgent.WAITING
+        )
+        CRUD.insert(db, payment_commission_agent)
+        return payment_commission_agent
 
     @staticmethod
     def toke_generation_mercado_pago(phone, approval_code):
