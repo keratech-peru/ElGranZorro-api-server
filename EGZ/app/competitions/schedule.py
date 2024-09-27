@@ -1,6 +1,6 @@
 import pytz
 from fastapi import Depends
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.config import SQLALCHEMY_DATABASE_URI
 from app.competitions.models import Competitions
 from app.competitions.service import Competitions_
@@ -28,8 +28,12 @@ class JobCompetitions:
             Tournaments_.start(db, tournament.id)
 
     def checking_changes_in_matches(db: Session):
-        date_now, __ = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
-        footballgames = db.query(FootballGames).filter(FootballGames.date == date_now, FootballGames.origin == Origin.API).all()
+        list_dates = []
+        for i in range(0,3):
+            now = datetime.now(pytz.timezone("America/Lima")) + timedelta(days=i)
+            date_now, __ = datetime.strftime(now,'%d/%m/%y %H:%M:%S').split(" ")
+            list_dates.append(date_now)
+        footballgames = db.query(FootballGames).filter(FootballGames.date.in_(list_dates), FootballGames.origin == Origin.API).all()
         Competitions_.checkout_match(footballgames, db)
 
 class CronJob:

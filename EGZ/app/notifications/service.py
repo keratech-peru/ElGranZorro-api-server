@@ -159,15 +159,13 @@ class NotificacionesAdmin_:
 
     @staticmethod
     def send_whatsapp_checkout_match(text : str) -> None:
-        text_0 = "*ADMINISTRADOR* se actualizaron los siguientes registros:\n"
-        if text:
-            Notificaciones_.send_whatsapp("936224658", text_0 + text)
+        text_0 = "*SUPERVICION - Flujo checkout_match*\n\n*ADMINISTRADOR* se *actualizaron* los siguientes registros por medio de apí:\n\n"
+        Notificaciones_.send_whatsapp("936224658", text_0 + text)
 
     @staticmethod
     def send_whatsapp_checkout_match_timed(text : str) -> None:
-        text_0 = "*ADMINISTRADOR* se detectaron match *reprogramados*:\n"
-        if text:
-            Notificaciones_.send_whatsapp("936224658", text_0 + text)
+        text_0 = "*URGENTE - Flujo checkout_match*\n\n*ADMINISTRADOR* se debe actualizar los siguientes footballgames por *reprogramacion*:\n\n"
+        Notificaciones_.send_whatsapp("936224658", text_0 + text)
     
     @staticmethod
     def send_whatsapp_pending_refund(db: Session, user: AppUsers, tournament_id: int) -> None:
