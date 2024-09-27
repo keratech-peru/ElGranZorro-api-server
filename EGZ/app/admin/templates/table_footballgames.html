@@ -72,6 +72,8 @@ d{% extends "layout.html" %}
                       <td>
                         {% if tabla.date and tabla.hour and tabla.home_team and tabla.away_team %}
                           <span>
+                        {% elif tabla.origin == "MANUAL" %}
+                            <span class="badge bg-purple">
                         {% else %}
                           <span class="badge bg-red">
                         {% endif %}

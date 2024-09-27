@@ -146,3 +146,12 @@ class Payments_(CRUD):
             payments_enabled = payments_enabled or (payment_commission_agent_["status"] == StatusPaymentsCommissionAgent.APPROVED)
             payments_commission_agent.append(payment_commission_agent_)
         return payments_commission_agent, payments_enabled
+
+    def update_tournament_start(db: Session, tournament_id: int) -> None:
+        payments = db.query(Payments).filter(Payments.tournaments_id == tournament_id, Payments.status == StatusPayments.RECEIVED).all()
+        for payment in payments:
+            payment_commission_agent = db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id == payment.id).first()
+            payment.status = StatusPayments.APPROVED
+            payment_commission_agent.status = StatusPaymentsCommissionAgent.APPROVED
+            CRUD.update(db, payment)
+            CRUD.update(db, payment_commission_agent)

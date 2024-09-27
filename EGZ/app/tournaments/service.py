@@ -10,6 +10,7 @@ from app.notifications.service import Notificaciones_
 from app.competitions.models import Teams, MatchsFootballGames, Matchs, Competitions
 from app.competitions.constants import DataDummyTeam, DataDummyCompetition
 from app.competitions.utils import format_date
+from app.payments.service import Payments_
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List, Dict
@@ -179,6 +180,7 @@ class Tournaments_(CRUD):
     def start(db: Session, tournament_id: int):
         enrollments = db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id == tournament_id).all()
         tournament = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
+        Payments_.update_tournament_start(db, tournament_id)
         tournament.stage = STATUS_TOURNAMENT["GP"]
         CRUD.update(db, tournament)
         for enrollment in enrollments:
