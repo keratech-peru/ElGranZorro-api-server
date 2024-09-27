@@ -69,7 +69,14 @@ d{% extends "layout.html" %}
                       <td>
                         <input data-id="{{ tabla.id|int }}" class="form-check-input m-0 align-middle checkbox-select-item" type="checkbox"/>
                       </td>
-                      <td>{{ tabla.id }}</td>
+                      <td>
+                        {% if tabla.date and tabla.hour and tabla.home_team and tabla.away_team %}
+                          <span>
+                        {% else %}
+                          <span class="badge bg-red">
+                        {% endif %}
+                        {{ tabla.id }}</span>
+                      </td>
                       <td>{{ tabla.codigo }}</td>
                       <td style="font-weight: bold;">{{ tabla.tournament_name }}</td>
                       <td>
