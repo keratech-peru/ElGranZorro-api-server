@@ -242,8 +242,9 @@ class Competitions_(CRUD):
                 text_timed = text_timed + f"*{home_team} - {away_team}*\nCodigo: *{footballgame.codigo}*\nFootballGames : {footballgame_date_temp} {footballgame_hour_temp}\nApi_new : {format_date(list_datetime[0])} {list_datetime[1][:8]}\n\n"
             CRUD.update(db, footballgame)
             CRUD.update(db, match)
-        NotificacionesAdmin_.send_whatsapp_checkout_match_timed(text_timed)
-        NotificacionesAdmin_.send_whatsapp_checkout_match(text)
+        if len(footballgames) > 0:
+            NotificacionesAdmin_.send_whatsapp_checkout_match_timed(text_timed)
+            NotificacionesAdmin_.send_whatsapp_checkout_match(text)
 
     @staticmethod
     def update_match(match: Matchs, date_api: str, hour_api: str, objects_list_update: list, db: Session):

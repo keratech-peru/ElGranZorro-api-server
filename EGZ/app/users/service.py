@@ -135,15 +135,15 @@ class AppUsers_(CRUD):
     def update_level(db: Session, tournament_id: int):
         users_id = db.query(EnrollmentUsers.appuser_id).filter(EnrollmentUsers.tournaments_id == tournament_id).all()
         for user_id in users_id:
-            completed_tournaments =  AppUsers_.numbers_completed_tournaments(db, user_id)
-            user = db.query(AppUsers).filter(AppUsers.id == user_id).first()
-            if TOURNAMENT_LEVELS["1"] == completed_tournaments:
+            completed_tournaments =  AppUsers_.numbers_completed_tournaments(db, user_id[0])
+            user = db.query(AppUsers).filter(AppUsers.id == user_id[0]).first()
+            if completed_tournaments >= TOURNAMENT_LEVELS["1"] and completed_tournaments < TOURNAMENT_LEVELS["2"]:
                 user.level = 2
                 CRUD.update(db, user)
-            if TOURNAMENT_LEVELS["2"] == completed_tournaments:
+            if completed_tournaments >= TOURNAMENT_LEVELS["2"] and completed_tournaments < TOURNAMENT_LEVELS["3"]:
                 user.level = 3
                 CRUD.update(db, user)
-            if TOURNAMENT_LEVELS["3"] == completed_tournaments:
+            if completed_tournaments >= TOURNAMENT_LEVELS["3"]:
                 user.level = 4
                 CRUD.update(db, user)                                       
 
