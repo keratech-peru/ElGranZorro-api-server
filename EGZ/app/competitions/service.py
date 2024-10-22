@@ -3,6 +3,7 @@ import requests
 import pytz
 from typing import List
 from datetime import datetime, timedelta, timezone
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.database import CRUD
 from app.competitions.models import Matchs, Competitions, Teams, MatchsFootballGames
@@ -130,7 +131,24 @@ class Competitions_(CRUD):
         cont = 0 
         for day in days:
             footballgames_by_day = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id, FootballGames.date == day).all()
-            matchs = db.query(Matchs).filter(Matchs.date == day).all()    
+            matchs = db.query(Matchs).filter(Matchs.date == day).all()
+            subquery = (
+                db.query(Matchs.cod_competitions, func.count(Matchs.cod_competitions).label('count'))
+                .filter(Matchs.date == day)
+                .group_by(Matchs.cod_competitions)
+            ).subquery()
+
+            # Consulta principal para obtener los partidos, ordenados por el conteo de cod_competitions
+            matchs = (
+                db.query(Matchs)
+                .join(subquery, Matchs.cod_competitions == subquery.c.cod_competitions)
+                .order_by(subquery.c.count.desc())
+                .all()
+            )
+
+            # Imprimir los resultados
+            for match in matchs:
+                print(f'ID: {match.id}, cod_competitions: {match.cod_competitions}, date: {match.date}')  
             if len(matchs) > 0:
                 len_loop = len(footballgames_by_day) if len(matchs) > len(footballgames_by_day) else len(matchs)
                 matchs_random = preferred_random_values( matchs, len_loop)
