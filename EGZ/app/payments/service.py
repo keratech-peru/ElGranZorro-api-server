@@ -106,12 +106,13 @@ class Payments_(CRUD):
     @staticmethod
     def pending_refund(db : Session ,tournament_id : int , user):
         payment = db.query(Payments).filter(Payments.appuser_id == user.id, Payments.tournaments_id == tournament_id).first()
-        payment.status = StatusPayments.WAITING_FOR_REFOUND
-        CRUD.update(db, payment)
-        payments_commission_agent = db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id == payment.id).first()
-        if payments_commission_agent:
-            payments_commission_agent.status = StatusPaymentsCommissionAgent.REFUND
-            CRUD.update(db, payments_commission_agent)
+        if payment:
+            payment.status = StatusPayments.WAITING_FOR_REFOUND
+            CRUD.update(db, payment)
+            payments_commission_agent = db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id == payment.id).first()
+            if payments_commission_agent:
+                payments_commission_agent.status = StatusPaymentsCommissionAgent.REFUND
+                CRUD.update(db, payments_commission_agent)
     
     @staticmethod
     def list_search_codigo(db: Session):

@@ -3,7 +3,6 @@ import requests
 import pytz
 from typing import List
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.database import CRUD
 from app.competitions.models import Matchs, Competitions, Teams, MatchsFootballGames
@@ -11,7 +10,37 @@ from app.tournaments.models import FootballGames
 from app.tournaments.constants import Origin
 from app.notifications.service import NotificacionesAdmin_
 from app.config import API_FOOTBALL_DATA, KEY_FOOTBALL_DATA
-from app.competitions.utils import format_date, preferred_random_values
+from app.competitions.utils import format_date, preferred_random_values, get_cod_competitions_most_used
+
+class Match_(CRUD):
+    @staticmethod
+    def get_list_match_cod_competitions_most_used(day: str, cod_competitions_most_used: List[str], len_footballgames_by_day: int, db: Session):
+        matchs = db.query(Matchs).filter(Matchs.date == day, Matchs.cod_competitions.in_(cod_competitions_most_used)).all()
+        if len(matchs) == 0:
+            matchs = db.query(Matchs).filter(Matchs.date == day).all()
+        elif len(matchs) < 3 and len(matchs) > 0:
+            match_ = db.query(Matchs).filter(Matchs.date == day, Matchs.cod_competitions.notin_(cod_competitions_most_used)).all()
+            matchs = matchs + match_[:3-len(matchs)]
+        
+        matchs_random = []
+        len_loop = 0
+        if len(matchs) > 0:
+            len_loop = len_footballgames_by_day if len(matchs) > len_footballgames_by_day else len(matchs)
+            matchs_random = preferred_random_values( matchs, len_loop)
+        return matchs_random, len_loop
+
+    @staticmethod    
+    def update_footbalgame_and_match_footballgame(len_loop: int, cont: int, db: Session, matchs: List[Matchs], footballgames_by_day: List[FootballGames]):
+        for i in range(len_loop):
+            footballgames_by_day[i].hour = matchs[i].hour
+            footballgames_by_day[i].home_team = db.query(Teams.name).filter(Teams.id_team == matchs[i].id_team_home).first()[0]
+            footballgames_by_day[i].away_team = db.query(Teams.name).filter(Teams.id_team == matchs[i].id_team_away).first()[0]
+            footballgames_by_day[i].origin = Origin.API
+            CRUD.update(db, footballgames_by_day[i])
+            cont = cont + 1
+            match_footballgame = MatchsFootballGames( id_match=matchs[i].id , id_footballgames=footballgames_by_day[i].id )
+            CRUD.insert(db, match_footballgame)
+        return cont
 
 class Competitions_(CRUD):
     @staticmethod
@@ -128,39 +157,12 @@ class Competitions_(CRUD):
     def assignment_api(tournament_id: int, db: Session):
         footballgames = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id).all()
         days = set([footballgame.date for footballgame in footballgames])
-        cont = 0 
+        cont = 0
+        cod_competitions_most_used = get_cod_competitions_most_used(days, db)
         for day in days:
             footballgames_by_day = db.query(FootballGames).filter(FootballGames.tournament_id == tournament_id, FootballGames.date == day).all()
-            matchs = db.query(Matchs).filter(Matchs.date == day).all()
-            subquery = (
-                db.query(Matchs.cod_competitions, func.count(Matchs.cod_competitions).label('count'))
-                .filter(Matchs.date == day)
-                .group_by(Matchs.cod_competitions)
-            ).subquery()
-
-            # Consulta principal para obtener los partidos, ordenados por el conteo de cod_competitions
-            matchs = (
-                db.query(Matchs)
-                .join(subquery, Matchs.cod_competitions == subquery.c.cod_competitions)
-                .order_by(subquery.c.count.desc())
-                .all()
-            )
-
-            # Imprimir los resultados
-            for match in matchs:
-                print(f'ID: {match.id}, cod_competitions: {match.cod_competitions}, date: {match.date}')  
-            if len(matchs) > 0:
-                len_loop = len(footballgames_by_day) if len(matchs) > len(footballgames_by_day) else len(matchs)
-                matchs_random = preferred_random_values( matchs, len_loop)
-                for i in range(len_loop):
-                    footballgames_by_day[i].hour = matchs_random[i].hour
-                    footballgames_by_day[i].home_team = db.query(Teams.name).filter(Teams.id_team == matchs_random[i].id_team_home).first()[0]
-                    footballgames_by_day[i].away_team = db.query(Teams.name).filter(Teams.id_team == matchs_random[i].id_team_away).first()[0]
-                    footballgames_by_day[i].origin = Origin.API
-                    CRUD.update(db, footballgames_by_day[i])
-                    cont = cont + 1
-                    match_footballgame = MatchsFootballGames( id_match=matchs_random[i].id , id_footballgames=footballgames_by_day[i].id )
-                    CRUD.insert(db, match_footballgame)
+            matchs, len_loop = Match_.get_list_match_cod_competitions_most_used(day, cod_competitions_most_used, len(footballgames_by_day), db)
+            cont = Match_.update_footbalgame_and_match_footballgame(len_loop, cont, db, matchs, footballgames_by_day)
         return cont
 
     @staticmethod
@@ -343,3 +345,4 @@ class Competitions_(CRUD):
             objects_list_update.append(dict_temp)
 
         return objects_list_update
+
