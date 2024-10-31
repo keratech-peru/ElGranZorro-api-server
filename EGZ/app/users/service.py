@@ -58,6 +58,10 @@ class AppUsers_(CRUD):
         group_stage = db.query(GroupStage).filter(GroupStage.tournament_cod == tournament_cod, GroupStage.appuser_id == user.id).first()
         group_stage.appuser_id = None
         CRUD.update(db, group_stage) 
+        numb_completed_tournaments= AppUsers_.numbers_completed_tournaments(db, user.id)
+        level = numb_completed_tournaments//5
+        user.level = level+1
+        CRUD.update(db, user)
 
     def plays_footballgames(db: Session, user: AppUsers, play_users: schemas.PlaysUsers):
         playusers = db.query(PlaysUsers).filter(PlaysUsers.appuser_id==user.id, PlaysUsers.football_games_id == play_users.football_games_id).first()
