@@ -196,7 +196,7 @@ class Tournaments_(CRUD):
         competitions = [{"name":competition[0], "emblem":competition[1]} for competition in db.query(Competitions.name, Competitions.emblem).filter(Competitions.id.in_(competitions_ids_list)).all()]
         if len(footballgame_ids_list) > len(matchs_footballgames_ids_list):
             competitions = competitions + [{"name":DataDummyCompetition.name, "emblem":random.choice(emblem)[0]}]
-        return competitions
+        return competitions[:6] if len(competitions) > 6 else competitions
     
     def update_stage(db: Session, tournament_cod: str, key:str):
         tournament = db.query(Tournaments).filter(Tournaments.codigo == tournament_cod).first()
