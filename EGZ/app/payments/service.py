@@ -124,7 +124,7 @@ class Payments_(CRUD):
             tournament = db.query(Tournaments).filter(Tournaments.id == payment.tournaments_id).first()
             payment_ = payment.__dict__
             payment_["appuser"] = appuser.name + " " + appuser.lastname
-            payment_["commission_agent"] = commission_agent.codigo
+            payment_["commission_agent"] = getattr(commission_agent, "codigo", "SIN CUPON")
             payment_["tournament"] = tournament.codigo
             payment_["day_hour"] = payment.day + " " + payment.hour
             payments_.append(payment_)
