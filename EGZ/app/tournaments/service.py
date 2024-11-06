@@ -11,6 +11,7 @@ from app.competitions.models import Teams, MatchsFootballGames, Matchs, Competit
 from app.competitions.constants import DataDummyTeam, DataDummyCompetition
 from app.competitions.utils import format_date
 from app.payments.service import Payments_
+from app.payments.models import Payments, PaymentsCommissionAgent
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List, Dict
@@ -45,6 +46,9 @@ class Tournaments_(CRUD):
         db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id==str(tourmament.id)).delete()        
         db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id==tourmament.id).delete()
         db.query(Tournaments).filter(Tournaments.id==tourmament.id).delete()
+        list_id_payments = [id[0] for id in db.query(Payments.id).filter(Payments.tournaments_id==tourmament.id).all()]
+        db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id.in_(list_id_payments)).delete()
+        db.query(Payments).filter(Payments.id.in_(list_id_payments)).delete()
         db.commit()
 
     def list_all(db: Session) -> List[Tournaments]:
