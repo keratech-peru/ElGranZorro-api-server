@@ -6,6 +6,7 @@ from app.payments import exception
 from app.payments.schemas import InputPayments
 from app.payments.models import CommissionAgent, Payments
 from app.payments.service import CommissionAgent_, Payments_
+from app.payments.constants import StatusPayments
 from app.database import get_db
 from app.security import get_user_current
 
@@ -101,7 +102,7 @@ def payments(
     if commission_agent and (user.id == commission_agent.appuser_id):
         raise exception.coupon_not_allowed_user
 
-    payment = db.query(Payments).filter(Payments.appuser_id == user.id , Payments.tournaments_id == input_payments.tournament_id).first()
+    payment = db.query(Payments).filter(Payments.appuser_id == user.id , Payments.tournaments_id == input_payments.tournament_id, Payments.status == StatusPayments.APPROVED).first()
     if payment:
         raise exception.payment_already_registered
 
