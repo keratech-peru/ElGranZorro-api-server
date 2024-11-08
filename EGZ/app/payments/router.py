@@ -7,6 +7,7 @@ from app.payments.schemas import InputPayments
 from app.payments.models import CommissionAgent, Payments
 from app.payments.service import CommissionAgent_, Payments_
 from app.payments.constants import StatusPayments
+from app.notifications.service import Notificaciones_, NotificacionesAdmin_
 from app.database import get_db
 from app.security import get_user_current
 
@@ -26,6 +27,8 @@ def commission_agent_create(
         if commission_agent:
             raise exception.user_already_commission_agent
         new_commission_agent = CommissionAgent_.create(db, user)
+        Notificaciones_.send_whatsapp_user_commission_agent(user)
+        NotificacionesAdmin_.send_whatsapp_new_commission_agent(user)
         return {"status": "done", "commission_agent_id": new_commission_agent.id}
 
 @router.get("/commission-agent", status_code=status.HTTP_200_OK)

@@ -98,6 +98,11 @@ class Notificaciones_:
             text = TextToSend.user_has_not_played(footballgame, appuser.name)
             Notificaciones_.send_whatsapp(appuser.phone, text)
 
+    @staticmethod
+    def send_whatsapp_user_commission_agent(appuser: AppUsers) -> None:
+        text = TextToSend.user_commission_agent(appuser.name)
+        Notificaciones_.send_whatsapp(appuser.phone, text)
+
 class NotificacionesAdmin_:
     @staticmethod
     def send_whatsapp_create_tournament(name: str, numb_fooballgames_api: int, numb_fooballgames_random: int) -> None:
@@ -172,3 +177,8 @@ class NotificacionesAdmin_:
         payment = db.query(Payments).filter(Payments.appuser_id == user.id, Payments.tournaments_id == tournament_id).first()
         if payment:
             Notificaciones_.send_whatsapp("936224658", f"Se reporto una devolucion para:\n\nuser : {user.name}\nphone : {user.phone}\ntournament_id : {tournament_id}\nid_mercado_pago : {payment.id_mercado_pago}")
+
+    @staticmethod
+    def send_whatsapp_new_commission_agent(user: AppUsers) -> None:
+        text = f"*Nuevo Comisionador*\n\nphone:{user.phone}\nname:{user.name} {user.lastname}"
+        Notificaciones_.send_whatsapp("936224658", text)

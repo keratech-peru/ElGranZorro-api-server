@@ -61,6 +61,13 @@ class TextToSend:
                 \n✅ Recuerda *realizar tu jugada* antes del comienzo del partido ⏳ en {URL_FRONT}tournament/{footballgame.tournament_id}\n
                 '''
         return text
+
+    def user_commission_agent(name: str):
+        text = f''' Hola *{name}* 👀.Gracias por colaborar con nosotros, en unos minutos un asesor se contactara contigo para explicarte los por menores.   
+                \n✅ Recuerda estar atento a los nuevos torneos {URL_FRONT}tournaments\n
+                '''
+        return text
+
   
 class Otp:
     COUNT = 5
