@@ -258,7 +258,7 @@ class Tournaments_(CRUD):
 
     def enrollment_all(db: Session, tournament_id: int):
         tournaments = db.query(Tournaments).filter(Tournaments.id == tournament_id).first()
-        enrollments_appuser_id = db.query(EnrollmentUsers.appuser_id).filter(EnrollmentUsers.tournaments_id == tournament_id).all()
+        enrollments_appuser_id = [enrollment[0] for enrollment in db.query(EnrollmentUsers.appuser_id).filter(EnrollmentUsers.tournaments_id == tournament_id).all()]
         if int(tournaments.max_number_of_players) > len(enrollments_appuser_id):
             enrollment_dif = int(tournaments.max_number_of_players) - len(enrollments_appuser_id)
             appusers = db.query(AppUsers).filter(AppUsers.id.notin_(enrollments_appuser_id)).all()
