@@ -14,7 +14,7 @@ from app.config import ApiKey, TOKEN_SCONDS_EXP
 from datetime import datetime, timedelta
 from app.notifications.service import Notificaciones_, NotificacionesAdmin_
 from app.notifications.constants import TextToSend
-from app.payments.service import Payments_
+from app.payments.service import Payments_, CommissionAgent_
 
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -93,7 +93,8 @@ def login(
         access_token_jwt = create_token({"email":user.email})
         if option == 1:
             EventOtpUsers_.user_should_be_blocked(db, user)
-        return { "access_token": access_token_jwt,"appuser_id":user.id,"token_type": "bearder", "expires_in": TOKEN_SCONDS_EXP }
+        is_commission_agent = True if CommissionAgent_.get(db, user) else False
+        return { "access_token": access_token_jwt,"appuser_id":user.id,"token_type": "bearder", "expires_in": TOKEN_SCONDS_EXP, "is_commission_agent": is_commission_agent }
 
 @router.post("/enrollment/{tournaments_id}", status_code=status.HTTP_201_CREATED)
 def user_enrollment(

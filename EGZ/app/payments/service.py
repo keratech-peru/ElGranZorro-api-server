@@ -34,6 +34,10 @@ class CommissionAgent_(CRUD):
         dif = end_date - now_date
         return int(dif.days) >= 0
 
+    @staticmethod
+    def get(db: Session, appuser: AppUsers) -> CommissionAgent:
+        commission_agent = db.query(CommissionAgent).filter(CommissionAgent.appuser_id == appuser.id).first()
+        return commission_agent
 class Payments_(CRUD):
     @staticmethod
     def create(
