@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 from app.users.models import AppUsers
 from app.payments import exception
 from app.payments.schemas import InputPayments
-from app.payments.models import CommissionAgent, Payments
+from app.payments.models import CommissionAgent, Payments, PaymentsCommissionAgent, PaymentsCommissionAgentRequest
 from app.payments.service import CommissionAgent_, Payments_
-from app.payments.constants import StatusPayments
+from app.payments.constants import StatusPayments, StatusRequestPaymentsCommissionAgent
 from app.notifications.service import Notificaciones_, NotificacionesAdmin_
-from app.database import get_db
+from app.database import get_db, CRUD
 from app.security import get_user_current
 
 router = APIRouter(prefix="/payments", tags=["payments"])
@@ -46,13 +46,12 @@ def commission_agent(
         commission_agent = db.query(CommissionAgent).filter(CommissionAgent.appuser_id == user.id).first()
         if commission_agent:
             exception.user_is_not_commission_agent
-        commission_table, is_active_botton = Payments_.list_all_for_commission_agent(db , commission_agent.id)
+        commission_table = Payments_.list_all_for_commission_agent(db , commission_agent.id)
         return {
             "status":"done",
             "data": {
                 "commission_agent" : commission_agent,
-                "commission_table" : commission_table,
-                "is_active_botton" : is_active_botton
+                "commission_table" : commission_table
                 }
             }
 
@@ -130,3 +129,19 @@ def payments(
     )
     new_payment_commision_agent = Payments_.create_commision_agent(db, new_payment.id)
     return {"data":new_payment_commision_agent}
+
+@router.post("/commission-agent/{id_mercado_pago}", status_code=status.HTTP_201_CREATED)
+def commission_agent_request_payment(
+    id_mercado_pago: str,
+    db: Session = Depends(get_db),
+    __: AppUsers = Depends(get_user_current)
+    ) -> Dict[str, object]:
+        """
+        **Descripcion** : El servicio que solicita el pago de una comission.
+        \n**Excepcion** : 
+            \n- El servicio requiere api-key.
+        """
+        payments_commission_agent_request = db.query(PaymentsCommissionAgentRequest).filter(PaymentsCommissionAgentRequest.id_mercado_pago == id_mercado_pago).first()
+        payments_commission_agent_request.status = StatusRequestPaymentsCommissionAgent.WAITING_PAYMENT
+        CRUD.update(db, payments_commission_agent_request)
+        return {"status": "done", "payments_commission_agent_request": payments_commission_agent_request}

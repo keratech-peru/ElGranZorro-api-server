@@ -19,6 +19,13 @@ class PaymentsCommissionAgent(Base):
     payment_id = Column(Integer, unique=True)
     status = Column(String)
 
+class PaymentsCommissionAgentRequest(Base):
+    __tablename__ = "payments_payments_commission_agent_request"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    id_mercado_pago = Column(String)
+    payment_commission_agent_id = Column(Integer, unique=True)
+    status = Column(String)
+
 class Payments(Base):
     __tablename__ = "payments_payments"
     id = Column(Integer, primary_key=True, autoincrement=True)

@@ -26,6 +26,11 @@ class StatusPaymentsCommissionAgent:
     REFUND = "REEMBOLSO"
     APPROVED = "APROBADO"
 
+class StatusRequestPaymentsCommissionAgent:
+    READY_GET_PAID = "LISTO PARA COBRAR"
+    WAITING_PAYMENT = "EN ESPERA DE PAGO"
+    PAID = "PAGADO"
+
 COLORS_PAYMENTS = {
     StatusPayments.RECEIVED : "bg-yellow",
     StatusPayments.APPROVED : "bg-blue",

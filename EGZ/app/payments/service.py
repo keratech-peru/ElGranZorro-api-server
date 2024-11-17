@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from app.database import CRUD
 from app.users.models import AppUsers
 from app.tournaments.models import Tournaments
-from app.payments.models import CommissionAgent, Payments, PaymentsCommissionAgent
-from app.payments.constants import Coupon, StatusPayments, StatusPaymentsCommissionAgent
+from app.payments.models import CommissionAgent, Payments, PaymentsCommissionAgent, PaymentsCommissionAgentRequest
+from app.payments.constants import Coupon, StatusPayments, StatusPaymentsCommissionAgent, StatusRequestPaymentsCommissionAgent
 from app.payments import schemas
 from app.config import MercadoPago
 import uuid
@@ -138,19 +138,20 @@ class Payments_(CRUD):
     def list_all_for_commission_agent(db: Session, commission_agent_id: int):
         payments = db.query(Payments).filter(Payments.commission_agent_id == commission_agent_id).all()
         payments_commission_agent = []
-        payments_enabled = False
         for payment in payments:
             payment_commission_agent_ = {}
             payment_commission_agent = db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id == payment.id).first()
+            payment_commission_agent_request = db.query(PaymentsCommissionAgentRequest).filter(PaymentsCommissionAgentRequest.id_mercado_pago == payment.id_mercado_pago).first() if payment.id_mercado_pago else None
             tournament = db.query(Tournaments).filter(Tournaments.id == payment.tournaments_id).first()
             payment_commission_agent_["id_mercado_pago"] = payment.id_mercado_pago
             payment_commission_agent_["tournament"] = tournament.name
             payment_commission_agent_["appuser_id"] = payment.appuser_id
             payment_commission_agent_["day_hour"] = payment.day + " " + payment.hour
             payment_commission_agent_["status"] = payment_commission_agent.status
-            payments_enabled = payments_enabled or (payment_commission_agent_["status"] == StatusPaymentsCommissionAgent.APPROVED)
+            payment_commission_agent_["is_active_botton"] = payment_commission_agent_["status"] == StatusPaymentsCommissionAgent.APPROVED
+            payment_commission_agent_["text_botton"] = payment_commission_agent_request.status if payment_commission_agent_request else None
             payments_commission_agent.append(payment_commission_agent_)
-        return payments_commission_agent, payments_enabled
+        return payments_commission_agent
 
     def update_tournament_start(db: Session, tournament_id: int) -> None:
         payments = db.query(Payments).filter(Payments.tournaments_id == tournament_id, Payments.status == StatusPayments.RECEIVED).all()
@@ -158,5 +159,11 @@ class Payments_(CRUD):
             payment_commission_agent = db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id == payment.id).first()
             payment.status = StatusPayments.APPROVED
             payment_commission_agent.status = StatusPaymentsCommissionAgent.APPROVED
+            payment_commission_agent_request = PaymentsCommissionAgentRequest(
+                id_mercado_pago=payment.id_mercado_pago,
+                payment_commission_agent_id=payment_commission_agent.id,
+                status=StatusRequestPaymentsCommissionAgent.READY_GET_PAID
+            )
+            CRUD.insert(db, payment_commission_agent_request)
             CRUD.update(db, payment)
             CRUD.update(db, payment_commission_agent)

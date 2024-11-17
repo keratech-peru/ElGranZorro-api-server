@@ -18,3 +18,8 @@ class Payments(BaseModel):
     total_paid_amount: float
     net_received_amount: float
     status: str
+
+class PaymentsCommissionAgentRequest:
+    id_mercado_pago: int
+    payment_commission_agent_id: int
+    status: str
