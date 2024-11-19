@@ -11,7 +11,7 @@ from app.payments.models import Payments
 from email.message import EmailMessage
 import smtplib
 import requests
-import random
+from datetime import datetime
 
 class Notificaciones_:
     @staticmethod
@@ -151,15 +151,17 @@ class NotificacionesAdmin_:
             Notificaciones_.send_whatsapp("936224658", text)
 
     @staticmethod
-    def send_whatsapp_incomplete_footballgames(footballgames: List[FootballGames]) -> None:
+    def send_whatsapp_incomplete_footballgames(footballgames: List[FootballGames], hour_now: str, time_format: str) -> None:
         text = "*ADMINISTRADOR* falta completar los siguientes registros del dia:\n"
         if footballgames:
             for footballgame in footballgames:
-                codigo = footballgame.codigo
-                home_team = footballgame.home_team
-                away_team = footballgame.away_team
-                hour = footballgame.hour
-                text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {hour}\n"
+                dif = datetime.strptime(hour_now, time_format) - datetime.strptime(footballgame.hour, time_format)
+                if dif.total_seconds() > 6000 and (footballgame.home_score is None) and (footballgame.away_score is None):
+                    codigo = footballgame.codigo
+                    home_team = footballgame.home_team
+                    away_team = footballgame.away_team
+                    hour = footballgame.hour
+                    text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {hour}\n"
             Notificaciones_.send_whatsapp("936224658", text)
 
     @staticmethod

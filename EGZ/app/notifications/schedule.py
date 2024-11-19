@@ -57,21 +57,22 @@ class JobNotificationsAdmin:
                 match_footballgame = db.query(MatchsFootballGames).filter(MatchsFootballGames.id_footballgames ==footballgame.id).first()
                 if match_footballgame:
                     update_result, result_home, result_away = FootballGames_.update_footballgames_from_api(footballgame, match_footballgame, update_result, db)
-                else:
-                    update_result, result_home, result_away = FootballGames_.update_footballgames_from_random(footballgame, update_result, db)
+                #else:
+                #    update_result, result_home, result_away = FootballGames_.update_footballgames_from_random(footballgame, update_result, db)
                 # Activa los flujos para pasar de etapas en el torneo.
-                FootballGames_.update_stage(footballgame, result_home, result_away, db)
+                    FootballGames_.update_stage(footballgame, result_home, result_away, db)
         NotificacionesAdmin_.send_whatsapp_update_footballgames(update_result)
 
     def incomplete_footballgames(db: Session):
         '''
         Notifica al administrador los footballgames que faltan actualizar su marcador.
         '''
-        date_now, __ = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
+        time_format = "%H:%M:%S"
+        date_now, hour_now = datetime.strftime(datetime.now(pytz.timezone("America/Lima")),'%d/%m/%y %H:%M:%S').split(" ")
         footballgames = db.query(FootballGames).filter( FootballGames.date == date_now,
                                                         FootballGames.away_score.is_(None),
                                                         FootballGames.home_score.is_(None)).all()
-        NotificacionesAdmin_.send_whatsapp_incomplete_footballgames(footballgames)
+        NotificacionesAdmin_.send_whatsapp_incomplete_footballgames(footballgames, hour_now, time_format)
 
 # Configura el cron job para que se ejecute cada minuto
 class CronJob:
