@@ -49,9 +49,9 @@ def init_data():
     scheduler = BackgroundScheduler(timezone=pytz.timezone("America/Lima"))
     scheduler.add_job(CronJobCompetitions.adding_match, 'cron', hour=23, minute=15)
     scheduler.add_job(CronJobCompetitions.start_tournament, 'cron', hour=0, minute=5)
+    scheduler.add_job(CronJobCompetitions.checking_changes_in_matches, 'cron', hour='*/3')
 
     scheduler.add_job(CronJobNotifications.not_complete_footballgames, 'cron', minute=2)
     scheduler.add_job(CronJobNotifications.update_footballgames, 'cron', minute=0)
     scheduler.add_job(CronJobNotifications.incomplete_footballgames, 'cron', minute=10)
-    scheduler.add_job(CronJobCompetitions.checking_changes_in_matches, 'cron', hour='*/3')
     scheduler.start()
