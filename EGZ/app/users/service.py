@@ -34,13 +34,6 @@ class AppUsers_(CRUD):
         user_old.name =  user_old.team_name if update_user.team_name is None else update_user.team_name
         CRUD.update(db, user_old)
         return user_old.id
-
-    def update_level(db: Session, users: List[AppUsers]):
-        for user in users:
-            numb_completed_tournaments= AppUsers_.numbers_completed_tournaments(db, user.id)
-            level = numb_completed_tournaments//5
-            user.level = level+1
-            CRUD.update(db, user)
     
     def authenticate(db: Session, email, phone):
         user = AppUsers_.get(db, email, phone)
@@ -65,7 +58,7 @@ class AppUsers_(CRUD):
         group_stage = db.query(GroupStage).filter(GroupStage.tournament_cod == tournament_cod, GroupStage.appuser_id == user.id).first()
         group_stage.appuser_id = None
         CRUD.update(db, group_stage)
-        AppUsers_.update_level(db, [user]) 
+        AppUsers_.update_level(db, int(tournament_cod[3:])) 
 
     def plays_footballgames(db: Session, user: AppUsers, play_users: schemas.PlaysUsers):
         playusers = db.query(PlaysUsers).filter(PlaysUsers.appuser_id==user.id, PlaysUsers.football_games_id == play_users.football_games_id).first()
@@ -145,15 +138,14 @@ class AppUsers_(CRUD):
         for user_id in users_id:
             completed_tournaments =  AppUsers_.numbers_completed_tournaments(db, user_id[0])
             user = db.query(AppUsers).filter(AppUsers.id == user_id[0]).first()
+            user.level = 1
             if completed_tournaments >= TOURNAMENT_LEVELS["1"] and completed_tournaments < TOURNAMENT_LEVELS["2"]:
                 user.level = 2
-                CRUD.update(db, user)
             if completed_tournaments >= TOURNAMENT_LEVELS["2"] and completed_tournaments < TOURNAMENT_LEVELS["3"]:
                 user.level = 3
-                CRUD.update(db, user)
             if completed_tournaments >= TOURNAMENT_LEVELS["3"]:
                 user.level = 4
-                CRUD.update(db, user)                                       
+            CRUD.update(db, user)                                       
 
 class OtpUsers_(CRUD):
     @staticmethod

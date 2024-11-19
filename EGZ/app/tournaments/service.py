@@ -40,17 +40,16 @@ class Tournaments_(CRUD):
             CRUD.update(db, tourmament)
 
     def delete(tourmament:Tournaments , db: Session):
-        users = db.query(EnrollmentUsers.appuser).filter(EnrollmentUsers.tournaments_id==tourmament.id).all()
         db.query(FootballGames).filter(FootballGames.tournament_id==tourmament.id).delete()
         db.query(GroupStage).filter(GroupStage.tournament_cod==tourmament.codigo).delete()
         db.query(ConfrontationsGroupStage).filter(ConfrontationsGroupStage.tournaments_id==str(tourmament.id)).delete()
         db.query(ConfrontationsKeyStage).filter(ConfrontationsKeyStage.tournaments_id==str(tourmament.id)).delete()        
+        AppUsers_.update_level(db, tourmament.id)
         db.query(EnrollmentUsers).filter(EnrollmentUsers.tournaments_id==tourmament.id).delete()
         db.query(Tournaments).filter(Tournaments.id==tourmament.id).delete()
         list_id_payments = [id[0] for id in db.query(Payments.id).filter(Payments.tournaments_id==tourmament.id).all()]
         db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id.in_(list_id_payments)).delete()
         db.query(Payments).filter(Payments.id.in_(list_id_payments)).delete()
-        AppUsers_.update_level(db, users)
         db.commit()
 
     def list_all(db: Session) -> List[Tournaments]:
