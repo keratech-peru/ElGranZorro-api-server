@@ -74,10 +74,6 @@ class Tournaments_(CRUD):
             elif not is_past(tournament.start_date):
                 tournament_["active_for_user"] = tournament_["level"] == str(db.query(AppUsers.level).filter(AppUsers.id == appuser_id).first()[0])
                 tournaments_.append(tournament_)
-            print("level 1 : ",tournament_["level"])
-            print("level 2 : ",str(db.query(AppUsers.level).filter(AppUsers.id == appuser_id).first()[0]))
-            print("name : ",tournament_["name"])
-            print("active_for_user : ",tournament_["active_for_user"],"\n")
         return tournaments_
 
     def list_search_codigo(db: Session, codigo: str) -> List[Tournaments]:
