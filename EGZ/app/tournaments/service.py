@@ -177,7 +177,7 @@ class Tournaments_(CRUD):
                 football_stage_keys[footballgame.tournament_stage].append(footballgame_dict)
         football_stage_keys["WINNERS"] = Tournaments_.all_winners(db, tournament.id, tournament.stage)
         tournament_ = tournament.__dict__
-        tournament_["winner"] = football_stage_keys["WINNERS"].get("FINAL")[0] if football_stage_keys["WINNERS"].get("FINAL") else None
+        tournament_["winner"] = football_stage_keys["WINNERS"].get("FINAL")[0] if football_stage_keys["WINNERS"].get("FINAL") else ""
 
         return tournament_, group_stage_table, football_stage_group, football_stage_keys
 
