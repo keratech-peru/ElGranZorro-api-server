@@ -35,6 +35,13 @@ class AppUsers_(CRUD):
         CRUD.update(db, user_old)
         return user_old.id
 
+    def update_level(db: Session, users: List[AppUsers]):
+        for user in users:
+            numb_completed_tournaments= AppUsers_.numbers_completed_tournaments(db, user.id)
+            level = numb_completed_tournaments//5
+            user.level = level+1
+            CRUD.update(db, user)
+    
     def authenticate(db: Session, email, phone):
         user = AppUsers_.get(db, email, phone)
         if not user:
@@ -57,11 +64,8 @@ class AppUsers_(CRUD):
         db.query(EnrollmentUsers).filter(EnrollmentUsers.id==enrollment.id).delete()
         group_stage = db.query(GroupStage).filter(GroupStage.tournament_cod == tournament_cod, GroupStage.appuser_id == user.id).first()
         group_stage.appuser_id = None
-        CRUD.update(db, group_stage) 
-        numb_completed_tournaments= AppUsers_.numbers_completed_tournaments(db, user.id)
-        level = numb_completed_tournaments//5
-        user.level = level+1
-        CRUD.update(db, user)
+        CRUD.update(db, group_stage)
+        AppUsers_.update_level(db, [user]) 
 
     def plays_footballgames(db: Session, user: AppUsers, play_users: schemas.PlaysUsers):
         playusers = db.query(PlaysUsers).filter(PlaysUsers.appuser_id==user.id, PlaysUsers.football_games_id == play_users.football_games_id).first()

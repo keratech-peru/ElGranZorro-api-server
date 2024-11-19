@@ -30,7 +30,7 @@ def is_over(start_date: str):
     dif = datetime_now - datetime.strptime(f'{start_date}', '%d/%m/%y').replace(tzinfo=timezone.utc) - timedelta(hours=5)
     return int(dif.days) > 300
 
-def hide_data_because_is_past_is_appuser(is_past:True, is_appuser:True, data):
+def hide_data_because_is_past_is_appuser(is_past:bool, is_appuser:int, data):
     if not is_appuser:
         if not is_past:
             return None

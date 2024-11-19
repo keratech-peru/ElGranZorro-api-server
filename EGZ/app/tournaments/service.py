@@ -40,6 +40,7 @@ class Tournaments_(CRUD):
             CRUD.update(db, tourmament)
 
     def delete(tourmament:Tournaments , db: Session):
+        users = db.query(EnrollmentUsers.appuser).filter(EnrollmentUsers.tournaments_id==tourmament.id).all()
         db.query(FootballGames).filter(FootballGames.tournament_id==tourmament.id).delete()
         db.query(GroupStage).filter(GroupStage.tournament_cod==tourmament.codigo).delete()
         db.query(ConfrontationsGroupStage).filter(ConfrontationsGroupStage.tournaments_id==str(tourmament.id)).delete()
@@ -49,6 +50,7 @@ class Tournaments_(CRUD):
         list_id_payments = [id[0] for id in db.query(Payments.id).filter(Payments.tournaments_id==tourmament.id).all()]
         db.query(PaymentsCommissionAgent).filter(PaymentsCommissionAgent.payment_id.in_(list_id_payments)).delete()
         db.query(Payments).filter(Payments.id.in_(list_id_payments)).delete()
+        AppUsers_.update_level(db, users)
         db.commit()
 
     def list_all(db: Session) -> List[Tournaments]:
@@ -72,6 +74,10 @@ class Tournaments_(CRUD):
             elif not is_past(tournament.start_date):
                 tournament_["active_for_user"] = tournament_["level"] == str(db.query(AppUsers.level).filter(AppUsers.id == appuser_id).first()[0])
                 tournaments_.append(tournament_)
+            print("level 1 : ",tournament_["level"])
+            print("level 2 : ",str(db.query(AppUsers.level).filter(AppUsers.id == appuser_id).first()[0]))
+            print("name : ",tournament_["name"])
+            print("active_for_user : ",tournament_["active_for_user"],"\n")
         return tournaments_
 
     def list_search_codigo(db: Session, codigo: str) -> List[Tournaments]:
@@ -116,13 +122,13 @@ class Tournaments_(CRUD):
             plays_.append({ "id_local":appuser_id_local,
                             "team_local_name":None if appuser_local is None else appuser_local.team_name,
                             "team_local_logo":None,
-                            "plays_local": hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_local, plays_local),
-                            "points_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_local, confrontation.points_1),
+                            "plays_local": hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], appuser_id_local, plays_local),
+                            "points_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], appuser_id_local, confrontation.points_1),
                             "id_visit":appuser_id_visit,
                             "team_visit_name":None if appuser_visit is None else appuser_visit.team_name,
                             "team_visit_logo":None,
-                            "plays_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_visit, plays_visit),
-                            "points_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == appuser_id_visit, confrontation.points_2),
+                            "plays_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], appuser_id_visit, plays_visit),
+                            "points_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], appuser_id_visit, confrontation.points_2),
                             "is_user_play": user_id in [appuser_id_local, appuser_id_visit],
                             "is_appuser_local": user_id == appuser_id_local
                         })
@@ -142,13 +148,13 @@ class Tournaments_(CRUD):
             plays_.append({ "id_local":confrontation.appuser_1_id,
                             "team_local_name":appuser_local.team_name if appuser_local else None,
                             "team_local_logo":None,
-                            "plays_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_1_id, plays_local),
-                            "points_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_1_id, confrontation.points_1),
+                            "plays_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], confrontation.appuser_1_id, plays_local),
+                            "points_local":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], confrontation.appuser_1_id, confrontation.points_1),
                             "id_visit":confrontation.appuser_2_id,
                             "team_visit_name":appuser_visit.team_name if appuser_visit else None,
                             "team_visit_logo":None,
-                            "plays_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_2_id, plays_visit),
-                            "points_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], user_id == confrontation.appuser_2_id, confrontation.points_2),
+                            "plays_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], confrontation.appuser_2_id, plays_visit),
+                            "points_visit":hide_data_because_is_past_is_appuser(footballgame_dict["is_past"], confrontation.appuser_2_id, confrontation.points_2),
                             "is_user_play": user_id in [confrontation.appuser_1_id, confrontation.appuser_2_id],
                             "is_appuser_local": user_id == confrontation.appuser_1_id,
                             "key_side": "A" if len(confrontations_key_stage)/2 >= cont else "B"
