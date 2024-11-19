@@ -203,11 +203,15 @@ class Competitions_(CRUD):
         datetime_last_moth = datetime_now + timedelta(days=10)
         day_now = str(datetime_now).split(" ")[0]
         day_last_moth = str(datetime_last_moth).split(" ")[0]
+        url_fail = []
         for competition in competitions:
-            uri = API_FOOTBALL_DATA + f'competitions/{competition[2]}/matches/?dateFrom={day_now}&dateTo={day_last_moth}'
+            url = API_FOOTBALL_DATA + f'competitions/{competition[2]}/matches/?dateFrom={day_now}&dateTo={day_last_moth}'
             headers = { 'X-Auth-Token': KEY_FOOTBALL_DATA }
-            response = requests.get(uri, headers=headers).json()
-            for match in response["matches"]:
+            response = requests.get(url, headers=headers)
+            if response.status_code != 200:
+                url_fail.append(url)
+                continue
+            for match in response.json()["matches"]:
                 list_datetime = str(datetime.strptime(match["utcDate"], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc) - timedelta(hours=5)).split(" ")
                 matchh = db.query(Matchs).filter(Matchs.id_match == match["id"]).first()
                 date_api = format_date(list_datetime[0])
@@ -228,7 +232,7 @@ class Competitions_(CRUD):
                     )
                     objects_list.append(match_)
         CRUD.bulk_insert(db, objects_list)
-
+        NotificacionesAdmin_.send_whatsapp_adding_match_error_api(url_fail)
         NotificacionesAdmin_.send_whatsapp_update_match(objects_list_update ,numb_match = len(objects_list_update), start_date = day_now, end_date = day_last_moth)
         NotificacionesAdmin_.send_whatsapp_adding_match(numb_match = len(objects_list), start_date = day_now, end_date = day_last_moth)
 

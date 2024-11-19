@@ -88,13 +88,13 @@ class Notificaciones_:
         if not play_user:
             appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
             # Eliminar cuando se pase a produccion.
-            new_user_play_footballgame = PlaysUsers(
-                appuser_id=appuser_id,
-                football_games_id=footballgame.id,
-                score_local=random.randint(0, 3),
-                score_visit=random.randint(0, 3)
-            )
-            CRUD.insert(db, new_user_play_footballgame)
+            # new_user_play_footballgame = PlaysUsers(
+            #     appuser_id=appuser_id,
+            #     football_games_id=footballgame.id,
+            #     score_local=random.randint(0, 3),
+            #     score_visit=random.randint(0, 3)
+            # )
+            # CRUD.insert(db, new_user_play_footballgame)
             text = TextToSend.user_has_not_played(footballgame, appuser.name)
             Notificaciones_.send_whatsapp(appuser.phone, text)
 
@@ -105,7 +105,7 @@ class Notificaciones_:
 
 class NotificacionesAdmin_:
     @staticmethod
-    def send_whatsapp_create_tournament(name: str, numb_fooballgames_api: int, numb_fooballgames_random: int) -> None:
+    def send_whatsapp_create_tournament(name: str, numb_fooballgames_api: int, numb_fooballgames_random: int = 0) -> None:
         text = f"*ADMINISTRADOR* el torneo *{name}* creado recientemente tiene :\n- Footballgames API : *{numb_fooballgames_api}* \n- Footballgames RANDOM : *{numb_fooballgames_random}*"
         Notificaciones_.send_whatsapp("936224658", text)
 
@@ -182,3 +182,11 @@ class NotificacionesAdmin_:
     def send_whatsapp_new_commission_agent(user: AppUsers) -> None:
         text = f"*Nuevo Comisionador*\n\nphone:{user.phone}\nname:{user.name} {user.lastname}"
         Notificaciones_.send_whatsapp("936224658", text)
+
+    @staticmethod
+    def send_whatsapp_adding_match_error_api(urls:List[str]) -> None:
+        if len(urls) > 0:
+            text = f"###*ADMINISTRADOR*###\nAutomatizacion:*ADDING_MATCH*\nSe han presento un error al consumir el API:\n"
+            for url in urls:
+                text = text + f"- {url}\n"
+            Notificaciones_.send_whatsapp("936224658", text)
