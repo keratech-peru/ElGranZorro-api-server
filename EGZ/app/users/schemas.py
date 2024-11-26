@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
+from app.users.constants import USER_STATUS_IN_TOURNAMENT
 
 class AppUsers(BaseModel):
     name: str
@@ -31,7 +32,7 @@ class PasswordUpdate(BaseModel):
 class EnrollmentUsers(BaseModel):
     appuser_id: int
     tournaments_id: int
-    state: str = "EN ESPERA"
+    state: str = USER_STATUS_IN_TOURNAMENT["EE"]
 
 class PlaysUsers(BaseModel):
     appuser_id: Optional[int] = None
