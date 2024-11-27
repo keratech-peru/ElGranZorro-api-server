@@ -583,6 +583,8 @@ class Confrontations_(CRUD):
 
     def get_winner_appusers_key_stage(db: Session, points_local_a_null, points_visit_a_null, points_local_b_null, points_visit_b_null, key_stage, points_local_a, points_visit_a, points_local_b, points_visit_b):
         # Se define cual de los dos son los ganadores
+        appuser_1_id = None
+        appuser_2_id = None
         tournament = db.query(Tournaments).filter(Tournaments.id == key_stage[0].tournaments_id).first()
         text_0 = f"###*ADMINISTRADOR*###\nAutomatizacion:*VERIFICACION_PLAY*\nTournament:{tournament.name}\nGRUPO:A\n"
         text_1 = ""
@@ -631,12 +633,12 @@ class Confrontations_(CRUD):
         text_0 = f"###*ADMINISTRADOR*###\nAutomatizacion:*VERIFICACION_PLAY*\nTournament:{tournament.name}\nGRUPO:B\n"
         text_1 = ""
         if key_stage[-1].appuser_1_id is None and key_stage[-1].appuser_2_id is not None:
-            appuser_1_id = key_stage[-1].appuser_2_id
-            appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_1_id).first() ### ELIMINAR LUEGO ###
+            appuser_2_id = key_stage[-1].appuser_2_id
+            appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_2_id).first() ### ELIMINAR LUEGO ###
             text_1= f"Caso de uso *Usuario Local No existe y Visitante si existe*\nLocal(No definido) - vs Visita({appuser_1.name})" ### ELIMINAR LUEGO ###
         elif key_stage[-1].appuser_2_id is None and key_stage[-1].appuser_1_id is not None:
-            appuser_1_id = key_stage[-1].appuser_1_id
-            appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_1_id).first() ### ELIMINAR LUEGO ###
+            appuser_2_id = key_stage[-1].appuser_1_id
+            appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_2_id).first() ### ELIMINAR LUEGO ###
             text_1= f"Caso de uso *Usuario Local si existe y Visitante no existe*\nLocal({appuser_1.name}) - vs Visita(No definido)" ### ELIMINAR LUEGO ###
         elif key_stage[-1].appuser_2_id is None and key_stage[-1].appuser_1_id is None:
             pass
