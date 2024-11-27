@@ -103,6 +103,13 @@ class Notificaciones_:
         text = TextToSend.user_commission_agent(appuser.name)
         Notificaciones_.send_whatsapp(appuser.phone, text)
 
+    @staticmethod
+    def send_whatsapp_users_without_completing_play(db: Session, appusers_id: List[int]) -> None:
+        for appuser_id in appusers_id:
+            appuser = db.query(AppUsers).filter(AppUsers.id == appuser_id).first()
+            text = TextToSend.user_without_completing_play(appuser.name)
+            Notificaciones_.send_whatsapp(appuser.phone, text)
+
 class NotificacionesAdmin_:
     @staticmethod
     def send_whatsapp_create_tournament(name: str, numb_fooballgames_api: int, numb_fooballgames_random: int = 0) -> None:

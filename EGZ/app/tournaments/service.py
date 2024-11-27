@@ -581,6 +581,62 @@ class Confrontations_(CRUD):
                 confront.points_2 = appuser_id_point_plays[confront.appuser_2_id]
                 CRUD.update(db, confront)
 
+    def get_winner_appusers_key_stage(db: Session, points_local_a_null, points_visit_a_null, points_local_b_null, points_visit_b_null, key_stage, points_local_a, points_visit_a, points_local_b, points_visit_b):
+        # Se define cual de los dos son los ganadores
+        if key_stage[0].appuser_1_id is None and key_stage[0].appuser_2_id is not None:
+            appuser_1_id = key_stage[0].appuser_2_id
+        elif key_stage[0].appuser_2_id is None and key_stage[0].appuser_1_id is not None:
+            appuser_1_id = key_stage[0].appuser_1_id
+        elif key_stage[0].appuser_2_id is None and key_stage[0].appuser_1_id is None:
+            pass
+        else:
+            if len(points_local_a_null) == 3 and len(points_visit_a_null) == 3:
+                # Caso de uso : Cuando el usuario local y visitante no realiza ninguna jugada.
+                Notificaciones_.send_whatsapp_users_without_completing_play([key_stage[0].appuser_1_id, key_stage[0].appuser_2_id])
+                appuser_1_id = random.choice([key_stage[0].appuser_1_id, key_stage[0].appuser_2_id])
+            elif len(points_local_a_null) == 3 and len(points_visit_a_null) != 3:
+                # caso de uso : Cuando el usuario local no completo ninguna jugada, pero el usuario visitante completo al menos una.En este caso el visitante es el ganador.
+                appuser_1_id = key_stage[0].appuser_2_id
+            elif len(points_local_a_null) != 3 and len(points_visit_a_null) == 3:
+                # caso de uso : Cuando el usuario visitante no completo ninguna jugada, pero el usuario local completo al menos una.En este caso el local es el ganador.
+                appuser_1_id = key_stage[0].appuser_1_id
+            elif len(points_local_a_null) != 3 and len(points_visit_a_null) != 3:
+                # caso de uso : Cuando el usuario local y visitante completo almenos una jugada.
+                if points_local_a > points_visit_a:
+                    appuser_1_id = key_stage[0].appuser_1_id
+                elif points_local_a == points_visit_a:
+                    appuser_1_id = Confrontations_.winner_points_equal(db, key_stage, group="A")
+                else:
+                    appuser_1_id = key_stage[0].appuser_2_id
+
+        if key_stage[-1].appuser_1_id is None and key_stage[-1].appuser_2_id is not None:
+            appuser_1_id = key_stage[-1].appuser_2_id
+        elif key_stage[-1].appuser_2_id is None and key_stage[-1].appuser_1_id is not None:
+            appuser_1_id = key_stage[-1].appuser_1_id
+        elif key_stage[-1].appuser_2_id is None and key_stage[-1].appuser_1_id is None:
+            pass
+        else:
+            if len(points_local_b_null) == 3 and len(points_visit_b_null) == 3:
+                # Caso de uso : Cuando el usuario local y visitante no realiza ninguna jugada.
+                Notificaciones_.send_whatsapp_users_without_completing_play([key_stage[-1].appuser_1_id, key_stage[-1].appuser_2_id])
+                appuser_1_id = random.choice([key_stage[-1].appuser_1_id, key_stage[-1].appuser_2_id])
+            elif len(points_local_b_null) == 3 and len(points_visit_b_null) != 3:
+                # caso de uso : Cuando el usuario local no completo ninguna jugada, pero el usuario visitante completo al menos una.En este caso el visitante es el ganador.
+                appuser_2_id = key_stage[-1].appuser_2_id
+            elif len(points_local_b_null) != 3 and len(points_visit_b_null) == 3:
+                # caso de uso : Cuando el usuario visitante no completo ninguna jugada, pero el usuario local completo al menos una.En este caso el local es el ganador.
+                appuser_2_id = key_stage[-1].appuser_1_id
+            elif len(points_local_b_null) != 3 and len(points_visit_b_null) != 3:
+                # caso de uso : Cuando el usuario local y visitante completo almenos una jugada.
+                if points_local_b > points_visit_b:
+                    appuser_2_id = key_stage[-1].appuser_1_id
+                elif points_local_b == points_visit_b:
+                    appuser_2_id = Confrontations_.winner_points_equal(db, key_stage, group="B")
+                else:
+                    appuser_2_id = key_stage[-1].appuser_2_id
+        
+        return appuser_1_id, appuser_2_id
+
     def winner_points_equal(db:Session, key_stage: List[ConfrontationsKeyStage], group: str):
         key_stage_part = key_stage[:3] if group == 'A' else key_stage[3:]
         footballgames_cod_list = [key.football_games_cod for key in key_stage_part]
@@ -631,40 +687,9 @@ class Confrontations_(CRUD):
                 points_visit_b_null.append(1)
             else:
                 points_visit_b = points_visit_b + points_grupo[1]
-
-
-        # Se define cual de los dos son los ganadores
-        if len(points_local_a_null) == 3 and len(points_visit_a_null) == 3:
-            appuser_1_id = key_stage[0].appuser_1_id
-        elif len(points_local_a_null) == 3 and len(points_visit_a_null) != 3:
-            appuser_1_id = key_stage[0].appuser_2_id
-        elif len(points_local_a_null) != 3 and len(points_visit_a_null) == 3:
-            appuser_1_id = key_stage[0].appuser_1_id
-        elif len(points_local_a_null) != 3 and len(points_visit_a_null) != 3:
-
-            if points_local_a > points_visit_a:
-                appuser_1_id = key_stage[0].appuser_1_id
-            elif points_local_a == points_visit_a:
-                appuser_1_id = Confrontations_.winner_points_equal(db, key_stage, group="A")
-            else:
-                appuser_1_id = key_stage[0].appuser_2_id
-
-
-        if len(points_local_b_null) == 3 and len(points_visit_b_null) == 3:
-            appuser_2_id = key_stage[-1].appuser_1_id
-        elif len(points_local_b_null) == 3 and len(points_visit_b_null) != 3:
-            appuser_2_id = key_stage[-1].appuser_2_id
-        elif len(points_local_b_null) != 3 and len(points_visit_b_null) == 3:
-            appuser_2_id = key_stage[-1].appuser_1_id
-        elif len(points_local_b_null) != 3 and len(points_visit_b_null) != 3:
-
-            if points_local_b > points_visit_b:
-                appuser_2_id = key_stage[-1].appuser_1_id
-            elif points_local_b == points_visit_b:
-                appuser_2_id = Confrontations_.winner_points_equal(db, key_stage, group="B")
-            else:
-                appuser_2_id = key_stage[-1].appuser_2_id
         
+        appuser_1_id, appuser_2_id = Confrontations_.get_winner_appusers_key_stage(db, points_local_a_null, points_visit_a_null, points_local_b_null, points_visit_b_null, key_stage, points_local_a, points_visit_a, points_local_b, points_visit_b)
+
         return appuser_1_id, appuser_2_id
 
     def orden_update_group_stage(db: Session, cod_tournament: str):

@@ -67,7 +67,11 @@ class TextToSend:
                 \n✅ Recuerda estar atento a los nuevos torneos {URL_FRONT}tournaments\n
                 '''
         return text
-
+    
+    def user_without_completing_play(name: str):
+        text = f''' Hola *{name}*.Tu contrincante ni tu completo ninguna de sus jugadas. El ganador se definira al azar, suerte.\n
+                '''
+        return text        
   
 class Otp:
     COUNT = 5
