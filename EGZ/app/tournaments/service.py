@@ -583,10 +583,17 @@ class Confrontations_(CRUD):
 
     def get_winner_appusers_key_stage(db: Session, points_local_a_null, points_visit_a_null, points_local_b_null, points_visit_b_null, key_stage, points_local_a, points_visit_a, points_local_b, points_visit_b):
         # Se define cual de los dos son los ganadores
+        tournament = db.query(Tournaments).filter(Tournaments.id == key_stage[0].tournaments_id).first()
+        text_0 = f"###*ADMINISTRADOR*###\nAutomatizacion:*VERIFICACION_PLAY*\nTournament:{tournament.name}\nGRUPO:A\n"
+        text_1 = ""
         if key_stage[0].appuser_1_id is None and key_stage[0].appuser_2_id is not None:
             appuser_1_id = key_stage[0].appuser_2_id
+            appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_1_id).first() ### ELIMINAR LUEGO ###
+            text_1= f"Caso de uso *Usuario Local No existe y Visitante si existe*\nLocal(No definido) - vs Visita({appuser_1.name})" ### ELIMINAR LUEGO ###
         elif key_stage[0].appuser_2_id is None and key_stage[0].appuser_1_id is not None:
             appuser_1_id = key_stage[0].appuser_1_id
+            appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_1_id).first() ### ELIMINAR LUEGO ###
+            text_1= f"Caso de uso *Usuario Local si existe y Visitante no existe*\nLocal({appuser_1.name}) - vs Visita(No definido)" ### ELIMINAR LUEGO ###
         elif key_stage[0].appuser_2_id is None and key_stage[0].appuser_1_id is None:
             pass
         else:
@@ -594,46 +601,76 @@ class Confrontations_(CRUD):
                 # Caso de uso : Cuando el usuario local y visitante no realiza ninguna jugada.
                 Notificaciones_.send_whatsapp_users_without_completing_play([key_stage[0].appuser_1_id, key_stage[0].appuser_2_id])
                 appuser_1_id = random.choice([key_stage[0].appuser_1_id, key_stage[0].appuser_2_id])
+                appuser_1 = db.query(AppUsers).filter(AppUsers.id == key_stage[0].appuser_1_id).first() ### ELIMINAR LUEGO ###
+                appuser_2 = db.query(AppUsers).filter(AppUsers.id == key_stage[0].appuser_2_id).first() ### ELIMINAR LUEGO ###
+                text_1= f"Caso de uso *Usuario Local y Visitante si existe, pero ninguno completo sus jugadas ganador random*\nLocal({appuser_1.name}) - vs Visita({appuser_2.name})" ### ELIMINAR LUEGO ###
             elif len(points_local_a_null) == 3 and len(points_visit_a_null) != 3:
                 # caso de uso : Cuando el usuario local no completo ninguna jugada, pero el usuario visitante completo al menos una.En este caso el visitante es el ganador.
                 appuser_1_id = key_stage[0].appuser_2_id
+                appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_1_id).first() ### ELIMINAR LUEGO ###
+                appuser_2 = db.query(AppUsers).filter(AppUsers.id == key_stage[0].appuser_1_id).first() ### ELIMINAR LUEGO ###
+                text_1= f"Caso de uso *Usuario Local y Visitante si existe, pero el local no hizo ninguna jugada y el visitante al menos hizo una*\nLocal({appuser_2.name}) - vs Visita({appuser_1.name})" ### ELIMINAR LUEGO ###
             elif len(points_local_a_null) != 3 and len(points_visit_a_null) == 3:
                 # caso de uso : Cuando el usuario visitante no completo ninguna jugada, pero el usuario local completo al menos una.En este caso el local es el ganador.
                 appuser_1_id = key_stage[0].appuser_1_id
+                appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_1_id).first() ### ELIMINAR LUEGO ###
+                appuser_2 = db.query(AppUsers).filter(AppUsers.id == key_stage[0].appuser_2_id).first() ### ELIMINAR LUEGO ###
+                text_1= f"Caso de uso *Usuario Local y Visitante si existe, pero el visitante no hizo ninguna jugada y el local al menos hizo una*\nLocal({appuser_1.name}) - vs Visita({appuser_2.name})" ### ELIMINAR LUEGO ###
             elif len(points_local_a_null) != 3 and len(points_visit_a_null) != 3:
                 # caso de uso : Cuando el usuario local y visitante completo almenos una jugada.
                 if points_local_a > points_visit_a:
                     appuser_1_id = key_stage[0].appuser_1_id
                 elif points_local_a == points_visit_a:
                     appuser_1_id = Confrontations_.winner_points_equal(db, key_stage, group="A")
+                    text_1= f"Hubo un empate en el torneo"
                 else:
                     appuser_1_id = key_stage[0].appuser_2_id
+        if text_1:
+            Notificaciones_.send_whatsapp("936224658", text_0 + text_1) ### ELIMINAR LUEGO ###
 
+        text_0 = f"###*ADMINISTRADOR*###\nAutomatizacion:*VERIFICACION_PLAY*\nTournament:{tournament.name}\nGRUPO:B\n"
+        text_1 = ""
         if key_stage[-1].appuser_1_id is None and key_stage[-1].appuser_2_id is not None:
             appuser_1_id = key_stage[-1].appuser_2_id
+            appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_1_id).first() ### ELIMINAR LUEGO ###
+            text_1= f"Caso de uso *Usuario Local No existe y Visitante si existe*\nLocal(No definido) - vs Visita({appuser_1.name})" ### ELIMINAR LUEGO ###
         elif key_stage[-1].appuser_2_id is None and key_stage[-1].appuser_1_id is not None:
             appuser_1_id = key_stage[-1].appuser_1_id
+            appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_1_id).first() ### ELIMINAR LUEGO ###
+            text_1= f"Caso de uso *Usuario Local si existe y Visitante no existe*\nLocal({appuser_1.name}) - vs Visita(No definido)" ### ELIMINAR LUEGO ###
         elif key_stage[-1].appuser_2_id is None and key_stage[-1].appuser_1_id is None:
             pass
         else:
             if len(points_local_b_null) == 3 and len(points_visit_b_null) == 3:
                 # Caso de uso : Cuando el usuario local y visitante no realiza ninguna jugada.
                 Notificaciones_.send_whatsapp_users_without_completing_play([key_stage[-1].appuser_1_id, key_stage[-1].appuser_2_id])
-                appuser_1_id = random.choice([key_stage[-1].appuser_1_id, key_stage[-1].appuser_2_id])
+                appuser_2_id = random.choice([key_stage[-1].appuser_1_id, key_stage[-1].appuser_2_id])
+                appuser_1 = db.query(AppUsers).filter(AppUsers.id == key_stage[-1].appuser_1_id).first() ### ELIMINAR LUEGO ###
+                appuser_2 = db.query(AppUsers).filter(AppUsers.id == key_stage[-1].appuser_2_id).first() ### ELIMINAR LUEGO ###
+                text_1= f"Caso de uso *Usuario Local y Visitante si existe, pero ninguno completo sus jugadas ganador random*\nLocal({appuser_1.name}) - vs Visita({appuser_2.name})" ### ELIMINAR LUEGO ###
             elif len(points_local_b_null) == 3 and len(points_visit_b_null) != 3:
                 # caso de uso : Cuando el usuario local no completo ninguna jugada, pero el usuario visitante completo al menos una.En este caso el visitante es el ganador.
                 appuser_2_id = key_stage[-1].appuser_2_id
+                appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_2_id).first() ### ELIMINAR LUEGO ###
+                appuser_2 = db.query(AppUsers).filter(AppUsers.id == key_stage[-1].appuser_1_id).first() ### ELIMINAR LUEGO ###
+                text_1= f"Caso de uso *Usuario Local y Visitante si existe, pero el local no hizo ninguna jugada y el visitante al menos hizo una*\nLocal({appuser_2.name}) - vs Visita({appuser_1.name})" ### ELIMINAR LUEGO ###
             elif len(points_local_b_null) != 3 and len(points_visit_b_null) == 3:
                 # caso de uso : Cuando el usuario visitante no completo ninguna jugada, pero el usuario local completo al menos una.En este caso el local es el ganador.
                 appuser_2_id = key_stage[-1].appuser_1_id
+                appuser_1 = db.query(AppUsers).filter(AppUsers.id == appuser_2_id).first() ### ELIMINAR LUEGO ###
+                appuser_2 = db.query(AppUsers).filter(AppUsers.id == key_stage[-1].appuser_2_id).first() ### ELIMINAR LUEGO ###
+                text_1= f"Caso de uso *Usuario Local y Visitante si existe, pero el visitante no hizo ninguna jugada y el local al menos hizo una*\nLocal({appuser_1.name}) - vs Visita({appuser_2.name})" ### ELIMINAR LUEGO ###
             elif len(points_local_b_null) != 3 and len(points_visit_b_null) != 3:
                 # caso de uso : Cuando el usuario local y visitante completo almenos una jugada.
                 if points_local_b > points_visit_b:
                     appuser_2_id = key_stage[-1].appuser_1_id
                 elif points_local_b == points_visit_b:
                     appuser_2_id = Confrontations_.winner_points_equal(db, key_stage, group="B")
+                    text_1= f"Hubo un empate en el torneo"
                 else:
                     appuser_2_id = key_stage[-1].appuser_2_id
+        if text_1:
+            Notificaciones_.send_whatsapp("936224658", text_0 + text_1) ### ELIMINAR LUEGO ###
         
         return appuser_1_id, appuser_2_id
 
