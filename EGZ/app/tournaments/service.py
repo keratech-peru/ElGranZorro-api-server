@@ -71,7 +71,7 @@ class Tournaments_(CRUD):
             if tournament_["is_enrolled_user"]:
                 tournaments_.append(tournament_)
             elif not is_past(tournament.start_date):
-                tournament_["active_for_user"] = tournament_["level"] == str(db.query(AppUsers.level).filter(AppUsers.id == appuser_id).first()[0])
+                tournament_["active_for_user"] = int(tournament_["level"]) <= int(db.query(AppUsers.level).filter(AppUsers.id == appuser_id).first()[0])
                 tournaments_.append(tournament_)
         return tournaments_
 
