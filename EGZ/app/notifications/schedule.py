@@ -1,11 +1,10 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from app.database import get_db, SessionLocal
+from app.config import ADMINISTRATOR_NUMBER
+from app.database import SessionLocal
 from app.tournaments.models import FootballGames, ConfrontationsGroupStage, ConfrontationsKeyStage,GroupStage
 from app.tournaments.service import FootballGames_
-from app.tournaments.constants import Origin
-from app.users.models import PlaysUsers
-from app.competitions.models import Matchs, MatchsFootballGames
+from app.competitions.models import MatchsFootballGames
 from app.notifications.service import Notificaciones_, NotificacionesAdmin_
 from datetime import datetime
 import pytz
@@ -80,6 +79,8 @@ class CronJob:
         db = SessionLocal()
         try:
             JobNotificationsUsers.not_complete_footballgames(db)
+        except:
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, "*ADMINISTRADOR* : Hay error en not_complete_footballgames.")
         finally:
             db.close()
 
@@ -87,6 +88,8 @@ class CronJob:
         db = SessionLocal()
         try:
             JobNotificationsAdmin.update_footballgames(db)
+        except:
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, "*ADMINISTRADOR* : Hay error en update_footballgames.")
         finally:
             db.close()
 
@@ -94,5 +97,7 @@ class CronJob:
         db = SessionLocal()
         try:
             JobNotificationsAdmin.incomplete_footballgames(db)
+        except:
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, "*ADMINISTRADOR* : Hay error en incomplete_footballgames.")
         finally:
             db.close()

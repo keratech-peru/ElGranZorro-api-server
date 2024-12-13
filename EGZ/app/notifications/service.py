@@ -1,6 +1,6 @@
 from typing import List
 from sqlalchemy.orm import Session
-from app.config import Email, Whatsapp
+from app.config import Email, Whatsapp, ADMINISTRATOR_NUMBER
 from app.notifications.constants import TextToSend
 from app.database import CRUD
 from app.tournaments.models import Tournaments, FootballGames
@@ -114,12 +114,12 @@ class NotificacionesAdmin_:
     @staticmethod
     def send_whatsapp_create_tournament(name: str, numb_fooballgames_api: int, numb_fooballgames_random: int = 0) -> None:
         text = f"*ADMINISTRADOR* el torneo *{name}* creado recientemente tiene :\n- Footballgames API : *{numb_fooballgames_api}* \n- Footballgames RANDOM : *{numb_fooballgames_random}*"
-        Notificaciones_.send_whatsapp("936224658", text)
+        Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text)
 
     @staticmethod
     def send_whatsapp_adding_match(numb_match: int, start_date:str, end_date:str) -> None:
         text = f"*ADMINISTRADOR* se han agregado {numb_match} match nuevos correspondietes a las fechas *{start_date}* al *{end_date}*"
-        Notificaciones_.send_whatsapp("936224658", text)
+        Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text)
 
     @staticmethod
     def send_whatsapp_update_match(footballgames: List[dict], numb_match: int, start_date:str, end_date:str) -> None:
@@ -140,7 +140,7 @@ class NotificacionesAdmin_:
             text_2 = f"old : {home_team_old} vs {away_team_old} - {day_old}/{hour_old}\n"
             text_3 = f"new : {home_team_new} vs {away_team_new} - {day_new}/{hour_new}\n\n"
             text = text + text_1 + text_2 + text_3    
-        Notificaciones_.send_whatsapp("936224658", text)
+        Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text)
 
     @staticmethod
     def send_whatsapp_update_footballgames(update_results: List[dict]) -> None:
@@ -155,7 +155,7 @@ class NotificacionesAdmin_:
                 hour = result["hour"]
                 origin = result["origin"]
                 text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {home_score} - {away_score} -> {hour} -> {origin}\n"
-            Notificaciones_.send_whatsapp("936224658", text)
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text)
 
     @staticmethod
     def send_whatsapp_incomplete_footballgames(footballgames: List[FootballGames], hour_now: str, time_format: str) -> None:
@@ -169,30 +169,30 @@ class NotificacionesAdmin_:
                     away_team = footballgame.away_team
                     hour = footballgame.hour
                     text = text + f"- *{codigo}* -> {home_team} vs {away_team} -> {hour}\n"
-            Notificaciones_.send_whatsapp("936224658", text)
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text)
 
     @staticmethod
     def send_whatsapp_checkout_match(text : str) -> None:
         if text:
             text_0 = "*SUPERVICION - Flujo checkout_match*\n\n*ADMINISTRADOR* se *actualizaron* los siguientes registros por medio de apí:\n\n"
-            Notificaciones_.send_whatsapp("936224658", text_0 + text)
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text_0 + text)
 
     @staticmethod
     def send_whatsapp_checkout_match_timed(text : str) -> None:
         if text:
             text_0 = "*URGENTE - Flujo checkout_match*\n\n*ADMINISTRADOR* se debe actualizar los siguientes footballgames por *reprogramacion*:\n\n"
-            Notificaciones_.send_whatsapp("936224658", text_0 + text)
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text_0 + text)
     
     @staticmethod
     def send_whatsapp_pending_refund(db: Session, user: AppUsers, tournament_id: int) -> None:
         payment = db.query(Payments).filter(Payments.appuser_id == user.id, Payments.tournaments_id == tournament_id).first()
         if payment:
-            Notificaciones_.send_whatsapp("936224658", f"Se reporto una devolucion para:\n\nuser : {user.name}\nphone : {user.phone}\ntournament_id : {tournament_id}\nid_mercado_pago : {payment.id_mercado_pago}")
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, f"Se reporto una devolucion para:\n\nuser : {user.name}\nphone : {user.phone}\ntournament_id : {tournament_id}\nid_mercado_pago : {payment.id_mercado_pago}")
 
     @staticmethod
     def send_whatsapp_new_commission_agent(user: AppUsers) -> None:
         text = f"*Nuevo Comisionador*\n\nphone:{user.phone}\nname:{user.name} {user.lastname}"
-        Notificaciones_.send_whatsapp("936224658", text)
+        Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text)
 
     @staticmethod
     def send_whatsapp_adding_match_error_api(urls:List[str]) -> None:
@@ -200,4 +200,4 @@ class NotificacionesAdmin_:
             text = f"###*ADMINISTRADOR*###\nAutomatizacion:*ADDING_MATCH*\nSe han presento un error al consumir el API:\n"
             for url in urls:
                 text = text + f"- {url}\n"
-            Notificaciones_.send_whatsapp("936224658", text)
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text)

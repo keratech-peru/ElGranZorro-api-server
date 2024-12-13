@@ -1,12 +1,13 @@
 import pytz
 from fastapi import Depends
 from datetime import datetime, timedelta
-from app.config import SQLALCHEMY_DATABASE_URI
+from app.config import ADMINISTRATOR_NUMBER
 from app.competitions.models import Competitions
 from app.competitions.service import Competitions_
 from app.tournaments.service import Tournaments_
 from app.tournaments.models import Tournaments, FootballGames
 from app.tournaments.constants import Origin
+from app.notifications.service import Notificaciones_
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 
@@ -41,6 +42,8 @@ class CronJob:
         db = SessionLocal()
         try:
             JobCompetitions.adding_match(db)
+        except:
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, "*ADMINISTRADOR* : Hay error en adding_match.")
         finally:
             db.close()
 
@@ -48,6 +51,8 @@ class CronJob:
         db = SessionLocal()
         try:
             JobCompetitions.start_tournament(db)
+        except:
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, "*ADMINISTRADOR* : Hay error en start_tournament.")
         finally:
             db.close()
 
@@ -55,5 +60,7 @@ class CronJob:
         db = SessionLocal()
         try:
             JobCompetitions.checking_changes_in_matches(db)
+        except:
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, "*ADMINISTRADOR* : Hay error en checking_changes_in_matches.")
         finally:
             db.close()

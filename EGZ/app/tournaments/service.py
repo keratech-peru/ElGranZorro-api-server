@@ -8,14 +8,13 @@ from app.tournaments.constants import GROUPS, STATUS_TOURNAMENT, FOOTBALLGAMES_B
 from app.tournaments.utils import is_past, hide_data_because_is_past_is_appuser, is_over, code_generator_tournaments
 from app.notifications.service import Notificaciones_
 from app.competitions.models import Teams, MatchsFootballGames, Matchs, Competitions
-from app.competitions.constants import DataDummyTeam, DataDummyCompetition
-from app.competitions.utils import format_date
+from app.competitions.constants import DataDummyCompetition
 from app.payments.service import Payments_
 from app.payments.models import Payments, PaymentsCommissionAgent
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List, Dict
-from app.config import API_FOOTBALL_DATA, KEY_FOOTBALL_DATA
+from app.config import API_FOOTBALL_DATA, KEY_FOOTBALL_DATA, ADMINISTRATOR_NUMBER
 from datetime import datetime, timedelta, timezone
 import requests
 import random
@@ -628,7 +627,7 @@ class Confrontations_(CRUD):
                 else:
                     appuser_1_id = key_stage[0].appuser_2_id
         if text_1:
-            Notificaciones_.send_whatsapp("936224658", text_0 + text_1) ### ELIMINAR LUEGO ###
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text_0 + text_1) ### ELIMINAR LUEGO ###
 
         text_0 = f"###*ADMINISTRADOR*###\nAutomatizacion:*VERIFICACION_PLAY*\nTournament:{tournament.name}\nGRUPO:B\n"
         text_1 = ""
@@ -672,7 +671,7 @@ class Confrontations_(CRUD):
                 else:
                     appuser_2_id = key_stage[-1].appuser_2_id
         if text_1:
-            Notificaciones_.send_whatsapp("936224658", text_0 + text_1) ### ELIMINAR LUEGO ###
+            Notificaciones_.send_whatsapp(ADMINISTRATOR_NUMBER, text_0 + text_1) ### ELIMINAR LUEGO ###
         
         return appuser_1_id, appuser_2_id
 
