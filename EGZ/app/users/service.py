@@ -92,7 +92,10 @@ class AppUsers_(CRUD):
             if footballgame_type == 'SCORE':
                 point = 3 if play.score_local == int(home_score) and play.score_visit == int(away_score)  else 0
             if  footballgame_type == 'RESULT':
-                point = 1 if (play.score_local >= play.score_visit) == (int(home_score) >= int(away_score)) else 0
+                empate = (int(home_score) == int(away_score)) and (play.score_local == play.score_visit)
+                local = (int(home_score) > int(away_score)) and (play.score_local > play.score_visit)
+                visitante = (int(home_score) < int(away_score)) and (play.score_local < play.score_visit)
+                point = 1 if empate or local or visitante else 0
             appuser_id_point_plays[play.appuser_id] = point
         return appuser_id_point_plays
     
