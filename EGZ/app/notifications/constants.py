@@ -1,7 +1,7 @@
 from app.tournaments.models import Tournaments, FootballGames
 
 OTP_DIGIT_LIMIT = 4
-URL_FRONT = "https://egz-frontend-alpha.vercel.app/"
+URL_FRONT = "https://www.elgranzorro.com/"
 class TextToSend:
     def login():
         text = f"Bienvenido a *El Gran Zorro*🐺, tu session esta activa.\nRecuerda visitar nuestra pagina {URL_FRONT}"

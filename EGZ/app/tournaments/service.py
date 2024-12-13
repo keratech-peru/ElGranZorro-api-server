@@ -601,7 +601,7 @@ class Confrontations_(CRUD):
         else:
             if len(points_local_a_null) == 3 and len(points_visit_a_null) == 3:
                 # Caso de uso : Cuando el usuario local y visitante no realiza ninguna jugada.
-                Notificaciones_.send_whatsapp_users_without_completing_play([key_stage[0].appuser_1_id, key_stage[0].appuser_2_id])
+                Notificaciones_.send_whatsapp_users_without_completing_play(db, [key_stage[0].appuser_1_id, key_stage[0].appuser_2_id])
                 appuser_1_id = random.choice([key_stage[0].appuser_1_id, key_stage[0].appuser_2_id])
                 appuser_1 = db.query(AppUsers).filter(AppUsers.id == key_stage[0].appuser_1_id).first() ### ELIMINAR LUEGO ###
                 appuser_2 = db.query(AppUsers).filter(AppUsers.id == key_stage[0].appuser_2_id).first() ### ELIMINAR LUEGO ###
@@ -645,7 +645,7 @@ class Confrontations_(CRUD):
         else:
             if len(points_local_b_null) == 3 and len(points_visit_b_null) == 3:
                 # Caso de uso : Cuando el usuario local y visitante no realiza ninguna jugada.
-                Notificaciones_.send_whatsapp_users_without_completing_play([key_stage[-1].appuser_1_id, key_stage[-1].appuser_2_id])
+                Notificaciones_.send_whatsapp_users_without_completing_play(db, [key_stage[-1].appuser_1_id, key_stage[-1].appuser_2_id])
                 appuser_2_id = random.choice([key_stage[-1].appuser_1_id, key_stage[-1].appuser_2_id])
                 appuser_1 = db.query(AppUsers).filter(AppUsers.id == key_stage[-1].appuser_1_id).first() ### ELIMINAR LUEGO ###
                 appuser_2 = db.query(AppUsers).filter(AppUsers.id == key_stage[-1].appuser_2_id).first() ### ELIMINAR LUEGO ###
