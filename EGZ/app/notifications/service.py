@@ -32,7 +32,7 @@ class Notificaciones_:
 
     @staticmethod
     def send_whatsapp(phone: str, message: str) -> None:
-        body = {"message":message,"number":'51'+phone}
+        body = {"chatId":'51'+phone+"@c.us","contentType":"string","content":message}
         response = requests.post(Whatsapp.URL_SEND, json = body)
 
     @staticmethod
